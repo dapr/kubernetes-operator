@@ -14,7 +14,7 @@ concurrency:
 
 env:
   IMAGE_VERSION: ${{ github.ref_name}}
-  IMAGE_TAG_BASE: "quay.io/lburgazzoli/dapr-operator"
+  IMAGE_TAG_BASE: "${{ vars.DOCKER_DAPRIO_REGISTRY }}/daprio/dapr-kubernetes-operator"
 
 jobs:
   build:
@@ -22,12 +22,13 @@ jobs:
     steps:
       - name: check-out
         uses: actions/checkout@v3
-      - name: Login to Quay.io
+      - name: Container Registry login
         uses: docker/login-action@v2
+        env:
+          DOCKER_REGISTRY_ID: ${{ vars.DOCKER_DAPRIO_REGISTRY }}
         with:
-          registry: quay.io
-          username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
-          password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+          username: ${{ secrets.DOCKER_REGISTRY_ID }}
+          password: ${{ secrets.DOCKER_REGISTRY_PASS }}
       - name: Build Operator Container Image
         run: |
           export VERSION="${IMAGE_VERSION#v}"

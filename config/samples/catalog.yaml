@@ -1,12 +1,12 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: dapr-catalog
+  name: daprio-catalog
   namespace: openshift-marketplace
 spec:
   sourceType: grpc
-  image: quay.io/lburgazzoli/dapr-operator-catalog:latest
-  displayName: Dapr Catalog
+  image: docker.io/daprio/dapr-kubernetes-operator-catalog:latest
+  displayName: dapr.io catalog
   publisher: dapr.io
   updateStrategy:
     registryPoll:

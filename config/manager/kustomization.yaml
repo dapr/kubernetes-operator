@@ -1,8 +1,8 @@
 resources:
-- manager.yaml
+  - manager.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
-- name: controller
-  newName: quay.io/lburgazzoli/dapr-operator
-  newTag: v0.0.22
+  - name: controller
+    newName: docker.io/daprio/dapr-kubernetes-operator
+    newTag: v0.0.22
