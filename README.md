@@ -1,6 +1,8 @@
-# dapr-operator
+# Dapr Kubernetes Operator
 
-## setup
+This project was created by [@lburgazzoli in this repository](https://github.com/lburgazzoli/dapr-operator) and donated to the Dapr Sandbox organization. 
+
+## Setup
  
 ```shell
 # install the catalog
