@@ -1,0 +1,31 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: dapr-api
+  labels:
+    {{- range $key, $value := .Values.global.k8sLabels }}
+    {{ $key }}: {{ tpl $value $ }}
+    {{- end }}
+spec:
+  selector:
+    app: dapr-operator
+  ports:
+  - protocol: TCP
+    port: {{ .Values.ports.port }} 
+    targetPort: {{ .Values.ports.targetPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dapr-webhook
+  labels:
+    {{- range $key, $value := .Values.global.k8sLabels }}
+    {{ $key }}: {{ tpl $value $ }}
+    {{- end }}
+spec:
+  ports:
+  - port: 443
+    targetPort: 19443
+    protocol: TCP
+  selector:
+    app: dapr-operator

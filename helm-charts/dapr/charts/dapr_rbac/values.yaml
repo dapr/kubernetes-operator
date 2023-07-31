@@ -1,0 +1,4 @@
+secretReader:
+  enabled: true
+  namespace: default
+component: rbac

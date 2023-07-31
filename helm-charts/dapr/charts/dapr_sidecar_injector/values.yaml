@@ -1,0 +1,46 @@
+enabled: true
+replicaCount: 1
+logLevel: info
+component: sidecar-injector
+
+# Override this to use a custom sidecar image.
+# If the image name contains a "/", it is assumed to be a full docker image name, including the registry url and tag.
+# Otherwise, the helm chart will use {{ .Values.global.registry }}/{{ .Values.image.name }}:{{ .Values.global.tag }}
+image:
+  name: "daprd"
+
+# Override this to use a custom injector service image.
+# If the image name contains a "/", it is assumed to be a full docker image name, including the registry url and tag.
+# Otherwise, the helm chart will use {{ .Values.global.registry }}/{{ .Values.injectorImage.name }}:{{ .Values.global.tag }}
+injectorImage:
+  name: "injector"
+
+nameOverride: ""
+fullnameOverride: ""
+webhookFailurePolicy: Ignore
+sidecarImagePullPolicy: IfNotPresent
+runAsNonRoot: true
+sidecarRunAsNonRoot: true
+sidecarReadOnlyRootFilesystem: true
+sidecarDropALLCapabilities: false
+allowedServiceAccounts: ""
+allowedServiceAccountsPrefixNames: ""
+resources: {}
+kubeClusterDomain: cluster.local
+ignoreEntrypointTolerations: "[{\\\"effect\\\":\\\"NoSchedule\\\",\\\"key\\\":\\\"alibabacloud.com/eci\\\"},{\\\"effect\\\":\\\"NoSchedule\\\",\\\"key\\\":\\\"azure.com/aci\\\"},{\\\"effect\\\":\\\"NoSchedule\\\",\\\"key\\\":\\\"aws\\\"},{\\\"effect\\\":\\\"NoSchedule\\\",\\\"key\\\":\\\"huawei.com/cci\\\"}]"
+hostNetwork: false
+healthzPort: 8080
+
+livenessProbe:
+  initialDelaySeconds: 3
+  periodSeconds: 3
+  failureThreshold: 5
+readinessProbe:
+  initialDelaySeconds: 3
+  periodSeconds: 3
+  failureThreshold: 5
+
+debug:
+  enabled: false
+  port: 40000
+  initialDelaySeconds: 30000

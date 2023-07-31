@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: dapr-sentry
+  labels:
+    {{- range $key, $value := .Values.global.k8sLabels }}
+    {{ $key }}: {{ tpl $value $ }}
+    {{- end }}
+spec:
+  selector:
+    app: dapr-sentry
+  ports:
+  - protocol: TCP
+    port: {{ .Values.ports.port }} 
+    targetPort: {{ .Values.ports.targetPort }}  

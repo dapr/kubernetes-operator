@@ -1,0 +1,41 @@
+replicaCount: 1
+logLevel: info
+watchInterval: "0"
+watchNamespace: ""
+maxPodRestartsPerMinute: 20
+component: operator
+
+# Override this to use a custom operator service image.
+# If the image name contains a "/", it is assumed to be a full docker image name, including the registry url and tag.
+# Otherwise, the helm chart will use {{ .Values.global.registry }}/{{ .Values.image.name }}:{{ .Values.global.tag }}
+image:
+  name: "operator"
+
+nameOverride: ""
+fullnameOverride: ""
+
+runAsNonRoot: true
+
+serviceReconciler:
+  enabled: true
+
+ports:
+  protocol: TCP
+  port: 80
+  targetPort: 6500
+
+resources: {}
+
+livenessProbe:
+  initialDelaySeconds: 3
+  periodSeconds: 3
+  failureThreshold: 5
+readinessProbe:
+  initialDelaySeconds: 3
+  periodSeconds: 3
+  failureThreshold: 5
+
+debug:
+  enabled: false
+  port: 40000
+  initialDelaySeconds: 30000

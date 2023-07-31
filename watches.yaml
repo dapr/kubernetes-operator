@@ -1,0 +1,12 @@
+# Use the 'create api' subcommand to add watches to this file.
+- group: dapr.dapr.io
+  version: v1alpha1
+  kind: Dapr
+  chart: helm-charts/dapr
+  overrideValues:
+    dapr_operator:runAsNonRoot: "true"
+    dapr_placement.runAsNonRoot: "true"
+    dapr_sentry.runAsNonRoot: "true"
+    dapr_dashboard.runAsNonRoot: "true"
+
+#+kubebuilder:scaffold:watch

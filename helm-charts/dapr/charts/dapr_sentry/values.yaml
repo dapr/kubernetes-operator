@@ -1,0 +1,44 @@
+replicaCount: 1
+logLevel: info
+component: sentry
+
+# Override this to use a custom sentry service image.
+# If the image name contains a "/", it is assumed to be a full docker image name, including the registry url and tag.
+# Otherwise, the helm chart will use {{ .Values.global.registry }}/{{ .Values.image.name }}:{{ .Values.global.tag }}
+image:
+  name: "sentry"
+
+nameOverride: ""
+fullnameOverride: ""
+
+tokenAudience: ""
+
+ports:
+  protocol: TCP
+  port: 80
+  targetPort: 50001
+
+tls:
+  issuer:
+    certPEM: ""
+    keyPEM: ""
+  root:
+    certPEM: ""
+  trustDomain: cluster.local
+
+livenessProbe:
+  initialDelaySeconds: 3
+  periodSeconds: 3
+  failureThreshold: 5
+readinessProbe:
+  initialDelaySeconds: 3
+  periodSeconds: 3
+  failureThreshold: 5
+
+debug:
+  enabled: false
+  port: 40000
+  initialDelaySeconds: 30000
+
+runAsNonRoot: true
+resources: {}

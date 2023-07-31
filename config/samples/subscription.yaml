@@ -1,0 +1,12 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: dapr-operator
+  namespace: openshift-operators
+spec:
+  channel: alpha
+  installPlanApproval: Automatic
+  name: dapr-operator
+  source: dapr-catalog
+  sourceNamespace: openshift-marketplace
+  startingCSV: dapr-operator.v1.11.0-2
