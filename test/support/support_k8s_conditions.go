@@ -26,6 +26,14 @@ func ConditionStatus[T conditionType](conditionType T) func(any) corev1.Conditio
 					}
 				}
 			}
+		case *corev1.Pod:
+			if o != nil {
+				for i := range o.Status.Conditions {
+					if string(o.Status.Conditions[i].Type) == string(conditionType) {
+						return o.Status.Conditions[i].Status
+					}
+				}
+			}
 		case *v1alpha1.DaprControlPlane:
 			if o != nil {
 				for i := range o.Status.Conditions {
@@ -48,6 +56,14 @@ func ConditionReason[T conditionType](conditionType T) func(any) string {
 				return c.Reason
 			}
 		case *appsv1.Deployment:
+			if o != nil {
+				for i := range o.Status.Conditions {
+					if string(o.Status.Conditions[i].Type) == string(conditionType) {
+						return o.Status.Conditions[i].Reason
+					}
+				}
+			}
+		case *corev1.Pod:
 			if o != nil {
 				for i := range o.Status.Conditions {
 					if string(o.Status.Conditions[i].Type) == string(conditionType) {
