@@ -3,17 +3,16 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app.kubernetes.io/name: clusterrolebinding
-    app.kubernetes.io/instance: manager-rolebinding
+    app.kubernetes.io/instance: dapr-control-plane-clusterrolebinding
     app.kubernetes.io/component: rbac
-    app.kubernetes.io/created-by: dapr-operator
-    app.kubernetes.io/part-of: dapr-operator
+    app.kubernetes.io/part-of: dapr-control-plane
     app.kubernetes.io/managed-by: kustomize
-  name: manager-rolebinding
+  name: dapr-control-plane-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: manager-role
+  name: dapr-control-plane-role
 subjects:
 - kind: ServiceAccount
-  name: controller-manager
-  namespace: system
+  name: dapr-control-plane-sa
+  namespace: dapr-system

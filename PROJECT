@@ -4,17 +4,18 @@
 # More info: https://book.kubebuilder.io/reference/project-config.html
 domain: dapr.io
 layout:
-- helm.sdk.operatorframework.io/v1
-plugins:
-  manifests.sdk.operatorframework.io/v2: {}
-  scorecard.sdk.operatorframework.io/v2: {}
-projectName: dapr-operator
+- go.kubebuilder.io/v4
+multigroup: true
+projectName: dapr-operator-ng
+repo: github.com/dapr-sandbox/dapr-kubernetes-operator
 resources:
 - api:
     crdVersion: v1
     namespaced: true
+  controller: true
   domain: dapr.io
-  group: dapr
+  group: tools
   kind: Dapr
+  path: github.com/dapr-sandbox/dapr-kubernetes-operator/api/tools/v1alpha1
   version: v1alpha1
 version: "3"

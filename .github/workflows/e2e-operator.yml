@@ -1,0 +1,66 @@
+name: "e2e - operator"
+
+on:
+  workflow_call:
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.publish.outputs.image }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+      - name: "Set up Go"
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: "Publish Image"
+        id: "publish"
+        run: |
+          export UUID=$(uuidgen | tr "[:upper:]" "[:lower:]")
+          export CONTAINER_IMAGE="ttl.sh/${UUID}-${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}:1h"
+          
+          echo CONTAINER_IMAGE
+          echo "image=${CONTAINER_IMAGE}" >> "$GITHUB_OUTPUT"
+          
+          make docker/build docker/push
+  e2e-operator:
+    runs-on: ubuntu-latest
+    needs:
+      - images
+    env:
+      CONTAINER_IMAGE: ${{needs.images.outputs.image}}
+    strategy:
+      matrix:
+        kubernetes-version:
+          - "1.27.3"
+          - "1.28.0"
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+      - name: "SetUp Go"
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: 'SetUp KinD'
+        uses: container-tools/kind-action@v2
+        with:
+          version: "v0.20.0"
+          kubectl_version: v${{ matrix.kubernetes-version }}
+          registry: false
+          node_image: kindest/node:v${{ matrix.kubernetes-version }}
+          config: test/e2e/kind.yaml
+      - name: "SetUp Dapr Kubernetes Operator"
+        run: |          
+          make deploy/e2e
+          
+          kubectl wait \
+            --namespace=dapr-system \
+            --for=condition=ready \
+            pod \
+            --selector=control-plane=dapr-control-plane \
+            --timeout=90s
+      - name: "Run Dapr Kubernetes Operator e2e"
+        run: |
+          make test/e2e/operator
