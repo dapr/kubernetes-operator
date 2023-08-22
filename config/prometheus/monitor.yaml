@@ -4,15 +4,15 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    control-plane: controller-manager
+    control-plane: dapr-control-plane
     app.kubernetes.io/name: servicemonitor
-    app.kubernetes.io/instance: controller-manager-metrics-monitor
+    app.kubernetes.io/instance: dapr-controller-metrics-monitor
     app.kubernetes.io/component: metrics
-    app.kubernetes.io/created-by: dapr-operator
-    app.kubernetes.io/part-of: dapr-operator
+    app.kubernetes.io/created-by: dapr-operator-ng
+    app.kubernetes.io/part-of: dapr-operator-ng
     app.kubernetes.io/managed-by: kustomize
-  name: controller-manager-metrics-monitor
-  namespace: system
+  name: dapr-controller-metrics-monitor
+  namespace: dapr-system
 spec:
   endpoints:
     - path: /metrics

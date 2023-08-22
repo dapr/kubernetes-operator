@@ -53,7 +53,7 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
-    verbs: ["get", "update", "delete"]
+    verbs: ["get", "update"]
     resourceNames: ["dapr-trust-bundle"]
 {{- if eq .Values.global.rbac.namespaced true }}
   - apiGroups: ["dapr.io"]

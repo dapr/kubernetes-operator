@@ -1,66 +1,74 @@
-# VERSION defines the project version for the bundle.
-# Update this value when you upgrade the version of your project.
-# To re-generate a bundle for another specific version without changing the standard setup, you can:
-# - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
-# - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.0.22
+
+PROJECT_NAME ?= dapr-kubernetes-operator
+PROJECT_VERSION ?= 0.0.2
+
+CONTAINER_REGISTRY ?= docker.io
+CONTAINER_REGISTRY_ORG ?= daprio
+CONTAINER_IMAGE_VERSION ?= $(PROJECT_VERSION)
+CONTAINER_IMAGE ?= $(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_ORG)/$(PROJECT_NAME):$(CONTAINER_IMAGE_VERSION)
+
+BUNDLE_VERSION ?= $(PROJECT_VERSION)
+BUNDLE_CONTAINER_IMAGE ?= $(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_ORG)/$(PROJECT_NAME)-bundle:$(BUNDLE_VERSION)
+
+CATALOG_VERSION ?= latest
+CATALOG_CONTAINER_IMAGE ?= $(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_ORG)/$(PROJECT_NAME)-catalog:$(CATALOG_VERSION)
+
+LINT_GOGC ?= 10
+LINT_DEADLINE ?= 10m
 
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJECT_PATH := $(patsubst %/,%,$(dir $(MKFILE_PATH)))
-LOCAL_BIN_PATH := ${PROJECT_PATH}/bin
+LOCALBIN := $(PROJECT_PATH)/bin
 
-# CHANNELS define the bundle channels used in the bundle.
-# Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
-# To re-generate a bundle for other specific channels without changing the standard setup, you can:
-# - use the CHANNELS as arg of the bundle target (e.g make bundle CHANNELS=candidate,fast,stable)
-# - use environment variables to overwrite this value (e.g export CHANNELS="candidate,fast,stable")
-ifneq ($(origin CHANNELS), undefined)
-BUNDLE_CHANNELS := --channels=$(CHANNELS)
-endif
-
-# DEFAULT_CHANNEL defines the default channel used in the bundle.
-# Add a new line here if you would like to change its default config. (E.g DEFAULT_CHANNEL = "stable")
-# To re-generate a bundle for any other default channel without changing the default setup, you can:
-# - use the DEFAULT_CHANNEL as arg of the bundle target (e.g make bundle DEFAULT_CHANNEL=stable)
-# - use environment variables to overwrite this value (e.g export DEFAULT_CHANNEL="stable")
-ifneq ($(origin DEFAULT_CHANNEL), undefined)
-BUNDLE_DEFAULT_CHANNEL := --default-channel=$(DEFAULT_CHANNEL)
-endif
-BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
-
-# IMAGE_TAG_BASE defines the docker.io namespace and part of the image name for remote images.
-# This variable is used to construct full image tags for bundle and catalog images.
-#
-# For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
-# dapr.io/dapr-operator-bundle:$VERSION and dapr.io/dapr-operator-catalog:$VERSION.
-IMAGE_TAG_BASE ?= docker.io/daprio/dapr-kubernetes-operator
-
-# BUNDLE_IMG defines the image:tag used for the bundle.
-# You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
-BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
-
-# BUNDLE_GEN_FLAGS are the flags passed to the operator-sdk generate bundle command
-BUNDLE_GEN_FLAGS ?= -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
-
-# USE_IMAGE_DIGESTS defines if images are resolved via tags or digests
-# You can enable this value if you would like to use SHA Based Digests
-# To enable set flag to true
-USE_IMAGE_DIGESTS ?= false
-ifeq ($(USE_IMAGE_DIGESTS), true)
-	BUNDLE_GEN_FLAGS += --use-image-digests
-endif
-
-# Image URL to use all building/pushing image targets
-IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
-
-# dapr helm chart related info
 HELM_CHART_REPO ?= https://dapr.github.io/helm-charts
 HELM_CHART ?= dapr
 HELM_CHART_VERSION ?= 1.11.0
 HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr-$(HELM_CHART_VERSION).tgz
 
+## Tool Versions
+CODEGEN_VERSION ?= v0.27.4
+KUSTOMIZE_VERSION ?= v5.0.1
+CONTROLLER_TOOLS_VERSION ?= v0.12.1
+KIND_VERSION ?= v0.20.0
+LINTER_VERSION ?= v1.52.2
+OPERATOR_SDK_VERSION ?= v1.31.0
+OPM_VERSION ?= v1.28.0
+
+## Tool Binaries
+KUBECTL ?= kubectl
+KUSTOMIZE ?= $(LOCALBIN)/kustomize
+LINTER ?= $(LOCALBIN)/golangci-lint
+GOIMPORT ?= $(LOCALBIN)/goimports
+YQ ?= $(LOCALBIN)/yq
+KIND ?= $(LOCALBIN)/kind
+OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
+OPM ?= $(LOCALBIN)/opm
+
+# Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
+ifeq (,$(shell go env GOBIN))
+GOBIN=$(shell go env GOPATH)/bin
+else
+GOBIN=$(shell go env GOBIN)
+endif
+
+# CONTAINER_TOOL defines the container tool to be used for building images.
+# Be aware that the target commands are only tested with Docker which is
+# scaffolded by default. However, you might want to replace it to use other
+# tools. (i.e. podman)
+CONTAINER_TOOL ?= docker
+
+# Setting SHELL to bash allows bash commands to be executed by recipes.
+# Options are set to exit when a recipe line exits non-zero or a piped command fails.
+SHELL = /usr/bin/env bash -o pipefail
+.SHELLFLAGS = -ec
+
 .PHONY: all
-all: docker-build
+all: build
+
+
+ifndef ignore-not-found
+  ignore-not-found = false
+endif
 
 ##@ General
 
@@ -77,188 +85,240 @@ all: docker-build
 
 .PHONY: help
 help: ## Display this help.
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-\/]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-.PHONY: init
-init: operator-sdk
-	$(OPERATOR_SDK) init \
-		--plugins helm \
-		--domain dapr.io \
-		--group dapr \
-		--version v1alpha1 \
-		--kind Dapr \
-		--helm-chart-repo $(HELM_CHART_REPO) \
-		--helm-chart $(HELM_CHART) \
-		--helm-chart-version $(HELM_CHART_VERSION)
+##@ Dapr
 
+.PHONY: update/dapr
+update/dapr: ## Update the helm chart.
+	$(PROJECT_PATH)/hack/scripts/update_helm_chart.sh $(PROJECT_PATH) $(HELM_CHART_URL)
 
-.PHONY: update
-update:
-	rm -rf $(PROJECT_PATH)/helm-charts/dapr
-	mkdir -p $(PROJECT_PATH)/helm-charts/dapr
-	
-	curl --location --silent $(HELM_CHART_URL) \
-        | tar xzf - \
-            --directory $(PROJECT_PATH)/helm-charts/dapr \
-            --strip-components=1
+##@ Development
+
+.PHONY: manifests
+manifests: codegen-tools-install ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+	$(PROJECT_PATH)/hack/scripts/gen_crd.sh $(PROJECT_PATH)
+
+.PHONY: generate
+generate: codegen-tools-install ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+	$(PROJECT_PATH)/hack/scripts/gen_res.sh $(PROJECT_PATH)
+	$(PROJECT_PATH)/hack/scripts/gen_client.sh $(PROJECT_PATH)
+
+.PHONY: fmt
+fmt: goimport ## Run go fmt, gomiport against code.
+	$(GOIMPORT) -l -w .
+	go fmt ./...
+
+.PHONY: vet
+vet: ## Run go vet against code.
+	go vet ./...
+
+.PHONY: test
+test: manifests generate fmt vet ## Run tests.
+	go test -ldflags="$(GOLDFLAGS)" -v ./pkg/... ./internal/...
+
+.PHONY: test/e2e/operator
+test/e2e/operator: manifests generate fmt vet ## Run e2e operator tests.
+	go test -ldflags="$(GOLDFLAGS)" -v ./test/e2e/operator/...
+
+.PHONY: test/e2e/olm
+test/e2e/olm: ## Run e2e catalog tests.
+	go test -ldflags="$(GOLDFLAGS)" -v ./test/e2e/olm/...
 
 ##@ Build
 
+.PHONY: build
+build: manifests generate fmt vet ## Build manager binary.
+	go build -ldflags="$(GOLDFLAGS)" -o bin/dapr-control-plane cmd/main.go
+
 .PHONY: run
-run: helm-operator ## Run against the configured Kubernetes cluster in ~/.kube/config
-	$(HELM_OPERATOR) run
+run: ## Run a controller from your host.
+	go run -ldflags="$(GOLDFLAGS)" cmd/main.go run --leader-election=false --zap-devel
 
-.PHONY: docker-build
-docker-build: ## Build docker image with the manager.
-	docker build -t ${IMG} .
+.PHONY: run/local
+run/local: install ## Install and Run a controller from your host.
+	go run -ldflags="$(GOLDFLAGS)" cmd/main.go run --leader-election=false --zap-devel
 
-.PHONY: docker-push
-docker-push: ## Push docker image with the manager.
-	docker push ${IMG}
+
+.PHONY: deps
+deps:  ## Tidy up deps.
+	go mod tidy
+
+
+.PHONY: check/lint
+check: check/lint
+
+.PHONY: check/lint
+check/lint: golangci-lint
+	@$(LINTER) run \
+		--config .golangci.yml \
+		--out-format tab \
+		--skip-dirs etc \
+		--deadline $(LINT_DEADLINE) \
+		--verbose
+
+.PHONY: check/lint/fix
+check/lint/fix: golangci-lint
+	@$(LINTER) run \
+		--config .golangci.yml \
+		--out-format tab \
+		--skip-dirs etc \
+		--deadline $(LINT_DEADLINE) \
+		--fix
+
+.PHONY: docker/build
+docker/build: test ## Build docker image with the manager.
+	$(CONTAINER_TOOL) build -t $(CONTAINER_IMAGE) .
+
+.PHONY: docker/push
+docker/push: ## Push docker image with the manager.
+	$(CONTAINER_TOOL) push $(CONTAINER_IMAGE)
+
+.PHONY: docker/push/kind
+docker/push/kind: docker/build ## Load docker image in kind.
+	kind load docker-image $(CONTAINER_IMAGE)
 
 ##@ Deployment
 
 .PHONY: install
-install: kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | kubectl apply -f -
+install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
+	$(KUSTOMIZE) build config/crd | $(KUBECTL) apply -f -
 
 .PHONY: uninstall
-uninstall: kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | kubectl delete -f -
+uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 .PHONY: deploy
-deploy: kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | kubectl apply -f -
+deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
+	$(KUSTOMIZE) build config/deploy/standalone | kubectl apply -f -
 
 .PHONY: undeploy
-undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/default | kubectl delete -f -
+undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+	$(KUSTOMIZE) build config/deploy/standalone | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
-OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
-ARCH := $(shell uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')
+
+.PHONY: deploy/e2e
+deploy/e2e: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
+	$(KUSTOMIZE) build config/deploy/e2e | kubectl apply -f -
+.PHONY: deploy/kind
+deploy/kind: manifests kustomize kind ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
+	kind load docker-image $(CONTAINER_IMAGE)
+	$(KUSTOMIZE) build config/deploy/standalone | kubectl apply -f -
+
+
+##@ Bundles
+
+.PHONY: bundle/info
+bundle/info: ## Dump bundle info.
+	@echo $(CONTAINER_IMAGE)
+	@echo $(BUNDLE_CONTAINER_IMAGE)
+
+.PHONY: bundle/generate_
+bundle/generate: generate manifests kustomize operator-sdk yq ## Generate bundle.
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
+	$(PROJECT_PATH)/hack/scripts/gen_bundle.sh \
+		$(PROJECT_PATH) \
+		$(PROJECT_NAME) \
+		$(BUNDLE_VERSION)
+
+.PHONY: bundle/build
+bundle/build: ## Build bundle image.
+	$(CONTAINER_TOOL) build \
+		-t $(BUNDLE_CONTAINER_IMAGE) \
+		-f $(PROJECT_PATH)/bundle/bundle.Dockerfile \
+		$(PROJECT_PATH)/bundle
+
+.PHONY: bundle/push
+bundle/push: ## Push bundle image.
+	$(CONTAINER_TOOL) push $(BUNDLE_CONTAINER_IMAGE)
+
+.PHONY: catalog/build
+catalog/build: opm ## Build catalog image.
+	$(OPM) index add \
+		--container-tool $(CONTAINER_TOOL) \
+		--mode semver \
+		--tag $(CATALOG_CONTAINER_IMAGE) \
+		--bundles $(BUNDLE_CONTAINER_IMAGE)
+
+.PHONY: catalog/push
+catalog/push: ## Push catalog image.
+	$(CONTAINER_TOOL) push $(CATALOG_CONTAINER_IMAGE)
+
+.PHONY: olm/install
+olm/install: operator-sdk ## Install olm.
+	cd bin && $(OPERATOR_SDK) olm install
+
+##@ Build Dependencies
+
+## Location to install dependencies to
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+
+## Tool Binaries
+KUBECTL ?= kubectl
+KUSTOMIZE ?= $(LOCALBIN)/kustomize
+CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
+
+## Tool Versions
+KUSTOMIZE_VERSION ?= v5.0.1
+CONTROLLER_TOOLS_VERSION ?= v0.12.0
 
 .PHONY: kustomize
-KUSTOMIZE = $(shell pwd)/bin/kustomize
-kustomize: ## Download kustomize locally if necessary.
-ifeq (,$(wildcard $(KUSTOMIZE)))
-ifeq (,$(shell which kustomize 2>/dev/null))
-	@{ \
-	set -e ;\
-	mkdir -p $(dir $(KUSTOMIZE)) ;\
-	curl -sSLo - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v4.5.7/kustomize_v4.5.7_$(OS)_$(ARCH).tar.gz | \
-	tar xzf - -C bin/ ;\
-	}
-else
-KUSTOMIZE = $(shell which kustomize)
-endif
-endif
+kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
+$(KUSTOMIZE): $(LOCALBIN)
+	test -s $(LOCALBIN)/kustomize || \
+	GOBIN=$(LOCALBIN) GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION)
+
+.PHONY: controller-gen
+controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary. If wrong version is installed, it will be overwritten.
+$(CONTROLLER_GEN): $(LOCALBIN)
+	test -s $(LOCALBIN)/controller-gen || \
+	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+
+
+.PHONY: golangci-lint
+golangci-lint: $(LINTER)
+$(LINTER): $(LOCALBIN)
+	@test -s $(LOCALBIN)/golangci-lint || \
+	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(LINTER_VERSION)
+
+.PHONY: goimport
+goimport: $(GOIMPORT)
+$(GOIMPORT): $(LOCALBIN)
+	@test -s $(LOCALBIN)/goimport || \
+	GOBIN=$(LOCALBIN) go install golang.org/x/tools/cmd/goimports@latest
+
+.PHONY: yq
+yq: $(YQ)
+$(YQ): $(LOCALBIN)
+	@test -s $(LOCALBIN)/yq || \
+	GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@latest
+
+
+.PHONY: kind
+kind: $(KIND)
+$(KIND): $(LOCALBIN)
+	@test -s $(LOCALBIN)/kind || \
+	GOBIN=$(LOCALBIN) go install sigs.k8s.io/kind@$(KIND_VERSION)
+
+
+.PHONY: codegen-tools-install
+codegen-tools-install: $(LOCALBIN)
+	@echo "Installing code gen tools"
+	$(PROJECT_PATH)/hack/scripts/install_gen_tools.sh $(PROJECT_PATH) $(CODEGEN_VERSION) $(CONTROLLER_TOOLS_VERSION)
 
 .PHONY: operator-sdk
-OPERATOR_SDK = $(shell pwd)/bin/operator-sdk
-operator-sdk: ## Download operator-sdk locally if necessary, preferring the $(pwd)/bin path over global if both exist.
-ifeq (,$(wildcard $(OPERATOR_SDK)))
-ifeq (,$(shell which operator-sdk 2>/dev/null))
-	@{ \
-	set -e ;\
-	mkdir -p $(dir $(OPERATOR_SDK)) ;\
-	curl -sSLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v1.28.1/operator-sdk_$(OS)_$(ARCH) ;\
-	chmod +x $(OPERATOR_SDK) ;\
-	}
-else
-OPERATOR_SDK = $(shell which operator-sdk)
-endif
-endif
+operator-sdk: $(OPERATOR_SDK)
+$(OPERATOR_SDK): $(LOCALBIN)
+	@echo "Installing operator-sdk"
+	$(PROJECT_PATH)/hack/scripts/install_operator_sdk.sh $(PROJECT_PATH) $(OPERATOR_SDK_VERSION)
 
-.PHONY: helm-operator
-HELM_OPERATOR = $(shell pwd)/bin/helm-operator
-helm-operator: ## Download helm-operator locally if necessary, preferring the $(pwd)/bin path over global if both exist.
-ifeq (,$(wildcard $(HELM_OPERATOR)))
-ifeq (,$(shell which helm-operator 2>/dev/null))
-	@{ \
-	set -e ;\
-	mkdir -p $(dir $(HELM_OPERATOR)) ;\
-	curl -sSLo $(HELM_OPERATOR) https://github.com/operator-framework/operator-sdk/releases/download/v1.28.1/helm-operator_$(OS)_$(ARCH) ;\
-	chmod +x $(HELM_OPERATOR) ;\
-	}
-else
-HELM_OPERATOR = $(shell which helm-operator)
-endif
-endif
-
-.PHONY: bundle
-bundle: operator-sdk kustomize ## Generate bundle manifests and metadata, then validate generated files.
-	$(OPERATOR_SDK) generate kustomize manifests -q
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
-	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle $(BUNDLE_GEN_FLAGS)
-	$(OPERATOR_SDK) bundle validate ./bundle
-
-.PHONY: bundle-build
-bundle-build: ## Build the bundle image.
-	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
-
-.PHONY: bundle-push
-bundle-push: ## Push the bundle image.
-	$(MAKE) docker-push IMG=$(BUNDLE_IMG)
 
 .PHONY: opm
-OPM = $(shell pwd)/bin/opm
-opm: ## Download opm locally if necessary.
-ifeq (,$(wildcard $(OPM)))
-ifeq (,$(shell which opm 2>/dev/null))
-	@{ \
-	set -e ;\
-	mkdir -p $(dir $(OPM)) ;\
-	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.27.1/$(OS)-$(ARCH)-opm ;\
-	chmod +x $(OPM) ;\
-	}
-else
-OPM = $(shell which opm)
-endif
-endif
-
-# A comma-separated list of bundle images (e.g. make catalog-build BUNDLE_IMGS=example.com/operator-bundle:v0.1.0,example.com/operator-bundle:v0.2.0).
-# These images MUST exist in a registry and be pull-able.
-BUNDLE_IMGS ?= $(BUNDLE_IMG)
-
-# The image tag given to the resulting catalog image (e.g. make catalog-build CATALOG_IMG=example.com/operator-catalog:v0.2.0).
-#CATALOG_IMG ?= $(IMAGE_TAG_BASE)-catalog:v$(VERSION)
-CATALOG_IMG ?= $(IMAGE_TAG_BASE)-catalog:latest
-
-# Set CATALOG_BASE_IMG to an existing catalog image tag to add $BUNDLE_IMGS to that image.
-ifneq ($(origin CATALOG_BASE_IMG), undefined)
-FROM_INDEX_OPT := --from-index $(CATALOG_BASE_IMG)
-endif
-
-# Build a catalog image by adding bundle images to an empty catalog using the operator package manager tool, 'opm'.
-# This recipe invokes 'opm' in 'semver' bundle add mode. For more information on add modes, see:
-# https://github.com/operator-framework/community-operators/blob/7f1438c/docs/packaging-operator.md#updating-your-existing-operator
-.PHONY: catalog-build
-catalog-build: opm ## Build a catalog image.	
-	$(OPM) index add --container-tool docker --mode semver --tag $(CATALOG_IMG) --bundles $(BUNDLE_IMGS) $(FROM_INDEX_OPT)
-
-# Push the catalog image.
-.PHONY: catalog-push
-catalog-push: ## Push a catalog image.
-	$(MAKE) docker-push IMG=$(CATALOG_IMG)
-
-
-
-.PHONY: openshift/deploy/catalog
-openshift/deploy/catalog: ## Deploy catalog.
-	kubectl apply -f config/samples/catalog.yaml
-
-.PHONY:  openshift/deploy/subscritpion
-openshift/deploy/subscritpion: ## Deploy subscritpion.
-	kubectl apply -f config/samples/subscription.yaml
-	
-.PHONY: openshift/deploy/dapr
-openshift/deploy/dapr: ## Deploy sample.
-	kubectl apply -f config/samples/sample.yaml
-
-.PHONY: openshift/undeploy
-openshift/undeploy: ## Deploy sample.
-	kubectl delete --ignore-not-found=true -f config/samples/sample.yaml
-	kubectl delete --ignore-not-found=true -f config/samples/subscription.yaml
-	kubectl delete --ignore-not-found=true -f config/samples/catalog.yaml
-
+opm: $(OPM)
+$(OPM): $(LOCALBIN)
+	@echo "Installing opm"
+	$(PROJECT_PATH)/hack/scripts/install_opm.sh $(PROJECT_PATH) $(OPM_VERSION)

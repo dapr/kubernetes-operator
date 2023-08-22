@@ -1,0 +1,15 @@
+resources:
+- ../../default
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+patches:
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/imagePullPolicy
+      value: "Always"
+  target:
+    group: apps
+    kind: Deployment
+    name: dapr-control-plane
+    version: v1

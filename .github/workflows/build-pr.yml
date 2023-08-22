@@ -1,0 +1,23 @@
+name: Build PR
+
+on:
+  pull_request:
+    branches:
+    - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+  e2e-operator:
+    uses: ./.github/workflows/e2e-operator.yml
+    needs:
+      - build
+  e2e-olm:
+    uses: ./.github/workflows/e2e-olm.yml
+    needs:
+      - build

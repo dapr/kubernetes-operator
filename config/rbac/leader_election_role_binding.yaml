@@ -3,17 +3,17 @@ kind: RoleBinding
 metadata:
   labels:
     app.kubernetes.io/name: rolebinding
-    app.kubernetes.io/instance: leader-election-rolebinding
+    app.kubernetes.io/instance: dapr-control-plane--leader-election-rolebinding
     app.kubernetes.io/component: rbac
-    app.kubernetes.io/created-by: dapr-operator
-    app.kubernetes.io/part-of: dapr-operator
+    app.kubernetes.io/part-of: dapr-control-plane
     app.kubernetes.io/managed-by: kustomize
-  name: leader-election-rolebinding
+  name: dapr-control-plane-leader-election-rolebinding
+  namespace: dapr-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: leader-election-role
+  name: dapr-control-plane-leader-election-role
 subjects:
 - kind: ServiceAccount
-  name: controller-manager
-  namespace: system
+  name: dapr-control-plane-sa
+  namespace: dapr-system
