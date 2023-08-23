@@ -51,6 +51,9 @@ jobs:
           registry: false
           node_image: kindest/node:v${{ matrix.kubernetes-version }}
           config: test/e2e/kind.yaml
+      - name: 'SetUp Kind Ingress'
+        run: |
+          ./hack/scripts/deploy_ingress.sh
       - name: "SetUp Dapr Kubernetes Operator"
         run: |          
           make deploy/e2e

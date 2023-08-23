@@ -71,24 +71,12 @@ jobs:
           registry: false
           node_image: kindest/node:v${{ matrix.kubernetes-version }}
           config: test/e2e/kind.yaml
+      - name: 'SetUp Kind Ingress'
+        run: |
+          ./hack/scripts/deploy_ingress.sh
       - name: "SetUp Dapr Kubernetes Operator OLM"
-        run: |          
-          make olm/install
-          
-          kubectl wait \
-            --namespace=olm \
-            --for=condition=ready \
-            pod \
-            --selector=app=olm-operator \
-            --timeout=90s
-          
-          kubectl wait \
-            --namespace=olm \
-            --for=condition=ready \
-            pod \
-            --selector=app=catalog-operator \
-            --timeout=90s
-
+        run: |
+          ./hack/scripts/deploy_olm.sh
       - name: "Run Dapr Kubernetes Operator OLM e2e"
         run: |
           make test/e2e/olm

@@ -5,6 +5,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator"
+	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/applyconfiguration/operator/v1alpha1"
+	daprTC "github.com/dapr-sandbox/dapr-kubernetes-operator/test/e2e/common"
+	"k8s.io/apimachinery/pkg/types"
+
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
@@ -125,5 +130,31 @@ func TestDaprDeploy(t *testing.T) {
 
 	test.Eventually(Deployment(test, "dapr-control-plane", sub.Namespace), TestTimeoutLong).Should(
 		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+
+	//
+	// Dapr
+	//
+
+	instance := test.NewNamespacedNameDaprControlPlane(
+		types.NamespacedName{
+			Name:      operator.DaprControlPlaneName,
+			Namespace: sub.Namespace,
+		},
+		daprAc.DaprControlPlaneSpec().
+			WithValues(nil),
+	)
+
+	test.Eventually(Deployment(test, "dapr-operator", instance.Namespace), TestTimeoutLong).Should(
+		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+	test.Eventually(Deployment(test, "dapr-sentry", instance.Namespace), TestTimeoutLong).Should(
+		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+	test.Eventually(Deployment(test, "dapr-sidecar-injector", instance.Namespace), TestTimeoutLong).Should(
+		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+
+	//
+	// Dapr Application
+	//
+
+	daprTC.ValidateDaprApp(test, instance.Namespace)
 
 }

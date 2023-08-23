@@ -5,10 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	olmAC "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/helm"
 
-	daprCP "github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator"
-	daprAC "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/clientset/versioned/typed/operator/v1alpha1"
+	olmAC "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned"
 
 	daprClient "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/clientset/versioned"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -23,16 +22,16 @@ type Client struct {
 	kubernetes.Interface
 
 	Dapr      daprClient.Interface
-	DaprCP    daprAC.DaprControlPlaneInterface
 	Discovery discovery.DiscoveryInterface
 	OLM       olmAC.Interface
+	Helm      *helm.Helm
 
 	//nolint:unused
 	scheme *runtime.Scheme
 	config *rest.Config
 }
 
-func newClient() (*Client, error) {
+func newClient(logFn func(string, ...interface{})) (*Client, error) {
 	kc := os.Getenv("KUBECONFIG")
 	if kc == "" {
 		home := homedir.HomeDir()
@@ -69,12 +68,17 @@ func newClient() (*Client, error) {
 		return nil, err
 	}
 
+	hClient, err := helm.New(helm.WithLog(logFn))
+	if err != nil {
+		return nil, err
+	}
+
 	c := Client{
 		Interface: kubeClient,
 		Discovery: discoveryClient,
 		Dapr:      dClient,
-		DaprCP:    dClient.OperatorV1alpha1().DaprControlPlanes(daprCP.DaprControlPlaneNamespaceDefault),
 		OLM:       oClient,
+		Helm:      hClient,
 		config:    cfg,
 	}
 

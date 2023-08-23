@@ -8,5 +8,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: docker.io/daprio/dapr-kubernetes-operator
-  newTag: 0.0.2
+  newName: ttl.sh/57e2fb88-57e2-4344-8b69-4364dd4f8b9b
+  newTag: 2h
