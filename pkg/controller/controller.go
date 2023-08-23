@@ -5,6 +5,8 @@ import (
 	"net/http/pprof"
 	"time"
 
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+
 	"github.com/pkg/errors"
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/logger"
@@ -47,6 +49,9 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 
 		Metrics: metricsserver.Options{
 			BindAddress: options.MetricsAddr,
+		},
+		Cache: cache.Options{
+			ByObject: options.WatchSelectors,
 		},
 	})
 

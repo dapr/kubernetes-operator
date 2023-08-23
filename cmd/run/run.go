@@ -1,7 +1,15 @@
 package run
 
 import (
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	admregv1 "k8s.io/api/admissionregistration/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
+	rtcache "sigs.k8s.io/controller-runtime/pkg/cache"
+	rtclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
@@ -38,13 +46,34 @@ func NewRunCmd() *cobra.Command {
 		Use:   "run",
 		Short: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			selector, err := daprCtl.ReleaseSelector()
+			if err != nil {
+				return errors.Wrap(err, "unable to compute cache's watch selector")
+			}
+
+			controllerOpts.WatchSelectors = map[rtclient.Object]rtcache.ByObject{
+				// k8s
+				&rbacv1.ClusterRole{}:                    {Label: selector},
+				&rbacv1.ClusterRoleBinding{}:             {Label: selector},
+				&rbacv1.Role{}:                           {Label: selector},
+				&rbacv1.RoleBinding{}:                    {Label: selector},
+				&admregv1.MutatingWebhookConfiguration{}: {Label: selector},
+				&corev1.Secret{}:                         {Label: selector},
+				&corev1.Service{}:                        {Label: selector},
+				&corev1.ServiceAccount{}:                 {Label: selector},
+				&appsv1.StatefulSet{}:                    {Label: selector},
+				&appsv1.Deployment{}:                     {Label: selector},
+				// dapr
+				resources.UnstructuredFor("dapr.io", "v1alpha1", "Configuration"): {Label: selector},
+			}
+
 			return controller.Start(controllerOpts, func(manager manager.Manager, opts controller.Options) error {
 				_, err := daprCtl.NewReconciler(cmd.Context(), manager, helmOpts)
 				if err != nil {
-					return err
+					return errors.Wrap(err, "unable to set-up DaprControlPlane reconciler")
 				}
 
-				return err
+				return nil
 			})
 		},
 	}

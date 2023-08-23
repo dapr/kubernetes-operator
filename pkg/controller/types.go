@@ -1,5 +1,10 @@
 package controller
 
+import (
+	rtcache "sigs.k8s.io/controller-runtime/pkg/cache"
+	rtclient "sigs.k8s.io/controller-runtime/pkg/client"
+)
+
 type ClusterType string
 
 const (
@@ -15,4 +20,5 @@ type Options struct {
 	LeaderElectionNamespace       string
 	EnableLeaderElection          bool
 	ReleaseLeaderElectionOnCancel bool
+	WatchSelectors                map[rtclient.Object]rtcache.ByObject
 }
