@@ -20,6 +20,8 @@ on:
 
 jobs:
   publish:
+    permissions:
+      packages: write
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
