@@ -33,7 +33,7 @@ jobs:
         env:
           DOCKER_REGISTRY_ID: ${{ secrets.DOCKER_REGISTRY_ID }}
         with:
-          username: ${{ secrets.DOCKER_REGISTRY_ID }}
+          username: daprio
           password: ${{ secrets.DOCKER_REGISTRY_PASS }}
       - name: Set versions
         run: |
