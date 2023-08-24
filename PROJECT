@@ -6,7 +6,7 @@ domain: dapr.io
 layout:
 - go.kubebuilder.io/v4
 multigroup: true
-projectName: dapr-operator-ng
+projectName: dapr-kubernetes-operator
 repo: github.com/dapr-sandbox/dapr-kubernetes-operator
 resources:
 - api:
@@ -14,8 +14,8 @@ resources:
     namespaced: true
   controller: true
   domain: dapr.io
-  group: tools
-  kind: Dapr
-  path: github.com/dapr-sandbox/dapr-kubernetes-operator/api/tools/v1alpha1
+  group: operator
+  kind: DaprControlPlane
+  path: github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1
   version: v1alpha1
 version: "3"
