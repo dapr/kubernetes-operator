@@ -32,7 +32,7 @@ echo "Patch bundle metadata"
 
 ${PROJECT_ROOT}/bin/yq -i \
   '.metadata.annotations.containerImage = .spec.install.spec.deployments[0].spec.template.spec.containers[0].image' \
-   "${PROJECT_ROOT}/bundle/dapr-operator-ng/manifests/${BUNDLE_NAME}.clusterserviceversion.yaml"
+  "${PROJECT_ROOT}/bundle/${BUNDLE_NAME}/manifests/${BUNDLE_NAME}.clusterserviceversion.yaml"
 
 echo "Validate bundle"
 
