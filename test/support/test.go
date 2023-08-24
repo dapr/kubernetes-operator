@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/go-cleanhttp"
+
 	"github.com/anthhub/forwarder"
 	"k8s.io/client-go/tools/portforward"
 
@@ -33,6 +35,7 @@ type Test interface {
 	T() *testing.T
 	Ctx() context.Context
 	Client() *Client
+	HTTPClient() *http.Client
 
 	NewTestNamespace(...Option[*corev1.Namespace]) *corev1.Namespace
 	NewDaprControlPlane(*daprAc.DaprControlPlaneSpecApplyConfiguration) *v1alpha1.DaprControlPlane
@@ -75,6 +78,7 @@ func With(t *testing.T) Test {
 		WithT: gomega.NewWithT(t),
 		t:     t,
 		ctx:   ctx,
+		http:  cleanhttp.DefaultClient(),
 	}
 
 	answer.SetDefaultEventuallyPollingInterval(500 * time.Millisecond)
@@ -91,6 +95,7 @@ type T struct {
 	t      *testing.T
 	client *Client
 	once   sync.Once
+	http   *http.Client
 
 	//nolint:containedctx
 	ctx context.Context
@@ -113,6 +118,14 @@ func (t *T) Client() *Client {
 		t.client = c
 	})
 	return t.client
+}
+
+func (t *T) HTTPClient() *http.Client {
+	t.once.Do(func() {
+		t.http = cleanhttp.DefaultClient()
+	})
+
+	return t.http
 }
 
 func (t *T) NewTestNamespace(options ...Option[*corev1.Namespace]) *corev1.Namespace {
@@ -273,7 +286,7 @@ func (t *T) GET(url string) func(g gomega.Gomega) (*http.Response, error) {
 			return nil, err
 		}
 
-		return http.DefaultClient.Do(req)
+		return t.HTTPClient().Do(req)
 	}
 }
 
@@ -293,6 +306,6 @@ func (t *T) POST(url string, contentType string, content []byte) func(g gomega.G
 			req.Header.Add("Content-Type", contentType)
 		}
 
-		return http.DefaultClient.Do(req)
+		return t.HTTPClient().Do(req)
 	}
 }
