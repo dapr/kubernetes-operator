@@ -1,7 +1,6 @@
 package predicates
 
 import (
-	"encoding/json"
 	"reflect"
 
 	"github.com/wI2L/jsondiff"
@@ -93,18 +92,13 @@ func (p DependentPredicate) Update(e event.UpdateEvent) bool {
 		log.Error(err, "failed to generate diff")
 		return true
 	}
-	d, err := json.Marshal(patch)
-	if err != nil {
-		log.Error(err, "failed to generate diff")
-		return true
-	}
 
 	log.Info("Reconciling due to dependent resource update",
 		"name", newObj.GetName(),
 		"namespace", newObj.GetNamespace(),
 		"apiVersion", newObj.GroupVersionKind().GroupVersion(),
 		"kind", newObj.GroupVersionKind().Kind,
-		"diff", string(d))
+		"diff", patch.String())
 
 	return true
 }

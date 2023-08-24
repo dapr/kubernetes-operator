@@ -88,3 +88,21 @@ func dependantWithLabels(watchUpdate bool, watchDelete bool) predicate.Predicate
 		},
 	)
 }
+
+func ReleaseSelector() (labels.Selector, error) {
+	hasReleaseNameLabel, err := labels.NewRequirement(DaprReleaseName, selection.Exists, []string{})
+	if err != nil {
+		return nil, err
+	}
+
+	hasReleaseNamespaceLabel, err := labels.NewRequirement(DaprReleaseNamespace, selection.Exists, []string{})
+	if err != nil {
+		return nil, err
+	}
+
+	selector := labels.NewSelector().
+		Add(*hasReleaseNameLabel).
+		Add(*hasReleaseNamespaceLabel)
+
+	return selector, nil
+}

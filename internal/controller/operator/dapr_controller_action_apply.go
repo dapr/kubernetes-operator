@@ -107,6 +107,9 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 			r := gvk.GroupVersion().String() + ":" + gvk.Kind
 
 			if _, ok := a.subscriptions[r]; !ok {
+
+				a.l.Info("watch", "ref", r)
+
 				err = rc.Reconciler.Watch(
 					&obj,
 					rc.Reconciler.EnqueueRequestForOwner(&daprApi.DaprControlPlane{}, handler.OnlyControllerOwner()),
@@ -135,6 +138,9 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 			r := gvk.GroupVersion().String() + ":" + gvk.Kind
 
 			if _, ok := a.subscriptions[r]; !ok {
+
+				a.l.Info("watch", "ref", r)
+
 				err = rc.Reconciler.Watch(
 					&obj,
 					rc.Reconciler.EnqueueRequestsFromMapFunc(labelsToRequest),
@@ -196,6 +202,7 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 
 		a.l.Info("run",
 			"apply", "true",
+			"gen", rc.Resource.Generation,
 			"ref", resources.Ref(&obj))
 	}
 
