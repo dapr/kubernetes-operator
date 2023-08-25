@@ -25,7 +25,8 @@ const (
 	DaprControlPlaneNamespaceDefault = "dapr-system"
 	DaprControlPlaneNamespaceEnv     = "DAPR_CONTROL_PLANE_NAMESPACE"
 
-	DaprConditionReconcile                      = "Reconcile"
+	DaprConditionReconciled                     = "Reconcile"
+	DaprConditionReady                          = "Ready"
 	DaprPhaseError                              = "Error"
 	DaprPhaseReady                              = "Ready"
 	DaprConditionReasonUnsupportedConfiguration = "UnsupportedConfiguration"

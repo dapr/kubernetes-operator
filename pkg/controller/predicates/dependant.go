@@ -15,6 +15,7 @@ var _ predicate.Predicate = DependentPredicate{}
 type DependentPredicate struct {
 	WatchDelete bool
 	WatchUpdate bool
+	WatchStatus bool
 
 	predicate.Funcs
 }
@@ -71,11 +72,13 @@ func (p DependentPredicate) Update(e event.UpdateEvent) bool {
 	oldObj = oldObj.DeepCopy()
 	newObj = newObj.DeepCopy()
 
-	// Update filters out events that change only the dependent resource
-	// status. It is not typical for the controller of a primary
-	// resource to write to the status of one its dependent resources.
-	delete(oldObj.Object, "status")
-	delete(newObj.Object, "status")
+	if !p.WatchStatus {
+		// Update filters out events that change only the dependent resource
+		// status. It is not typical for the controller of a primary
+		// resource to write to the status of one its dependent resources.
+		delete(oldObj.Object, "status")
+		delete(newObj.Object, "status")
+	}
 
 	// Reset field not meaningful for comparison
 	oldObj.SetResourceVersion("")

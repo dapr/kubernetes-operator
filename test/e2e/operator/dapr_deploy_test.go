@@ -52,8 +52,8 @@ func TestDaprDeployWrongCR(t *testing.T) {
 	)
 
 	test.Eventually(ControlPlane(test, instance), TestTimeoutLong).Should(
-		WithTransform(ConditionStatus(daprCP.DaprConditionReconcile), Equal(corev1.ConditionFalse)))
+		WithTransform(ConditionStatus(daprCP.DaprConditionReconciled), Equal(corev1.ConditionFalse)))
 	test.Eventually(ControlPlane(test, instance), TestTimeoutLong).Should(
-		WithTransform(ConditionReason(daprCP.DaprConditionReconcile), Equal(daprCP.DaprConditionReasonUnsupportedConfiguration)))
+		WithTransform(ConditionReason(daprCP.DaprConditionReconciled), Equal(daprCP.DaprConditionReasonUnsupportedConfiguration)))
 
 }

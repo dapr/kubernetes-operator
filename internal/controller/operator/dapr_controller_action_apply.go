@@ -115,7 +115,8 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 					rc.Reconciler.EnqueueRequestForOwner(&daprApi.DaprControlPlane{}, handler.OnlyControllerOwner()),
 					dependantWithLabels(
 						a.watchForUpdates(gvk),
-						true),
+						true,
+						a.watchStatus(gvk)),
 				)
 
 				if err != nil {
@@ -146,7 +147,8 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 					rc.Reconciler.EnqueueRequestsFromMapFunc(labelsToRequest),
 					dependantWithLabels(
 						a.watchForUpdates(gvk),
-						true),
+						true,
+						a.watchStatus(gvk)),
 				)
 
 				if err != nil {
@@ -274,6 +276,14 @@ func (a *ApplyAction) watchForUpdates(gvk schema.GroupVersionKind) bool {
 	}
 
 	return true
+}
+
+func (a *ApplyAction) watchStatus(gvk schema.GroupVersionKind) bool {
+	if gvk.Group == "apps" && gvk.Version == "v1" && gvk.Kind == "Deployment" {
+		return true
+	}
+
+	return false
 }
 
 func (a *ApplyAction) installOnly(gvk schema.GroupVersionKind) bool {
