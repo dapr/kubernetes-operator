@@ -6,12 +6,11 @@ metadata:
   labels:
     control-plane: dapr-control-plane
     app.kubernetes.io/name: servicemonitor
-    app.kubernetes.io/instance: dapr-controller-metrics-monitor
+    app.kubernetes.io/instance: dapr-control-plane-metrics-monitor
     app.kubernetes.io/component: metrics
-    app.kubernetes.io/created-by: dapr-operator-ng
-    app.kubernetes.io/part-of: dapr-operator-ng
+    app.kubernetes.io/part-of: dapr-control-plane
     app.kubernetes.io/managed-by: kustomize
-  name: dapr-controller-metrics-monitor
+  name: dapr-control-plane-metrics-monitor
   namespace: dapr-system
 spec:
   endpoints:

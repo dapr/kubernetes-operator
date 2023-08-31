@@ -3,11 +3,11 @@ kind: ClusterServiceVersion
 metadata:
   annotations:
     alm-examples: "[]"
-    capabilities: Basic Install
-    categories: Dapr
+    capabilities: "Basic Install"
+    categories: "Application Runtime"
     certified: "false"
     containerImage: ""
-  name: dapr-operator-ng.v0.0.0
+  name: dapr-kubernetes-operator.v0.0.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}

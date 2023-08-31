@@ -8,7 +8,7 @@ PROJECT_ROOT="$1"
 BUNDLE_NAME="$2"
 BUNDLE_VERSION="$3"
 
-rm -rf "${PROJECT_ROOT}/bundle/dapr-operator-ng"
+rm -rf "${PROJECT_ROOT}/bundle/${BUNDLE_NAME}"
 
 mkdir -p "${PROJECT_ROOT}/bundle"
 cd "${PROJECT_ROOT}/bundle" || exit
