@@ -65,6 +65,7 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o HelmOptions) (
 	}
 
 	rec.actions = append(rec.actions, NewApplyAction())
+	rec.actions = append(rec.actions, NewConditionsAction())
 
 	hc, err := loader.Load(o.ChartsDir)
 	if err != nil {

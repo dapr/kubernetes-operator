@@ -78,7 +78,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		rr.Resource.Status.Phase = DaprPhaseError
 
 		meta.SetStatusCondition(&rr.Resource.Status.Conditions, metav1.Condition{
-			Type:   DaprConditionReconcile,
+			Type:   DaprConditionReconciled,
 			Status: metav1.ConditionFalse,
 			Reason: DaprConditionReasonUnsupportedConfiguration,
 			Message: fmt.Sprintf(
@@ -146,7 +146,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	//
 
 	reconcileCondition := metav1.Condition{
-		Type:               DaprConditionReconcile,
+		Type:               DaprConditionReconciled,
 		Status:             metav1.ConditionTrue,
 		Reason:             "Reconciled",
 		Message:            "Reconciled",

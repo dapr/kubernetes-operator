@@ -74,7 +74,7 @@ func labelsToRequest(_ context.Context, object ctrlCli.Object) []reconcile.Reque
 	}}
 }
 
-func dependantWithLabels(watchUpdate bool, watchDelete bool) predicate.Predicate {
+func dependantWithLabels(watchUpdate bool, watchDelete bool, watchStatus bool) predicate.Predicate {
 	return predicate.And(
 		&predicates.HasLabel{
 			Name: DaprReleaseName,
@@ -85,6 +85,7 @@ func dependantWithLabels(watchUpdate bool, watchDelete bool) predicate.Predicate
 		&predicates.DependentPredicate{
 			WatchUpdate: watchUpdate,
 			WatchDelete: watchDelete,
+			WatchStatus: watchStatus,
 		},
 	)
 }
@@ -103,6 +104,42 @@ func ReleaseSelector() (labels.Selector, error) {
 	selector := labels.NewSelector().
 		Add(*hasReleaseNameLabel).
 		Add(*hasReleaseNamespaceLabel)
+
+	return selector, nil
+}
+
+func CurrentReleaseSelector(rc *ReconciliationRequest) (labels.Selector, error) {
+	namespace, err := labels.NewRequirement(
+		DaprReleaseNamespace,
+		selection.Equals,
+		[]string{rc.Resource.Namespace})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot determine release namespace requirement")
+	}
+
+	name, err := labels.NewRequirement(
+		DaprReleaseName,
+		selection.Equals,
+		[]string{rc.Resource.Name})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot determine release name requirement")
+	}
+
+	generation, err := labels.NewRequirement(
+		DaprReleaseGeneration,
+		selection.Equals,
+		[]string{strconv.FormatInt(rc.Resource.Generation, 10)})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot determine generation requirement")
+	}
+
+	selector := labels.NewSelector().
+		Add(*namespace).
+		Add(*name).
+		Add(*generation)
 
 	return selector, nil
 }

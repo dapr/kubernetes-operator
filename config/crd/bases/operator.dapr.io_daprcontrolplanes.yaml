@@ -24,12 +24,20 @@ spec:
       name: Phase
       type: string
     - description: Ready
-      jsonPath: .status.conditions[?(@.type=="Reconcile")].status
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
       name: Ready
       type: string
     - description: Reason
-      jsonPath: .status.conditions[?(@.type=="Reconcile")].reason
+      jsonPath: .status.conditions[?(@.type=="Ready")].reason
       name: Reason
+      type: string
+    - description: Ready
+      jsonPath: .status.conditions[?(@.type=="Reconcile")].status
+      name: Reconciled
+      type: string
+    - description: Reason
+      jsonPath: .status.conditions[?(@.type=="Reconcile")].reason
+      name: Reconciled Reason
       type: string
     name: v1alpha1
     schema:
