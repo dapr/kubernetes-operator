@@ -12,7 +12,7 @@ jobs:
       catalogImage: ${{ steps.publish.outputs.catalogImage }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: "Set up Go"
         uses: actions/setup-go@v4
         with:
@@ -58,7 +58,7 @@ jobs:
           - "1.28.0"
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: "SetUp Go"
         uses: actions/setup-go@v4
         with:
