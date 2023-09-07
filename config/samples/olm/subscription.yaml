@@ -2,10 +2,10 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: dapr-control-plane
-  namespace: openshift-operators
+  namespace: dapr-system
 spec:
   channel: alpha
   name: dapr-kubernetes-operator
   installPlanApproval: Automatic
   source: daprio-catalog
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: olm
