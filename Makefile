@@ -33,6 +33,7 @@ KIND_VERSION ?= v0.20.0
 LINTER_VERSION ?= v1.52.2
 OPERATOR_SDK_VERSION ?= v1.31.0
 OPM_VERSION ?= v1.28.0
+GOVULNCHECK_VERSION ?= latest
 
 ## Tool Binaries
 KUBECTL ?= kubectl
@@ -43,6 +44,7 @@ YQ ?= $(LOCALBIN)/yq
 KIND ?= $(LOCALBIN)/kind
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
 OPM ?= $(LOCALBIN)/opm
+GOVULNCHECK ?= $(LOCALBIN)/govulncheck
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -145,11 +147,12 @@ deps:  ## Tidy up deps.
 	go mod tidy
 
 
-.PHONY: check/lint
-check: check/lint
+.PHONY: check
+check: check/lint  check/vuln
 
 .PHONY: check/lint
 check/lint: golangci-lint
+	@echo "run golangci-lint"
 	@$(LINTER) run \
 		--config .golangci.yml \
 		--out-format tab \
@@ -165,6 +168,11 @@ check/lint/fix: golangci-lint
 		--skip-dirs etc \
 		--deadline $(LINT_DEADLINE) \
 		--fix
+
+.PHONY: check/vuln
+check/vuln: govulncheck
+	@echo "run govulncheck"
+	@$(GOVULNCHECK) ./...
 
 .PHONY: docker/build
 docker/build: test ## Build docker image with the manager.
@@ -305,6 +313,13 @@ $(KIND): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install sigs.k8s.io/kind@$(KIND_VERSION)
 
 
+.PHONY: govulncheck
+govulncheck: $(GOVULNCHECK)
+$(GOVULNCHECK): $(LOCALBIN)
+	@test -s $(GOVULNCHECK) || \
+	GOBIN=$(LOCALBIN) go install golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION)
+
+
 .PHONY: codegen-tools-install
 codegen-tools-install: $(LOCALBIN)
 	@echo "Installing code gen tools"
@@ -322,3 +337,6 @@ opm: $(OPM)
 $(OPM): $(LOCALBIN)
 	@echo "Installing opm"
 	$(PROJECT_PATH)/hack/scripts/install_opm.sh $(PROJECT_PATH) $(OPM_VERSION)
+
+
+
