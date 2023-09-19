@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/anthhub/forwarder v1.1.1-0.20230315114022-63dcf7b46a1a
-	github.com/evanphx/json-patch v5.6.0+incompatible
+	github.com/evanphx/json-patch v5.7.0+incompatible
 	github.com/go-logr/logr v1.2.4
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/onsi/gomega v1.27.10
