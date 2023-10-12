@@ -18,22 +18,20 @@ package operator
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"sort"
 
-	daprvApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	"github.com/pkg/errors"
-	"go.uber.org/multierr"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	daprvApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
 )
 
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -109,7 +107,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 					return ctrl.Result{}, err
 				}
 
-				return ctrl.Result{}, errors.Wrapf(err, "failure adding finalizer to connector cluster %s", req.NamespacedName)
+				return ctrl.Result{}, fmt.Errorf("failure adding finalizer to connector cluster %s: %w", req.NamespacedName, err)
 			}
 		}
 	} else {
@@ -134,7 +132,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 					return ctrl.Result{}, err
 				}
 
-				return ctrl.Result{}, errors.Wrapf(err, "failure removing finalizer from %s", req.NamespacedName)
+				return ctrl.Result{}, fmt.Errorf("failure removing finalizer from %s: %w", req.NamespacedName, err)
 			}
 		}
 
@@ -153,15 +151,14 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		ObservedGeneration: rr.Resource.Generation,
 	}
 
-	var allErrors error
-
+	errs := make([]error, 0, len(r.actions)+1)
 	for i := range r.actions {
 		if err := r.actions[i].Run(ctx, &rr); err != nil {
-			allErrors = multierr.Append(allErrors, err)
+			errs = append(errs, err)
 		}
 	}
 
-	if allErrors != nil {
+	if len(errs) > 0 {
 		reconcileCondition.Status = metav1.ConditionFalse
 		reconcileCondition.Reason = "Failure"
 		reconcileCondition.Message = "Failure"
@@ -187,8 +184,8 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		l.Info(err.Error())
 		return ctrl.Result{Requeue: true}, nil
 	} else if err != nil {
-		allErrors = multierr.Append(allErrors, err)
+		errs = append(errs, err)
 	}
 
-	return ctrl.Result{}, allErrors
+	return ctrl.Result{}, errors.Join(errs...)
 }

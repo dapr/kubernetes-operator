@@ -1,16 +1,10 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/pprof"
 	"time"
-
-	"sigs.k8s.io/controller-runtime/pkg/cache"
-
-	"github.com/pkg/errors"
-
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/logger"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -20,9 +14,13 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/logger"
 )
 
 var (
@@ -56,18 +54,18 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 	})
 
 	if err != nil {
-		return errors.Wrap(err, "unable to create manager")
+		return fmt.Errorf("unable to create manager: %w", err)
 	}
 
 	if err := setup(mgr, options); err != nil {
-		return errors.Wrap(err, "unable to set up controllers")
+		return fmt.Errorf("unable to set up controllers: %w", err)
 	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		return errors.Wrap(err, "unable to set up health check")
+		return fmt.Errorf("unable to set up health check: %w", err)
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		return errors.Wrap(err, "unable to set up readiness check")
+		return fmt.Errorf("unable to set up readiness check: %w", err)
 	}
 
 	if options.PprofAddr != "" {
@@ -96,7 +94,7 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 	Log.Info("starting manager")
 
 	if err := mgr.Start(ctx); err != nil {
-		return errors.Wrap(err, "problem running manager")
+		return fmt.Errorf("problem running manager: %w", err)
 	}
 
 	return nil

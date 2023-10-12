@@ -2,17 +2,17 @@ package operator
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/predicates"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
-
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	ctrlCli "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/predicates"
 )
 
 func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {
@@ -23,7 +23,7 @@ func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {
 		[]string{rc.Resource.Namespace})
 
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot determine release namespace requirement")
+		return nil, fmt.Errorf("cannot determine release namespace requirement: %w", err)
 	}
 
 	name, err := labels.NewRequirement(
@@ -32,7 +32,7 @@ func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {
 		[]string{rc.Resource.Name})
 
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot determine release name requirement")
+		return nil, fmt.Errorf("cannot determine release name requirement: %w", err)
 	}
 
 	generation, err := labels.NewRequirement(
@@ -41,7 +41,7 @@ func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {
 		[]string{strconv.FormatInt(rc.Resource.Generation, 10)})
 
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot determine generation requirement")
+		return nil, fmt.Errorf("cannot determine generation requirement: %w", err)
 	}
 
 	selector := labels.NewSelector().
@@ -115,7 +115,7 @@ func CurrentReleaseSelector(rc *ReconciliationRequest) (labels.Selector, error) 
 		[]string{rc.Resource.Namespace})
 
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot determine release namespace requirement")
+		return nil, fmt.Errorf("cannot determine release namespace requirement: %w", err)
 	}
 
 	name, err := labels.NewRequirement(
@@ -124,7 +124,7 @@ func CurrentReleaseSelector(rc *ReconciliationRequest) (labels.Selector, error) 
 		[]string{rc.Resource.Name})
 
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot determine release name requirement")
+		return nil, fmt.Errorf("cannot determine release name requirement: %w", err)
 	}
 
 	generation, err := labels.NewRequirement(
@@ -133,7 +133,7 @@ func CurrentReleaseSelector(rc *ReconciliationRequest) (labels.Selector, error) 
 		[]string{strconv.FormatInt(rc.Resource.Generation, 10)})
 
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot determine generation requirement")
+		return nil, fmt.Errorf("cannot determine generation requirement: %w", err)
 	}
 
 	selector := labels.NewSelector().

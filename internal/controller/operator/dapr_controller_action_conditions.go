@@ -13,7 +13,6 @@ import (
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
 	"github.com/go-logr/logr"
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -42,7 +41,7 @@ func (a *ConditionsAction) Configure(_ context.Context, _ *client.Client, b *bui
 func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) error {
 	crs, err := CurrentReleaseSelector(rc)
 	if err != nil {
-		return errors.Wrap(err, "cannot compute current release selector")
+		return fmt.Errorf("cannot compute current release selector: %w", err)
 	}
 
 	deployments, err := rc.Client.AppsV1().Deployments(rc.Resource.Namespace).List(ctx, metav1.ListOptions{
@@ -50,7 +49,7 @@ func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) e
 	})
 
 	if err != nil {
-		return errors.Wrap(err, "cannot list deployments")
+		return fmt.Errorf("cannot list deployments: %w", err)
 	}
 
 	ready := 0

@@ -3,15 +3,12 @@ package helm
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"sort"
 	"strings"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/mergemap"
-
-	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -19,6 +16,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8syaml "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
+
+	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/mergemap"
 )
 
 func NewEngine() *Engine {
@@ -36,12 +36,12 @@ type Engine struct {
 func (e *Engine) Render(c *chart.Chart, dapr *daprApi.DaprControlPlane, overrides map[string]interface{}) ([]unstructured.Unstructured, error) {
 	rv, err := e.renderValues(c, dapr, overrides)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot render values")
+		return nil, fmt.Errorf("cannot render values: %w", err)
 	}
 
 	files, err := engine.Engine{}.Render(c, rv)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot render a chart")
+		return nil, fmt.Errorf("cannot render a chart: %w", err)
 	}
 
 	keys := make([]string, 0, len(files))
@@ -60,7 +60,7 @@ func (e *Engine) Render(c *chart.Chart, dapr *daprApi.DaprControlPlane, override
 		v := files[k]
 		ul, err := e.decode([]byte(v))
 		if err != nil {
-			return nil, errors.Wrapf(err, "cannot decode %s", k)
+			return nil, fmt.Errorf("cannot decode %s: %w", k, err)
 		}
 		if ul == nil {
 			continue
@@ -124,7 +124,7 @@ func (e *Engine) renderValues(c *chart.Chart, dapr *daprApi.DaprControlPlane, ov
 
 	if dapr.Spec.Values != nil {
 		if err := json.Unmarshal(dapr.Spec.Values.RawMessage, &values); err != nil {
-			return chartutil.Values{}, errors.Wrap(err, "unable to decode values")
+			return chartutil.Values{}, fmt.Errorf("unable to decode values: %w", err)
 		}
 	}
 
@@ -132,7 +132,7 @@ func (e *Engine) renderValues(c *chart.Chart, dapr *daprApi.DaprControlPlane, ov
 
 	err := chartutil.ProcessDependencies(c, values)
 	if err != nil {
-		return chartutil.Values{}, errors.Wrap(err, "cannot process dependencies")
+		return chartutil.Values{}, fmt.Errorf("cannot process dependencies: %w", err)
 	}
 
 	rv, err := chartutil.ToRenderValues(
@@ -148,7 +148,7 @@ func (e *Engine) renderValues(c *chart.Chart, dapr *daprApi.DaprControlPlane, ov
 		nil)
 
 	if err != nil {
-		return chartutil.Values{}, errors.Wrap(err, "cannot render values")
+		return chartutil.Values{}, fmt.Errorf("cannot render values: %w", err)
 	}
 
 	return rv, nil
