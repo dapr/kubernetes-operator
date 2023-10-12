@@ -6,24 +6,21 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/gc"
-	corev1 "k8s.io/api/core/v1"
-
-	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/pointer"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
-
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
 	"github.com/go-logr/logr"
-	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+
+	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/gc"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/pointer"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
 )
 
 func NewApplyAction() Action {
@@ -49,7 +46,7 @@ func (a *ApplyAction) Configure(_ context.Context, _ *client.Client, b *builder.
 func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error {
 	items, err := a.engine.Render(rc.Chart, rc.Resource, rc.Overrides)
 	if err != nil {
-		return errors.Wrap(err, "cannot render a chart")
+		return fmt.Errorf("cannot render a chart: %w", err)
 	}
 
 	// TODO: this must be ordered by priority/relations
@@ -84,7 +81,7 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 
 		dc, err := rc.Client.Dynamic(rc.Resource.Namespace, &obj)
 		if err != nil {
-			return errors.Wrap(err, "cannot create dynamic client")
+			return fmt.Errorf("cannot create dynamic client: %w", err)
 		}
 
 		resources.Labels(&obj, map[string]string{
@@ -163,7 +160,7 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 			old, err := dc.Get(ctx, obj.GetName(), metav1.GetOptions{})
 			if err != nil {
 				if !k8serrors.IsNotFound(err) {
-					return errors.Wrapf(err, "cannot get object %s", resources.Ref(&obj))
+					return fmt.Errorf("cannot get object %s: %w", resources.Ref(&obj), err)
 				}
 			}
 
@@ -199,7 +196,7 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 		})
 
 		if err != nil {
-			return errors.Wrapf(err, "cannot patch object %s", resources.Ref(&obj))
+			return fmt.Errorf("cannot patch object %s: %w", resources.Ref(&obj), err)
 		}
 
 		a.l.Info("run",
@@ -222,12 +219,12 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 	if reinstall {
 		s, err := gcSelector(rc)
 		if err != nil {
-			return errors.Wrap(err, "cannot compute gc selector")
+			return fmt.Errorf("cannot compute gc selector: %w", err)
 		}
 
 		deleted, err := a.gc.Run(ctx, rc.Resource.Namespace, rc.Client, s)
 		if err != nil {
-			return errors.Wrap(err, "cannot run gc")
+			return fmt.Errorf("cannot run gc: %w", err)
 		}
 
 		a.l.Info("gc", "deleted", deleted)
@@ -239,7 +236,7 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 func (a *ApplyAction) Cleanup(ctx context.Context, rc *ReconciliationRequest) error {
 	items, err := a.engine.Render(rc.Chart, rc.Resource, rc.Overrides)
 	if err != nil {
-		return errors.Wrap(err, "cannot render a chart")
+		return fmt.Errorf("cannot render a chart: %w", err)
 	}
 
 	for i := range items {
@@ -247,7 +244,7 @@ func (a *ApplyAction) Cleanup(ctx context.Context, rc *ReconciliationRequest) er
 
 		dc, err := rc.Client.Dynamic(rc.Resource.Namespace, &obj)
 		if err != nil {
-			return errors.Wrap(err, "cannot create dynamic client")
+			return fmt.Errorf("cannot create dynamic client: %w", err)
 		}
 
 		// Delete clustered resources
@@ -257,7 +254,7 @@ func (a *ApplyAction) Cleanup(ctx context.Context, rc *ReconciliationRequest) er
 			})
 
 			if err != nil && !k8serrors.IsNotFound(err) {
-				return errors.Wrapf(err, "cannot delete object %s", resources.Ref(&obj))
+				return fmt.Errorf("cannot delete object %s: %w", resources.Ref(&obj), err)
 			}
 
 			a.l.Info("delete", "ref", resources.Ref(&obj))

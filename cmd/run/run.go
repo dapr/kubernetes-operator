@@ -1,24 +1,23 @@
 package run
 
 import (
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
-	"github.com/pkg/errors"
+	"fmt"
+
+	routev1 "github.com/openshift/api/route/v1"
 	"github.com/spf13/cobra"
 	admregv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	rtcache "sigs.k8s.io/controller-runtime/pkg/cache"
 	rtclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
-
 	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
 	daprCtl "github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator"
-	routev1 "github.com/openshift/api/route/v1"
-
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
 )
 
 func init() {
@@ -48,7 +47,7 @@ func NewRunCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			selector, err := daprCtl.ReleaseSelector()
 			if err != nil {
-				return errors.Wrap(err, "unable to compute cache's watch selector")
+				return fmt.Errorf("unable to compute cache's watch selector: %w", err)
 			}
 
 			controllerOpts.WatchSelectors = map[rtclient.Object]rtcache.ByObject{
@@ -70,7 +69,7 @@ func NewRunCmd() *cobra.Command {
 			return controller.Start(controllerOpts, func(manager manager.Manager, opts controller.Options) error {
 				_, err := daprCtl.NewReconciler(cmd.Context(), manager, helmOpts)
 				if err != nil {
-					return errors.Wrap(err, "unable to set-up DaprControlPlane reconciler")
+					return fmt.Errorf("unable to set-up DaprControlPlane reconciler: %w", err)
 				}
 
 				return nil

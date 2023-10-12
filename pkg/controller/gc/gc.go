@@ -2,14 +2,12 @@ package gc
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"sync"
 	"time"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
 	"github.com/go-logr/logr"
-	"github.com/pkg/errors"
 	"golang.org/x/time/rate"
 	authorization "k8s.io/api/authorization/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -20,6 +18,9 @@ import (
 	"k8s.io/client-go/discovery"
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlCli "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
 )
 
 func New() *GC {
@@ -43,7 +44,7 @@ func (gc *GC) Run(ctx context.Context, ns string, c *client.Client, selector lab
 
 	err := gc.computeDeletableTypes(ctx, ns, c)
 	if err != nil {
-		return 0, errors.Wrap(err, "cannot discover GVK types")
+		return 0, fmt.Errorf("cannot discover GVK types: %w", err)
 	}
 
 	return gc.deleteEachOf(ctx, c, selector)
@@ -70,7 +71,7 @@ func (gc *GC) deleteEachOf(ctx context.Context, c *client.Client, selector label
 				continue
 			}
 			if !k8serrors.IsNotFound(err) {
-				return 0, errors.Wrapf(err, "cannot list child resources %s", GVK.String())
+				return 0, fmt.Errorf("cannot list child resources %s: %w", GVK.String(), err)
 			}
 			continue
 		}
@@ -91,12 +92,13 @@ func (gc *GC) deleteEachOf(ctx context.Context, c *client.Client, selector label
 					continue
 				}
 
-				return 0, errors.Wrapf(
-					err,
-					"cannot delete resources gvk:%s, namespace: %s, name: %s",
+				return 0, fmt.Errorf(
+					"cannot delete resources gvk:%s, namespace: %s, name: %s, err: %w",
 					resource.GroupVersionKind().String(),
 					resource.GetNamespace(),
-					resource.GetName())
+					resource.GetName(),
+					err,
+				)
 			}
 
 			gc.l.Info("deleted", "ref", resources.Ref(&resource))
