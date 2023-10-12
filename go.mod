@@ -11,12 +11,10 @@ require (
 	github.com/openshift/api v0.0.0-20230816181854-a7ca92db022a
 	github.com/operator-framework/api v0.17.7
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
-	github.com/pkg/errors v0.9.1
 	github.com/rs/xid v1.5.0
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.4
 	github.com/wI2L/jsondiff v0.4.0
-	go.uber.org/multierr v1.11.0
 	golang.org/x/time v0.3.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.13.0
@@ -110,6 +108,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc4 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.16.0 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
@@ -128,6 +127,7 @@ require (
 	go.opentelemetry.io/otel v1.14.0 // indirect
 	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	go.starlark.net v0.0.0-20230814145427-12f4cb8177e4 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.25.0 // indirect
 	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
