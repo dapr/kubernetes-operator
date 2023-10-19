@@ -36,7 +36,9 @@ The operator can be installed manually if desired.
 The [Manual Installation Guide][install_manual] provides the steps needed to manually install the operator on any 
 Kubernetes cluster.
 
-## Configuration
+## Usage
+
+### Basic
 
 The following example shows the most minimal valid manifest to create a new Dapr instance:
 
@@ -72,3 +74,55 @@ The `DaprControlPlane` Custom Resource consists of the following properties
 [openshift_home]:https://try.openshift.com
 [operatorhub_link]:https://operatorhub.io/operator/dapr-kubernetes-operator
 [helm_configuration]:https://github.com/dapr/dapr/blob/master/charts/dapr/README.md#configuration
+
+### Create
+
+Create a new Dapr Control Plane operator in the `openshift-operators` namespace using the provided basic example
+
+```bash
+kubectl apply -n openshift-operators -f config/samples/basic/dapr-basic.yaml
+```
+
+There will be several Dapr controllers and resources created that should be familiar to anyone who has deployed Dapr beforeusing [helm](https://docs.dapr.io/operations/hosting/kubernetes/kubernetes-deploy/#install-with-helm-advanced):
+
+```bash
+➜ kubecto tree daprcontrolplanes.operator.dapr.io dapr-control-plane
+NAMESPACE            NAME                                                     READY  REASON  AGE
+openshift-operators  DaprControlPlane/dapr-control-plane                      True   Ready   72s
+openshift-operators  ├─ConfigMap/dapr-trust-bundle                            -              68s
+openshift-operators  ├─Configuration/daprsystem                               -              68s
+openshift-operators  ├─Deployment/dapr-operator                               -              68s
+openshift-operators  │ └─ReplicaSet/dapr-operator-5b98cf8c8                   -              68s
+openshift-operators  │   └─Pod/dapr-operator-5b98cf8c8-cnt29                  True           67s
+openshift-operators  ├─Deployment/dapr-sentry                                 -              68s
+openshift-operators  │ └─ReplicaSet/dapr-sentry-74cbc77cb                     -              68s
+openshift-operators  │   └─Pod/dapr-sentry-74cbc77cb-n7kb9                    True           67s
+openshift-operators  ├─Deployment/dapr-sidecar-injector                       -              68s
+openshift-operators  │ └─ReplicaSet/dapr-sidecar-injector-6745d677c7          -              68s
+openshift-operators  │   └─Pod/dapr-sidecar-injector-6745d677c7-zbxv4         True           67s
+openshift-operators  ├─Role/dapr-injector                                     -              67s
+openshift-operators  ├─Role/dapr-operator                                     -              67s
+openshift-operators  ├─Role/dapr-sentry                                       -              67s
+openshift-operators  ├─Role/secret-reader                                     -              67s
+openshift-operators  ├─RoleBinding/dapr-injector                              -              67s
+openshift-operators  ├─RoleBinding/dapr-operator                              -              67s
+openshift-operators  ├─RoleBinding/dapr-secret-reader                         -              67s
+openshift-operators  ├─RoleBinding/dapr-sentry                                -              67s
+openshift-operators  ├─Secret/dapr-trust-bundle                               -              67s
+openshift-operators  ├─Service/dapr-api                                       -              67s
+openshift-operators  │ └─EndpointSlice/dapr-api-mxw2p                         -              67s
+openshift-operators  ├─Service/dapr-placement-server                          -              67s
+openshift-operators  │ └─EndpointSlice/dapr-placement-server-74rkd            -              67s
+openshift-operators  ├─Service/dapr-sentry                                    -              67s
+openshift-operators  │ └─EndpointSlice/dapr-sentry-6c46f                      -              67s
+openshift-operators  ├─Service/dapr-sidecar-injector                          -              67s
+openshift-operators  │ └─EndpointSlice/dapr-sidecar-injector-8lt7j            -              67s
+openshift-operators  ├─Service/dapr-webhook                                   -              67s
+openshift-operators  │ └─EndpointSlice/dapr-webhook-sq5vm                     -              67s
+openshift-operators  ├─ServiceAccount/dapr-injector                           -              67s
+openshift-operators  ├─ServiceAccount/dapr-operator                           -              67s
+openshift-operators  ├─ServiceAccount/dapr-placement                          -              67s
+openshift-operators  ├─ServiceAccount/dapr-sentry                             -              67s
+openshift-operators  └─StatefulSet/dapr-placement-server                      -              67s
+openshift-operators    └─ControllerRevision/dapr-placement-server-6cb96b4b85  -              67s
+```
