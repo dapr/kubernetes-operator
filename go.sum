@@ -1176,8 +1176,8 @@ k8s.io/cli-runtime v0.23.5/go.mod h1:oY6QDF2qo9xndSq32tqcmRp2UyXssdGrLfjAVymgbx4
 k8s.io/cli-runtime v0.28.2 h1:64meB2fDj10/ThIMEJLO29a1oujSm0GQmKzh1RtA/uk=
 k8s.io/cli-runtime v0.28.2/go.mod h1:bTpGOvpdsPtDKoyfG4EG041WIyFZLV9qq4rPlkyYfDA=
 k8s.io/client-go v0.23.5/go.mod h1:flkeinTO1CirYgzMPRWxUCnV0G4Fbu2vLhYCObnt/r4=
-k8s.io/client-go v0.28.2 h1:DNoYI1vGq0slMBN/SWKMZMw0Rq+0EQW6/AK4v9+3VeY=
-k8s.io/client-go v0.28.2/go.mod h1:sMkApowspLuc7omj1FOSUxSoqjr+d5Q0Yc0LOFnYFJY=
+k8s.io/client-go v0.28.3 h1:2OqNb72ZuTZPKCl+4gTKvqao0AMOl9f3o2ijbAj3LI4=
+k8s.io/client-go v0.28.3/go.mod h1:LTykbBp9gsA7SwqirlCXBWtK0guzfhpoW4qSm7i9dxo=
 k8s.io/component-base v0.28.2 h1:Yc1yU+6AQSlpJZyvehm/NkJBII72rzlEsd6MkBQ+G0E=
 k8s.io/component-base v0.28.2/go.mod h1:4IuQPQviQCg3du4si8GpMrhAIegxpsgPngPRR/zWpzc=
 k8s.io/gengo v0.0.0-20200413195148-3a45101e95ac/go.mod h1:ezvh/TsK7cY6rbqRK0oQQ8IAqLxYwwyPxAX1Pzy0ii0=
