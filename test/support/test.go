@@ -10,9 +10,6 @@ import (
 
 	"github.com/hashicorp/go-cleanhttp"
 
-	"github.com/anthhub/forwarder"
-	"k8s.io/client-go/tools/portforward"
-
 	"github.com/rs/xid"
 	netv1 "k8s.io/api/networking/v1"
 
@@ -42,7 +39,6 @@ type Test interface {
 	NewNamespacedNameDaprControlPlane(types.NamespacedName, *daprAc.DaprControlPlaneSpecApplyConfiguration) *v1alpha1.DaprControlPlane
 	InstallChart(string, ...helm.InstallOption)
 	SetUpIngress(string, netv1.HTTPIngressPath) *netv1.Ingress
-	Forward(string, string, int) (*forwarder.Result, [][]portforward.ForwardedPort, error)
 
 	GET(string) func(g gomega.Gomega) (*http.Response, error)
 	POST(string, string, []byte) func(g gomega.Gomega) (*http.Response, error)
@@ -257,26 +253,6 @@ func (t *T) SetUpIngress(
 	})
 
 	return ing
-}
-
-func (t *T) Forward(service string, namespace string, remotePort int) (*forwarder.Result, [][]portforward.ForwardedPort, error) {
-	options := []*forwarder.Option{{
-		RemotePort:  remotePort,
-		ServiceName: service,
-		Namespace:   namespace,
-	}}
-
-	ret, err := forwarder.WithRestConfig(t.Ctx(), options, t.Client().config)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	ports, err := ret.Ready()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return ret, ports, nil
 }
 
 func (t *T) GET(url string) func(g gomega.Gomega) (*http.Response, error) {

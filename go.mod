@@ -3,7 +3,6 @@ module github.com/dapr-sandbox/dapr-kubernetes-operator
 go 1.21
 
 require (
-	github.com/anthhub/forwarder v1.1.1-0.20230315114022-63dcf7b46a1a
 	github.com/go-logr/logr v1.2.4
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/onsi/gomega v1.28.1
@@ -20,7 +19,7 @@ require (
 	k8s.io/client-go v0.28.3
 	k8s.io/klog/v2 v2.100.1
 	sigs.k8s.io/controller-runtime v0.16.3
-	sigs.k8s.io/structured-merge-diff/v4 v4.3.0
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.3
 )
 
 require (
