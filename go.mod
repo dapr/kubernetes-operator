@@ -3,17 +3,13 @@ module github.com/dapr-sandbox/dapr-kubernetes-operator
 go 1.21
 
 require (
-	github.com/anthhub/forwarder v1.1.1-0.20230315114022-63dcf7b46a1a
-	github.com/evanphx/json-patch v5.7.0+incompatible
 	github.com/go-logr/logr v1.2.4
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/onsi/gomega v1.28.1
-	github.com/openshift/api v0.0.0-20230816181854-a7ca92db022a
 	github.com/operator-framework/api v0.18.0
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
 	github.com/rs/xid v1.5.0
 	github.com/spf13/cobra v1.7.0
-	github.com/stretchr/testify v1.8.4
 	github.com/wI2L/jsondiff v0.4.0
 	golang.org/x/time v0.3.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -23,7 +19,7 @@ require (
 	k8s.io/client-go v0.28.3
 	k8s.io/klog/v2 v2.100.1
 	sigs.k8s.io/controller-runtime v0.16.3
-	sigs.k8s.io/structured-merge-diff/v4 v4.3.0
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.3
 )
 
 require (
@@ -52,6 +48,7 @@ require (
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
+	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d // indirect
 	github.com/fatih/color v1.13.0 // indirect
@@ -109,7 +106,6 @@ require (
 	github.com/opencontainers/image-spec v1.1.0-rc5 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.16.0 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect

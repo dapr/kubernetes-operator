@@ -3,7 +3,6 @@ package run
 import (
 	"fmt"
 
-	routev1 "github.com/openshift/api/route/v1"
 	"github.com/spf13/cobra"
 	admregv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -22,7 +21,6 @@ import (
 
 func init() {
 	utilruntime.Must(daprApi.AddToScheme(controller.Scheme))
-	utilruntime.Must(routev1.Install(controller.Scheme))
 }
 
 func NewRunCmd() *cobra.Command {
