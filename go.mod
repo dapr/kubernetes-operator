@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/onsi/gomega v1.28.1
 	github.com/openshift/api v0.0.0-20230816181854-a7ca92db022a
-	github.com/operator-framework/api v0.17.7
+	github.com/operator-framework/api v0.18.0
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
 	github.com/rs/xid v1.5.0
 	github.com/spf13/cobra v1.7.0
