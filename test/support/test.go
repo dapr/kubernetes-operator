@@ -50,15 +50,6 @@ type Option[T any] interface {
 	applyTo(to T) error
 }
 
-type errorOption[T any] func(to T) error
-
-//nolint:unused
-func (o errorOption[T]) applyTo(to T) error {
-	return o(to)
-}
-
-var _ Option[any] = errorOption[any](nil)
-
 func With(t *testing.T) Test {
 	t.Helper()
 
@@ -88,10 +79,10 @@ func With(t *testing.T) Test {
 type T struct {
 	*gomega.WithT
 
-	t      *testing.T
-	client *Client
-	once   sync.Once
-	http   *http.Client
+	t          *testing.T
+	client     *Client
+	clientOnce sync.Once
+	http       *http.Client
 
 	//nolint:containedctx
 	ctx context.Context
@@ -106,7 +97,7 @@ func (t *T) Ctx() context.Context {
 }
 
 func (t *T) Client() *Client {
-	t.once.Do(func() {
+	t.clientOnce.Do(func() {
 		c, err := newClient(t.t.Logf)
 		if err != nil {
 			t.T().Fatalf("Error creating client: %v", err)
@@ -117,10 +108,6 @@ func (t *T) Client() *Client {
 }
 
 func (t *T) HTTPClient() *http.Client {
-	t.once.Do(func() {
-		t.http = cleanhttp.DefaultClient()
-	})
-
 	return t.http
 }
 

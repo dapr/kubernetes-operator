@@ -1,9 +1,7 @@
 package support
 
 import (
-	"errors"
-	"os"
-	"path/filepath"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/helm"
 
@@ -14,8 +12,6 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
 )
 
 type Client struct {
@@ -32,19 +28,7 @@ type Client struct {
 }
 
 func newClient(logFn func(string, ...interface{})) (*Client, error) {
-	kc := os.Getenv("KUBECONFIG")
-	if kc == "" {
-		home := homedir.HomeDir()
-		if home != "" {
-			kc = filepath.Join(home, ".kube", "config")
-		}
-	}
-
-	if kc == "" {
-		return nil, errors.New("unable to determine KUBECONFIG")
-	}
-
-	cfg, err := clientcmd.BuildConfigFromFlags("", kc)
+	cfg, err := config.GetConfig()
 	if err != nil {
 		return nil, err
 	}
