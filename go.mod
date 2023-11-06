@@ -6,7 +6,7 @@ require (
 	github.com/go-logr/logr v1.3.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/onsi/gomega v1.29.0
-	github.com/operator-framework/api v0.18.0
+	github.com/operator-framework/api v0.19.0
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
 	github.com/rs/xid v1.5.0
 	github.com/spf13/cobra v1.7.0
