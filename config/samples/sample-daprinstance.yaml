@@ -1,0 +1,10 @@
+apiVersion: operator.dapr.io/v1alpha1
+kind: DaprInstance
+metadata:
+  name: "dapr-instance"
+  namespace: "dapr-system"
+spec:
+  chart:
+    version: "1.11.3"
+  # This object provides access to values passed into the Dpr Helm chart
+  values: {}

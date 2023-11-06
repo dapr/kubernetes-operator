@@ -151,6 +151,32 @@ rules:
   - patch
   - update
 - apiGroups:
+  - operator.dapr.io
+  resources:
+  - daprinstances
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - operator.dapr.io
+  resources:
+  - daprinstances/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - operator.dapr.io
+  resources:
+  - daprinstances/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - rbac.authorization.k8s.io
   resources:
   - clusterrolebindings

@@ -11,3 +11,9 @@ func WithUninstallTimeout(value time.Duration) UninstallOption {
 		install.Client.Timeout = value
 	}
 }
+
+func WithUninstallWait(value bool) UninstallOption {
+	return func(install *ReleaseOptions[action.Uninstall]) {
+		install.Client.Wait = value
+	}
+}

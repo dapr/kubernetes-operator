@@ -1,49 +1,59 @@
 package support
 
 import (
-	"bytes"
 	"context"
+	"errors"
 	"net/http"
 	"sync"
 	"testing"
 	"time"
 
+	helmsupport "github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/helm"
+
+	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
+	"k8s.io/client-go/kubernetes/scheme"
+
+	"github.com/go-logr/logr/testr"
 	"github.com/hashicorp/go-cleanhttp"
-
+	"github.com/onsi/gomega"
 	"github.com/rs/xid"
-	netv1 "k8s.io/api/networking/v1"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/helm"
-
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	daprCP "github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator"
-	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/applyconfiguration/operator/v1alpha1"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/pointer"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
+	supportclient "github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/client"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/klog/v2"
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/onsi/gomega"
+	olmV1 "github.com/operator-framework/api/pkg/operators/v1"
+	olmV1Alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
 )
 
-//nolint:interfacebloat
+func init() {
+	if err := daprApi.AddToScheme(scheme.Scheme); err != nil {
+		panic(err)
+	}
+	if err := olmV1.AddToScheme(scheme.Scheme); err != nil {
+		panic(err)
+	}
+	if err := olmV1Alpha1.AddToScheme(scheme.Scheme); err != nil {
+		panic(err)
+	}
+}
+
 type Test interface {
+	gomega.Gomega
+
 	T() *testing.T
 	Ctx() context.Context
-	Client() *Client
+
+	ID() string
+	Cleanup(func() []runtime.Object)
+
+	Client() *supportclient.Client
+	Helm() *helmsupport.Helm
 	HTTPClient() *http.Client
 
 	NewTestNamespace(...Option[*corev1.Namespace]) *corev1.Namespace
-	NewDaprControlPlane(*daprAc.DaprControlPlaneSpecApplyConfiguration) *v1alpha1.DaprControlPlane
-	NewNamespacedNameDaprControlPlane(types.NamespacedName, *daprAc.DaprControlPlaneSpecApplyConfiguration) *v1alpha1.DaprControlPlane
-	InstallChart(string, ...helm.InstallOption)
-	SetUpIngress(string, netv1.HTTPIngressPath) *netv1.Ingress
-
-	GET(string) func(g gomega.Gomega) (*http.Response, error)
-	POST(string, string, []byte) func(g gomega.Gomega) (*http.Response, error)
-
-	gomega.Gomega
 }
 
 type Option[T any] interface {
@@ -53,19 +63,22 @@ type Option[T any] interface {
 func With(t *testing.T) Test {
 	t.Helper()
 
-	t.Log()
+	lr := testr.New(t)
+	klog.SetLogger(lr.WithName("client"))
+
 	ctx := context.Background()
 	if deadline, ok := t.Deadline(); ok {
 		withDeadline, cancel := context.WithDeadline(ctx, deadline)
 		t.Cleanup(cancel)
 		ctx = withDeadline
 	}
-
 	answer := &T{
-		WithT: gomega.NewWithT(t),
-		t:     t,
-		ctx:   ctx,
-		http:  cleanhttp.DefaultClient(),
+		WithT:   gomega.NewWithT(t),
+		id:      xid.New().String(),
+		t:       t,
+		ctx:     ctx,
+		http:    cleanhttp.DefaultClient(),
+		cleanup: make([]func() []runtime.Object, 0),
 	}
 
 	answer.SetDefaultEventuallyPollingInterval(500 * time.Millisecond)
@@ -73,19 +86,50 @@ func With(t *testing.T) Test {
 	answer.SetDefaultConsistentlyDuration(500 * time.Millisecond)
 	answer.SetDefaultConsistentlyDuration(TestTimeoutLong)
 
+	t.Cleanup(func() {
+		t.Log("Run Test cleanup")
+
+		allerr := make([]error, 0)
+
+		for i := len(answer.cleanup) - 1; i >= 0; i-- {
+			objects := answer.cleanup[i]()
+
+			for i := range objects {
+				err := runCleanup(answer, objects[i])
+				if err != nil {
+					allerr = append(allerr, err)
+				}
+			}
+		}
+
+		if len(allerr) != 0 {
+			t.Fatal(errors.Join(allerr...))
+		}
+
+		t.Log("Test cleanup done")
+	})
+
 	return answer
 }
 
 type T struct {
 	*gomega.WithT
 
+	id         string
 	t          *testing.T
-	client     *Client
+	client     *supportclient.Client
 	clientOnce sync.Once
+	helm       *helmsupport.Helm
+	helmOnce   sync.Once
 	http       *http.Client
+	cleanup    []func() []runtime.Object
 
 	//nolint:containedctx
 	ctx context.Context
+}
+
+func (t *T) ID() string {
+	return t.id
 }
 
 func (t *T) T() *testing.T {
@@ -96,9 +140,9 @@ func (t *T) Ctx() context.Context {
 	return t.ctx
 }
 
-func (t *T) Client() *Client {
+func (t *T) Client() *supportclient.Client {
 	t.clientOnce.Do(func() {
-		c, err := newClient(t.t.Logf)
+		c, err := supportclient.New(t.t)
 		if err != nil {
 			t.T().Fatalf("Error creating client: %v", err)
 		}
@@ -107,8 +151,28 @@ func (t *T) Client() *Client {
 	return t.client
 }
 
+func (t *T) Helm() *helmsupport.Helm {
+	t.helmOnce.Do(func() {
+		h, err := helmsupport.New(helmsupport.WithLog(func(s string, i ...interface{}) {
+			t.T().Logf("[helm] "+s, i...)
+		}))
+
+		if err != nil {
+			t.T().Fatalf("Error creating helm client: %v", err)
+		}
+
+		t.helm = h
+	})
+
+	return t.helm
+}
+
 func (t *T) HTTPClient() *http.Client {
 	return t.http
+}
+
+func (t *T) Cleanup(f func() []runtime.Object) {
+	t.cleanup = append(t.cleanup, f)
 }
 
 func (t *T) NewTestNamespace(options ...Option[*corev1.Namespace]) *corev1.Namespace {
@@ -116,159 +180,10 @@ func (t *T) NewTestNamespace(options ...Option[*corev1.Namespace]) *corev1.Names
 
 	namespace := createTestNamespace(t, options...)
 
-	t.T().Cleanup(func() {
+	t.Cleanup(func() []runtime.Object {
 		deleteTestNamespace(t, namespace)
+		return nil
 	})
 
 	return namespace
-}
-
-func (t *T) NewDaprControlPlane(
-	spec *daprAc.DaprControlPlaneSpecApplyConfiguration,
-) *v1alpha1.DaprControlPlane {
-
-	return t.NewNamespacedNameDaprControlPlane(
-		types.NamespacedName{
-			Name:      daprCP.DaprControlPlaneName,
-			Namespace: daprCP.DaprControlPlaneNamespaceDefault,
-		},
-		spec,
-	)
-}
-
-func (t *T) NewNamespacedNameDaprControlPlane(
-	nn types.NamespacedName,
-	spec *daprAc.DaprControlPlaneSpecApplyConfiguration,
-) *v1alpha1.DaprControlPlane {
-
-	t.T().Logf("Setting up Dapr ControlPlane %s in namespace %s", nn.Name, nn.Namespace)
-
-	cp := t.Client().Dapr.OperatorV1alpha1().DaprControlPlanes(nn.Namespace)
-
-	instance, err := cp.Apply(
-		t.Ctx(),
-		daprAc.DaprControlPlane(nn.Name, nn.Namespace).
-			WithSpec(spec),
-		metav1.ApplyOptions{
-			FieldManager: "dapr-e2e-" + t.T().Name(),
-		})
-
-	t.Expect(err).
-		ToNot(gomega.HaveOccurred())
-
-	t.T().Cleanup(func() {
-		t.Expect(
-			cp.Delete(t.Ctx(), instance.Name, metav1.DeleteOptions{
-				PropagationPolicy: pointer.Any(metav1.DeletePropagationForeground),
-			}),
-		).ToNot(gomega.HaveOccurred())
-	})
-
-	return instance
-}
-
-func (t *T) InstallChart(
-	chart string,
-	options ...helm.InstallOption,
-) {
-	allopt := make([]helm.InstallOption, 0)
-	allopt = append(allopt, options...)
-	allopt = append(allopt, helm.WithInstallTimeout(TestTimeoutLong))
-
-	release, err := t.Client().Helm.Install(
-		t.Ctx(),
-		chart,
-		allopt...)
-
-	t.Expect(err).
-		ToNot(gomega.HaveOccurred())
-
-	t.T().Cleanup(func() {
-		err := t.Client().Helm.Uninstall(
-			t.Ctx(),
-			release.Name,
-			helm.WithUninstallTimeout(TestTimeoutLong))
-
-		t.Expect(err).
-			ToNot(gomega.HaveOccurred())
-	})
-}
-
-func (t *T) SetUpIngress(
-	namespace string,
-	path netv1.HTTPIngressPath,
-) *netv1.Ingress {
-	name := xid.New().String()
-
-	t.T().Logf("Setting up ingress %s in namespace %s", name, namespace)
-
-	ing, err := t.Client().NetworkingV1().Ingresses(namespace).Create(
-		t.Ctx(),
-		&netv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
-			Spec: netv1.IngressSpec{
-				Rules: []netv1.IngressRule{{
-					IngressRuleValue: netv1.IngressRuleValue{
-						HTTP: &netv1.HTTPIngressRuleValue{
-							Paths: []netv1.HTTPIngressPath{path},
-						},
-					},
-				}},
-			},
-		},
-		metav1.CreateOptions{},
-	)
-
-	t.Expect(err).
-		ToNot(gomega.HaveOccurred())
-	t.Expect(ing).
-		ToNot(gomega.BeNil())
-
-	t.T().Cleanup(func() {
-		t.Expect(
-			t.Client().NetworkingV1().Ingresses(namespace).Delete(
-				t.Ctx(),
-				ing.Name,
-				metav1.DeleteOptions{
-					PropagationPolicy: pointer.Any(metav1.DeletePropagationForeground),
-				},
-			),
-		).ToNot(gomega.HaveOccurred())
-	})
-
-	return ing
-}
-
-func (t *T) GET(url string) func(g gomega.Gomega) (*http.Response, error) {
-	return func(g gomega.Gomega) (*http.Response, error) {
-		req, err := http.NewRequestWithContext(t.Ctx(), http.MethodGet, url, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		return t.HTTPClient().Do(req)
-	}
-}
-
-func (t *T) POST(url string, contentType string, content []byte) func(g gomega.Gomega) (*http.Response, error) {
-	return func(g gomega.Gomega) (*http.Response, error) {
-		data := content
-		if data == nil {
-			data = []byte{}
-		}
-
-		req, err := http.NewRequestWithContext(t.Ctx(), http.MethodPost, url, bytes.NewReader(data))
-		if err != nil {
-			return nil, err
-		}
-
-		if contentType != "" {
-			req.Header.Add("Content-Type", contentType)
-		}
-
-		return t.HTTPClient().Do(req)
-	}
 }

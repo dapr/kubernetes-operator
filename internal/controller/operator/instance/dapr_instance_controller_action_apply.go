@@ -1,4 +1,4 @@
-package operator
+package instance
 
 import (
 	"context"
@@ -6,12 +6,13 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
+
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 
@@ -23,10 +24,10 @@ import (
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
 )
 
-func NewApplyAction() Action {
+func NewApplyAction(l logr.Logger) Action {
 	return &ApplyAction{
 		engine:        helm.NewEngine(),
-		l:             ctrl.Log.WithName("action").WithName("apply"),
+		l:             l.WithName("action").WithName("apply"),
 		subscriptions: make(map[string]struct{}),
 		gc:            gc.New(),
 	}
@@ -85,9 +86,9 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 		}
 
 		resources.Labels(&obj, map[string]string{
-			DaprReleaseGeneration: strconv.FormatInt(rc.Resource.Generation, 10),
-			DaprReleaseName:       rc.Resource.Name,
-			DaprReleaseNamespace:  rc.Resource.Namespace,
+			helm.ReleaseGeneration: strconv.FormatInt(rc.Resource.Generation, 10),
+			helm.ReleaseName:       rc.Resource.Name,
+			helm.ReleaseNamespace:  rc.Resource.Namespace,
 		})
 
 		switch dc.(type) {
@@ -109,7 +110,7 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 
 				err = rc.Reconciler.Watch(
 					&obj,
-					rc.Reconciler.EnqueueRequestForOwner(&daprApi.DaprControlPlane{}, handler.OnlyControllerOwner()),
+					rc.Reconciler.EnqueueRequestForOwner(&daprApi.DaprInstance{}, handler.OnlyControllerOwner()),
 					dependantWithLabels(
 						a.watchForUpdates(gvk),
 						true,
@@ -129,8 +130,8 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 		// which a reconcile should be triggered can be identified by using the labels
 		// added by the controller to all the generated resources
 		//
-		//    daprs.dapr.io/resource.namespace = ${namespace}
-		//    daprs.dapr.io/resource.name =${name}
+		//    helm.operator.dapr.io/resource.namespace = ${namespace}
+		//    helm.operator.dapr.io/resource.name = ${name}
 		//
 		case *client.ClusteredResource:
 			r := gvk.GroupVersion().String() + ":" + gvk.Kind
@@ -191,7 +192,7 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 		}
 
 		_, err = dc.Apply(ctx, obj.GetName(), &obj, metav1.ApplyOptions{
-			FieldManager: DaprFieldManager,
+			FieldManager: controller.FieldManager,
 			Force:        true,
 		})
 
@@ -212,9 +213,9 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 	//
 	// The logic of the task it to delete all the resources that have a generation older than
 	// current CR one, which is propagated by the controller to all the rendered resources in
-	// the for of a labels:
+	// the for of a label:
 	//
-	// - daprs.tools.dapr.io/release.generation
+	// - helm.operator.dapr.io/release.generation
 	//
 	if reinstall {
 		s, err := gcSelector(rc)

@@ -25,6 +25,10 @@ import (
 type Interface interface {
 	// DaprControlPlanes returns a DaprControlPlaneInformer.
 	DaprControlPlanes() DaprControlPlaneInformer
+	// DaprCruiseControls returns a DaprCruiseControlInformer.
+	DaprCruiseControls() DaprCruiseControlInformer
+	// DaprInstances returns a DaprInstanceInformer.
+	DaprInstances() DaprInstanceInformer
 }
 
 type version struct {
@@ -41,4 +45,14 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // DaprControlPlanes returns a DaprControlPlaneInformer.
 func (v *version) DaprControlPlanes() DaprControlPlaneInformer {
 	return &daprControlPlaneInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// DaprCruiseControls returns a DaprCruiseControlInformer.
+func (v *version) DaprCruiseControls() DaprCruiseControlInformer {
+	return &daprCruiseControlInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// DaprInstances returns a DaprInstanceInformer.
+func (v *version) DaprInstances() DaprInstanceInformer {
+	return &daprInstanceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

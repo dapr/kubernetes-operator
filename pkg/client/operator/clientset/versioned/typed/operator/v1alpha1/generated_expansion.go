@@ -18,3 +18,7 @@ limitations under the License.
 package v1alpha1
 
 type DaprControlPlaneExpansion interface{}
+
+type DaprCruiseControlExpansion interface{}
+
+type DaprInstanceExpansion interface{}

@@ -15,6 +15,8 @@ import (
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/scale"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
+
+	daprClient "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/clientset/versioned"
 )
 
 var scaleConverter = scale.NewScaleConverter()
@@ -24,6 +26,7 @@ type Client struct {
 	ctrl.Client
 	kubernetes.Interface
 
+	Dapr      daprClient.Interface
 	Discovery discovery.DiscoveryInterface
 
 	dynamic *dynamic.DynamicClient
@@ -35,32 +38,37 @@ type Client struct {
 
 func NewClient(cfg *rest.Config, scheme *runtime.Scheme, cc ctrl.Client) (*Client, error) {
 
-	discoveryClient, err := discovery.NewDiscoveryClientForConfig(cfg)
+	discoveryCl, err := discovery.NewDiscoveryClientForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
-	kubeClient, err := kubernetes.NewForConfig(cfg)
+	kubeCl, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
-	restClient, err := newRESTClientForConfig(cfg)
+	restCl, err := newRESTClientForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
-	dynClient, err := dynamic.NewForConfig(cfg)
+	dynCl, err := dynamic.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	daprCl, err := daprClient.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	c := Client{
 		Client:    cc,
-		Interface: kubeClient,
-		Discovery: discoveryClient,
-		dynamic:   dynClient,
-		mapper:    restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(discoveryClient)),
+		Interface: kubeCl,
+		Discovery: discoveryCl,
+		Dapr:      daprCl,
+		dynamic:   dynCl,
+		mapper:    restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(discoveryCl)),
 		scheme:    scheme,
 		config:    cfg,
-		rest:      restClient,
+		rest:      restCl,
 	}
 
 	return &c, nil

@@ -32,13 +32,16 @@ spec:
       name: Reason
       type: string
     - description: Ready
-      jsonPath: .status.conditions[?(@.type=="Reconcile")].status
+      jsonPath: .status.conditions[?(@.type=="Reconciled")].status
       name: Reconciled
       type: string
     - description: Reason
-      jsonPath: .status.conditions[?(@.type=="Reconcile")].reason
+      jsonPath: .status.conditions[?(@.type=="Reconciled")].reason
       name: Reconciled Reason
       type: string
+    deprecated: true
+    deprecationWarning: v1alpha1.DaprControlPlane is deprecated, please, use v1alpha1.DaprInstance
+      instead
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -65,6 +68,15 @@ spec:
             type: object
           status:
             properties:
+              chart:
+                properties:
+                  name:
+                    type: string
+                  repo:
+                    type: string
+                  version:
+                    type: string
+                type: object
               conditions:
                 items:
                   description: "Condition contains details for one aspect of the current

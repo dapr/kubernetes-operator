@@ -9,6 +9,10 @@ import (
 	"sort"
 	"strings"
 
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/cli"
+
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -21,25 +25,52 @@ import (
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/mergemap"
 )
 
+const (
+	ReleaseGeneration = "helm.operator.dapr.io/release.generation"
+	ReleaseName       = "helm.operator.dapr.io/release.name"
+	ReleaseNamespace  = "helm.operator.dapr.io/release.namespace"
+
+	ChartsDir = "helm-charts/dapr"
+)
+
+type Options struct {
+	ChartsDir string
+}
+
 func NewEngine() *Engine {
 	return &Engine{
 		e:       engine.Engine{},
+		env:     cli.New(),
 		decoder: k8syaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme),
 	}
 }
 
 type Engine struct {
 	e       engine.Engine
+	env     *cli.EnvSettings
 	decoder runtime.Serializer
 }
 
-func (e *Engine) Render(c *chart.Chart, dapr *daprApi.DaprControlPlane, overrides map[string]interface{}) ([]unstructured.Unstructured, error) {
+func (e *Engine) Load(repo string, name string, version string) (*chart.Chart, error) {
+	cpo := action.ChartPathOptions{}
+	cpo.RepoURL = repo
+	cpo.Version = version
+
+	path, err := cpo.LocateChart(name, e.env)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load chart (repo: %s, name: %s, version: %s), reson: %w", repo, name, version, err)
+	}
+
+	return loader.Load(path)
+}
+
+func (e *Engine) Render(c *chart.Chart, dapr *daprApi.DaprInstance, overrides map[string]interface{}) ([]unstructured.Unstructured, error) {
 	rv, err := e.renderValues(c, dapr, overrides)
 	if err != nil {
 		return nil, fmt.Errorf("cannot render values: %w", err)
 	}
 
-	files, err := engine.Engine{}.Render(c, rv)
+	files, err := e.e.Render(c, rv)
 	if err != nil {
 		return nil, fmt.Errorf("cannot render a chart: %w", err)
 	}
@@ -119,7 +150,11 @@ func (e *Engine) decode(content []byte) ([]unstructured.Unstructured, error) {
 	return results, nil
 }
 
-func (e *Engine) renderValues(c *chart.Chart, dapr *daprApi.DaprControlPlane, overrides map[string]interface{}) (chartutil.Values, error) {
+func (e *Engine) renderValues(
+	c *chart.Chart,
+	dapr *daprApi.DaprInstance,
+	overrides map[string]interface{},
+) (chartutil.Values, error) {
 	values := make(map[string]interface{})
 
 	if dapr.Spec.Values != nil {

@@ -24,9 +24,10 @@ import (
 // DaprControlPlaneStatusApplyConfiguration represents an declarative configuration of the DaprControlPlaneStatus type for use
 // with apply.
 type DaprControlPlaneStatusApplyConfiguration struct {
-	Phase              *string        `json:"phase,omitempty"`
-	Conditions         []v1.Condition `json:"conditions,omitempty"`
-	ObservedGeneration *int64         `json:"observedGeneration,omitempty"`
+	Phase              *string                      `json:"phase,omitempty"`
+	Conditions         []v1.Condition               `json:"conditions,omitempty"`
+	ObservedGeneration *int64                       `json:"observedGeneration,omitempty"`
+	Chart              *ChartMetaApplyConfiguration `json:"chart,omitempty"`
 }
 
 // DaprControlPlaneStatusApplyConfiguration constructs an declarative configuration of the DaprControlPlaneStatus type for use with
@@ -58,5 +59,13 @@ func (b *DaprControlPlaneStatusApplyConfiguration) WithConditions(values ...v1.C
 // If called multiple times, the ObservedGeneration field is set to the value of the last call.
 func (b *DaprControlPlaneStatusApplyConfiguration) WithObservedGeneration(value int64) *DaprControlPlaneStatusApplyConfiguration {
 	b.ObservedGeneration = &value
+	return b
+}
+
+// WithChart sets the Chart field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Chart field is set to the value of the last call.
+func (b *DaprControlPlaneStatusApplyConfiguration) WithChart(value *ChartMetaApplyConfiguration) *DaprControlPlaneStatusApplyConfiguration {
+	b.Chart = value
 	return b
 }

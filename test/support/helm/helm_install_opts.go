@@ -42,3 +42,9 @@ func WithInstallTimeout(value time.Duration) InstallOption {
 		install.Client.Timeout = value
 	}
 }
+
+func WithInstallWait(value bool) InstallOption {
+	return func(install *ReleaseOptions[action.Install]) {
+		install.Client.Wait = value
+	}
+}

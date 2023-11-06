@@ -28,12 +28,26 @@ import (
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=operator, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithKind("ChartMeta"):
+		return &operatorv1alpha1.ChartMetaApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ChartSpec"):
+		return &operatorv1alpha1.ChartSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("DaprControlPlane"):
 		return &operatorv1alpha1.DaprControlPlaneApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("DaprControlPlaneSpec"):
 		return &operatorv1alpha1.DaprControlPlaneSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("DaprControlPlaneStatus"):
 		return &operatorv1alpha1.DaprControlPlaneStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("DaprCruiseControl"):
+		return &operatorv1alpha1.DaprCruiseControlApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("DaprCruiseControlStatus"):
+		return &operatorv1alpha1.DaprCruiseControlStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("DaprInstance"):
+		return &operatorv1alpha1.DaprInstanceApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("DaprInstanceSpec"):
+		return &operatorv1alpha1.DaprInstanceSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("DaprInstanceStatus"):
+		return &operatorv1alpha1.DaprInstanceStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("JSON"):
 		return &operatorv1alpha1.JSONApplyConfiguration{}
 
