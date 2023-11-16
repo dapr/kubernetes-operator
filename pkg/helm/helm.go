@@ -21,7 +21,7 @@ import (
 	k8syaml "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 
 	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/mergemap"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/maputils"
 )
 
 const (
@@ -32,22 +32,31 @@ const (
 	ChartsDir = "helm-charts/dapr"
 )
 
+type ValuesCustomizer func(map[string]any) (map[string]any, error)
+
 type Options struct {
 	ChartsDir string
 }
 
 func NewEngine() *Engine {
 	return &Engine{
-		e:       engine.Engine{},
-		env:     cli.New(),
-		decoder: k8syaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme),
+		e:                 engine.Engine{},
+		env:               cli.New(),
+		decoder:           k8syaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme),
+		valuesCustomizers: make([]ValuesCustomizer, 0),
 	}
 }
 
 type Engine struct {
-	e       engine.Engine
-	env     *cli.EnvSettings
-	decoder runtime.Serializer
+	e                 engine.Engine
+	env               *cli.EnvSettings
+	decoder           runtime.Serializer
+	valuesCustomizers []ValuesCustomizer
+}
+
+func (e *Engine) Customizer(customizer ValuesCustomizer, customizers ...ValuesCustomizer) {
+	e.valuesCustomizers = append(e.valuesCustomizers, customizer)
+	e.valuesCustomizers = append(e.valuesCustomizers, customizers...)
 }
 
 func (e *Engine) Load(options ChartOptions) (*chart.Chart, error) {
@@ -158,7 +167,16 @@ func (e *Engine) renderValues(
 		}
 	}
 
-	values = mergemap.Merge(values, overrides)
+	for i := range e.valuesCustomizers {
+		nv, err := e.valuesCustomizers[i](values)
+		if err != nil {
+			return chartutil.Values{}, fmt.Errorf("unable to cusomize values: %w", err)
+		}
+
+		values = nv
+	}
+
+	values = maputils.Merge(values, overrides)
 
 	err := chartutil.ProcessDependencies(c, values)
 	if err != nil {

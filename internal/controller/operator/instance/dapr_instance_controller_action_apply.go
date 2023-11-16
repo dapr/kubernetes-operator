@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm/customizers"
+
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
 
 	"github.com/go-logr/logr"
@@ -24,13 +26,26 @@ import (
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
 )
 
+const autoPullPolicySidecarInjector = `
+if (.dapr_sidecar_injector.image | has("name")) and (.dapr_sidecar_injector | has("sidecarImagePullPolicy") | not) 
+then 
+  .dapr_sidecar_injector.sidecarImagePullPolicy = "Always"
+end
+`
+
 func NewApplyAction(l logr.Logger) Action {
-	return &ApplyAction{
+	action := ApplyAction{
 		engine:        helm.NewEngine(),
 		l:             l.WithName("action").WithName("apply"),
 		subscriptions: make(map[string]struct{}),
 		gc:            gc.New(),
 	}
+
+	action.engine.Customizer(
+		customizers.JQ(autoPullPolicySidecarInjector),
+	)
+
+	return &action
 }
 
 type ApplyAction struct {

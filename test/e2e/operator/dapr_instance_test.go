@@ -6,7 +6,6 @@ import (
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/conditions"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/dapr"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/matechers"
 
 	"github.com/rs/xid"
 
@@ -14,6 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	. "github.com/dapr-sandbox/dapr-kubernetes-operator/test/support"
+	. "github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/matchers"
 	. "github.com/onsi/gomega"
 
 	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/applyconfiguration/operator/v1alpha1"
@@ -37,10 +37,10 @@ func TestDaprInstanceDeployWithDefaults(t *testing.T) {
 		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
 
 	test.Eventually(dapr.Instance(test, instance), TestTimeoutLong).Should(
-		WithTransform(matechers.AsJSON(), And(
-			matechers.MatchJQ(`.status.chart.name == "dapr"`),
-			matechers.MatchJQ(`.status.chart.repo == "embedded"`),
-			matechers.MatchJQ(`.status.chart.version == "1.12.0"`),
+		WithTransform(AsJSON(), And(
+			MatchJQ(`.status.chart.name == "dapr"`),
+			MatchJQ(`.status.chart.repo == "embedded"`),
+			MatchJQ(`.status.chart.version == "1.12.0"`),
 		)),
 	)
 }
@@ -64,12 +64,51 @@ func TestDaprInstanceDeployWithCustomChart(t *testing.T) {
 		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
 
 	test.Eventually(dapr.Instance(test, instance), TestTimeoutLong).Should(
-		WithTransform(matechers.AsJSON(), And(
-			matechers.MatchJQ(`.status.chart.name == "dapr"`),
-			matechers.MatchJQ(`.status.chart.repo == "https://dapr.github.io/helm-charts"`),
-			matechers.MatchJQ(`.status.chart.version == "1.11.3"`),
+		WithTransform(AsJSON(), And(
+			MatchJQ(`.status.chart.name == "dapr"`),
+			MatchJQ(`.status.chart.repo == "https://dapr.github.io/helm-charts"`),
+			MatchJQ(`.status.chart.version == "1.11.3"`),
 		)),
 	)
+}
+
+func TestDaprInstanceDeployWithCustomSidecarImage(t *testing.T) {
+	test := With(t)
+
+	instance := dapr.DeployInstance(
+		test,
+		daprAc.DaprInstanceSpec().
+			WithValues(dapr.Values(test, map[string]any{
+				"dapr_sidecar_injector": map[string]any{
+					"image": map[string]any{
+						"name": "docker.io/daprio/daprd:" + test.ID(),
+					},
+				},
+			})),
+	)
+
+	test.Eventually(Deployment(test, "dapr-operator", instance.Namespace), TestTimeoutLong).Should(
+		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+	test.Eventually(Deployment(test, "dapr-sentry", instance.Namespace), TestTimeoutLong).Should(
+		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+	test.Eventually(Deployment(test, "dapr-sidecar-injector", instance.Namespace), TestTimeoutLong).Should(
+		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+
+	test.Eventually(dapr.Instance(test, instance), TestTimeoutLong).Should(
+		WithTransform(AsJSON(), And(
+			MatchJQ(`.status.chart.name == "dapr"`),
+			MatchJQ(`.status.chart.repo == "embedded"`),
+			MatchJQ(`.status.chart.version == "1.12.0"`),
+		)),
+	)
+
+	test.Eventually(PodList(test, "app=dapr-sidecar-injector", instance.Namespace), TestTimeoutLong).Should(
+		WithTransform(AsJSON(), And(
+			MatchJQf(`.items[0].spec.containers[0].env[] | select(.name == "SIDECAR_IMAGE") | .value == "docker.io/daprio/daprd:%s"`, test.ID()),
+			MatchJQf(`.items[0].spec.containers[0].env[] | select(.name == "SIDECAR_IMAGE_PULL_POLICY") | .value == "%s"`, corev1.PullAlways),
+		)),
+	)
+
 }
 
 func TestDaprInstanceDeployWithApp(t *testing.T) {
@@ -96,10 +135,10 @@ func TestDaprInstanceDeployWithApp(t *testing.T) {
 		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
 
 	test.Eventually(dapr.Instance(test, instance), TestTimeoutLong).Should(
-		WithTransform(matechers.AsJSON(), And(
-			matechers.MatchJQ(`.status.chart.name == "dapr"`),
-			matechers.MatchJQ(`.status.chart.repo == "embedded"`),
-			matechers.MatchJQ(`.status.chart.version == "1.12.0"`),
+		WithTransform(AsJSON(), And(
+			MatchJQ(`.status.chart.name == "dapr"`),
+			MatchJQ(`.status.chart.repo == "embedded"`),
+			MatchJQ(`.status.chart.version == "1.12.0"`),
 		)),
 	)
 

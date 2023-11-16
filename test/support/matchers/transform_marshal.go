@@ -1,4 +1,4 @@
-package matechers
+package matchers
 
 import (
 	"encoding/json"

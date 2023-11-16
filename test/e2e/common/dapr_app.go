@@ -9,7 +9,7 @@ import (
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/dapr"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/matechers"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/matchers"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -31,7 +31,7 @@ func ValidateDaprApp(test support.Test, namespace string) {
 		"Failure checking for App Deployment",
 	)
 	test.Eventually(support.PodList(test, "app="+appName, namespace), support.TestTimeoutShort).Should(
-		gomega.WithTransform(matechers.AsJSON(), matechers.MatchJQ(".items[0].spec.containers | length == 2")),
+		gomega.WithTransform(matchers.AsJSON(), matchers.MatchJQ(".items[0].spec.containers | length == 2")),
 		"Failure checking for App Pods (sidecar injection)",
 	)
 
@@ -58,7 +58,7 @@ func ValidateDaprApp(test support.Test, namespace string) {
 	test.Eventually(dapr.GET(test, base+"/read"), support.TestTimeoutLong).Should(
 		gomega.And(
 			gomega.HaveHTTPStatus(http.StatusOK),
-			gomega.HaveHTTPBody(gomega.Not(matechers.MatchJQf(`.Values | any(. == "%s")`, value))),
+			gomega.HaveHTTPBody(gomega.Not(matchers.MatchJQf(`.Values | any(. == "%s")`, value))),
 		),
 		"Failure to read initial values",
 	)
@@ -73,7 +73,7 @@ func ValidateDaprApp(test support.Test, namespace string) {
 	test.Eventually(dapr.GET(test, base+"/read"), support.TestTimeoutLong).Should(
 		gomega.And(
 			gomega.HaveHTTPStatus(http.StatusOK),
-			gomega.HaveHTTPBody(matechers.MatchJQf(`.Values | any(. == "%s")`, value)),
+			gomega.HaveHTTPBody(matchers.MatchJQf(`.Values | any(. == "%s")`, value)),
 		),
 		"Failure to read final values",
 	)

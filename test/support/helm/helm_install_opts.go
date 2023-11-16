@@ -3,7 +3,7 @@ package helm
 import (
 	"time"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/mergemap"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/maputils"
 	"helm.sh/helm/v3/pkg/action"
 )
 
@@ -33,7 +33,7 @@ func WithInstallVersion(value string) InstallOption {
 
 func WithInstallValues(values map[string]interface{}) InstallOption {
 	return func(install *ReleaseOptions[action.Install]) {
-		install.Values = mergemap.Merge(install.Values, values)
+		install.Values = maputils.Merge(install.Values, values)
 	}
 }
 
