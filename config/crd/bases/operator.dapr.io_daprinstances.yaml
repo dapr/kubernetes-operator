@@ -67,6 +67,8 @@ spec:
                   repo:
                     default: https://dapr.github.io/helm-charts
                     type: string
+                  secret:
+                    type: string
                   version:
                     type: string
                 type: object

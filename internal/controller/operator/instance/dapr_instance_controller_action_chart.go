@@ -2,12 +2,21 @@ package instance
 
 import (
 	"context"
+	"fmt"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
 	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
+)
+
+const (
+	ChartRepoUsernameKey = "username"
+	ChartRepoPasswordKey = "password"
+	ChartRepoEmbedded    = "embedded"
 )
 
 func NewChartAction(l logr.Logger) Action {
@@ -26,14 +35,38 @@ func (a *ChartAction) Configure(_ context.Context, _ *client.Client, b *builder.
 	return b, nil
 }
 
-func (a *ChartAction) Run(_ context.Context, rc *ReconciliationRequest) error {
+func (a *ChartAction) Run(ctx context.Context, rc *ReconciliationRequest) error {
 	if rc.Resource.Status.Chart == nil {
 		rc.Resource.Status.Chart = &v1alpha1.ChartMeta{}
 	}
 
 	// TODO: maybe cache the chart
 	if rc.Resource.Spec.Chart != nil {
-		c, err := a.engine.Load(rc.Resource.Spec.Chart.Repo, rc.Resource.Spec.Chart.Name, rc.Resource.Spec.Chart.Version)
+		opts := helm.ChartOptions{}
+		opts.Name = rc.Resource.Spec.Chart.Name
+		opts.RepoURL = rc.Resource.Spec.Chart.Repo
+		opts.Version = rc.Resource.Spec.Chart.Version
+
+		if rc.Resource.Spec.Chart.Secret != "" {
+			s, err := rc.Client.CoreV1().Secrets(rc.Resource.Namespace).Get(
+				ctx,
+				rc.Resource.Spec.Chart.Secret,
+				metav1.GetOptions{},
+			)
+
+			if err != nil {
+				return fmt.Errorf("unable to fetch secret %s, %w", rc.Resource.Spec.Chart.Secret, err)
+			}
+
+			if v, ok := s.Data[ChartRepoUsernameKey]; ok {
+				opts.Username = string(v)
+			}
+			if v, ok := s.Data[ChartRepoPasswordKey]; ok {
+				opts.Password = string(v)
+			}
+		}
+
+		c, err := a.engine.Load(opts)
 		if err != nil {
 			return err
 		}
@@ -42,7 +75,7 @@ func (a *ChartAction) Run(_ context.Context, rc *ReconciliationRequest) error {
 
 		rc.Resource.Status.Chart.Repo = rc.Resource.Spec.Chart.Repo
 	} else {
-		rc.Resource.Status.Chart.Repo = "embedded"
+		rc.Resource.Status.Chart.Repo = ChartRepoEmbedded
 	}
 
 	rc.Resource.Status.Chart.Version = rc.Chart.Metadata.Version

@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strings"
 
-	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
 
@@ -51,14 +50,10 @@ type Engine struct {
 	decoder runtime.Serializer
 }
 
-func (e *Engine) Load(repo string, name string, version string) (*chart.Chart, error) {
-	cpo := action.ChartPathOptions{}
-	cpo.RepoURL = repo
-	cpo.Version = version
-
-	path, err := cpo.LocateChart(name, e.env)
+func (e *Engine) Load(options ChartOptions) (*chart.Chart, error) {
+	path, err := options.LocateChart(options.Name, e.env)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load chart (repo: %s, name: %s, version: %s), reson: %w", repo, name, version, err)
+		return nil, fmt.Errorf("unable to load chart (repo: %s, name: %s, version: %s), reson: %w", options.RepoURL, options.Name, options.Version, err)
 	}
 
 	return loader.Load(path)

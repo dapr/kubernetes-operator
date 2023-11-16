@@ -23,6 +23,7 @@ type ChartSpecApplyConfiguration struct {
 	Repo    *string `json:"repo,omitempty"`
 	Name    *string `json:"name,omitempty"`
 	Version *string `json:"version,omitempty"`
+	Secret  *string `json:"secret,omitempty"`
 }
 
 // ChartSpecApplyConfiguration constructs an declarative configuration of the ChartSpec type for use with
@@ -52,5 +53,13 @@ func (b *ChartSpecApplyConfiguration) WithName(value string) *ChartSpecApplyConf
 // If called multiple times, the Version field is set to the value of the last call.
 func (b *ChartSpecApplyConfiguration) WithVersion(value string) *ChartSpecApplyConfiguration {
 	b.Version = &value
+	return b
+}
+
+// WithSecret sets the Secret field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Secret field is set to the value of the last call.
+func (b *ChartSpecApplyConfiguration) WithSecret(value string) *ChartSpecApplyConfiguration {
+	b.Secret = &value
 	return b
 }

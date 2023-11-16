@@ -76,6 +76,9 @@ type ChartSpec struct {
 
 	// +kubebuilder:validation:Optional
 	Version string `json:"version,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	Secret string `json:"secret,omitempty"`
 }
 
 type ChartMeta struct {
