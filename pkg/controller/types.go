@@ -10,6 +10,10 @@ type ClusterType string
 const (
 	ClusterTypeVanilla   ClusterType = "Vanilla"
 	ClusterTypeOpenShift ClusterType = "OpenShift"
+
+	FieldManager     = "dapr-kubernetes-controller"
+	NamespaceDefault = "dapr-system"
+	NamespaceEnv     = "DAPR_KUBERNETES_OPERATOR_NAMESPACE"
 )
 
 type Options struct {

@@ -18,4 +18,20 @@ resources:
   kind: DaprControlPlane
   path: github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: dapr.io
+  group: operator
+  kind: DaprInstance
+  path: github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: dapr.io
+  group: operator
+  kind: DaprCruiseControl
+  path: github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1
+  version: v1alpha1
 version: "3"

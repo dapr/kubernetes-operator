@@ -79,6 +79,22 @@ func ConditionStatus[T GenericConditionType](object any, conditionType T) corev1
 				}
 			}
 		}
+	case *daprApi.DaprInstance:
+		if o != nil {
+			for i := range o.Status.Conditions {
+				if o.Status.Conditions[i].Type == string(conditionType) {
+					return corev1.ConditionStatus(o.Status.Conditions[i].Status)
+				}
+			}
+		}
+	case *daprApi.DaprCruiseControl:
+		if o != nil {
+			for i := range o.Status.Conditions {
+				if o.Status.Conditions[i].Type == string(conditionType) {
+					return corev1.ConditionStatus(o.Status.Conditions[i].Status)
+				}
+			}
+		}
 	}
 
 	return corev1.ConditionUnknown
@@ -113,6 +129,22 @@ func ConditionReason[T GenericConditionType](object any, conditionType T) string
 			}
 		}
 	case *daprApi.DaprControlPlane:
+		if o != nil {
+			for i := range o.Status.Conditions {
+				if o.Status.Conditions[i].Type == string(conditionType) {
+					return o.Status.Conditions[i].Reason
+				}
+			}
+		}
+	case *daprApi.DaprInstance:
+		if o != nil {
+			for i := range o.Status.Conditions {
+				if o.Status.Conditions[i].Type == string(conditionType) {
+					return o.Status.Conditions[i].Reason
+				}
+			}
+		}
+	case *daprApi.DaprCruiseControl:
 		if o != nil {
 			for i := range o.Status.Conditions {
 				if o.Status.Conditions[i].Type == string(conditionType) {

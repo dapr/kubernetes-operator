@@ -66,3 +66,23 @@ func (m *RawMessage) String() string {
 
 var _ json.Marshaler = (*RawMessage)(nil)
 var _ json.Unmarshaler = (*RawMessage)(nil)
+
+type ChartSpec struct {
+	// +kubebuilder:default:="https://dapr.github.io/helm-charts"
+	Repo string `json:"repo,omitempty"`
+
+	// +kubebuilder:default:="dapr"
+	Name string `json:"name,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	Version string `json:"version,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	Secret string `json:"secret,omitempty"`
+}
+
+type ChartMeta struct {
+	Repo    string `json:"repo,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Version string `json:"version,omitempty"`
+}

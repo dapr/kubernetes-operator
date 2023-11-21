@@ -3,6 +3,10 @@ package run
 import (
 	"fmt"
 
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator/controlplane"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator/instance"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
+
 	"github.com/spf13/cobra"
 	admregv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -14,7 +18,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	daprCtl "github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
 )
@@ -35,15 +38,15 @@ func NewRunCmd() *cobra.Command {
 		LeaderElectionNamespace:       "",
 	}
 
-	helmOpts := daprCtl.HelmOptions{
-		ChartsDir: daprCtl.HelmChartsDir,
+	helmOpts := helm.Options{
+		ChartsDir: helm.ChartsDir,
 	}
 
 	cmd := cobra.Command{
 		Use:   "run",
 		Short: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			selector, err := daprCtl.ReleaseSelector()
+			selector, err := helm.ReleaseSelector()
 			if err != nil {
 				return fmt.Errorf("unable to compute cache's watch selector: %w", err)
 			}
@@ -65,9 +68,12 @@ func NewRunCmd() *cobra.Command {
 			}
 
 			return controller.Start(controllerOpts, func(manager manager.Manager, opts controller.Options) error {
-				_, err := daprCtl.NewReconciler(cmd.Context(), manager, helmOpts)
-				if err != nil {
+				if _, err := controlplane.NewReconciler(cmd.Context(), manager, helmOpts); err != nil {
 					return fmt.Errorf("unable to set-up DaprControlPlane reconciler: %w", err)
+				}
+
+				if _, err := instance.NewReconciler(cmd.Context(), manager, helmOpts); err != nil {
+					return fmt.Errorf("unable to set-up DaprInstance reconciler: %w", err)
 				}
 
 				return nil

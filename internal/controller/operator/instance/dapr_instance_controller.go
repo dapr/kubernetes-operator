@@ -14,10 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package operator
+package instance
 
 import (
 	"context"
+
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
 
 	"k8s.io/client-go/tools/record"
 
@@ -42,19 +44,19 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime/pkg/controller"
 )
 
-func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o HelmOptions) (*Reconciler, error) {
+func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) (*Reconciler, error) {
 	c, err := client.NewClient(manager.GetConfig(), manager.GetScheme(), manager.GetClient())
 	if err != nil {
 		return nil, err
 	}
 
 	rec := Reconciler{}
-	rec.l = ctrlRt.Log.WithName("controller")
+	rec.l = ctrlRt.Log.WithName("dapr-instance-controller")
 	rec.Client = c
 	rec.Scheme = manager.GetScheme()
 	rec.ClusterType = controller.ClusterTypeVanilla
 	rec.manager = manager
-	rec.recorder = manager.GetEventRecorderFor(DaprFieldManager)
+	rec.recorder = manager.GetEventRecorderFor(controller.FieldManager)
 
 	isOpenshift, err := c.IsOpenShift()
 	if err != nil {
@@ -64,8 +66,9 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o HelmOptions) (
 		rec.ClusterType = controller.ClusterTypeOpenShift
 	}
 
-	rec.actions = append(rec.actions, NewApplyAction())
-	rec.actions = append(rec.actions, NewConditionsAction())
+	rec.actions = append(rec.actions, NewChartAction(rec.l))
+	rec.actions = append(rec.actions, NewApplyAction(rec.l))
+	rec.actions = append(rec.actions, NewConditionsAction(rec.l))
 
 	hc, err := loader.Load(o.ChartsDir)
 	if err != nil {
@@ -85,33 +88,33 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o HelmOptions) (
 	return &rec, nil
 }
 
-//+kubebuilder:rbac:groups=operator.dapr.io,resources=daprcontrolplanes,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=operator.dapr.io,resources=daprcontrolplanes/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=operator.dapr.io,resources=daprcontrolplanes/finalizers,verbs=update
-//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=*
-//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles,verbs=*
-//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=*
-//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=*
-//+kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfigurations,verbs=*
-//+kubebuilder:rbac:groups="",resources=events,verbs=*
-//+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=*
-//+kubebuilder:rbac:groups="",resources=secrets,verbs=*
-//+kubebuilder:rbac:groups="",resources=services,verbs=*
-//+kubebuilder:rbac:groups="",resources=configmaps,verbs=*
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=*
-//+kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=components,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=components/status,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=components/finalizers,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=configurations,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=configurations/status,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=configurations/finalizers,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=resiliencies,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=resiliencies/status,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=resiliencies/finalizers,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=subscriptions,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=subscriptions/status,verbs=*
-//+kubebuilder:rbac:groups=dapr.io,resources=subscriptions/finalizers,verbs=*
+// +kubebuilder:rbac:groups=operator.dapr.io,resources=daprinstances,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=operator.dapr.io,resources=daprinstances/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=operator.dapr.io,resources=daprinstances/finalizers,verbs=update
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=*
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles,verbs=*
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=*
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=*
+// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfigurations,verbs=*
+// +kubebuilder:rbac:groups="",resources=events,verbs=*
+// +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=*
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=*
+// +kubebuilder:rbac:groups="",resources=services,verbs=*
+// +kubebuilder:rbac:groups="",resources=configmaps,verbs=*
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=*
+// +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=components,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=components/status,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=components/finalizers,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=configurations,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=configurations/status,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=configurations/finalizers,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=resiliencies,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=resiliencies/status,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=resiliencies/finalizers,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=subscriptions,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=subscriptions/status,verbs=*
+// +kubebuilder:rbac:groups=dapr.io,resources=subscriptions/finalizers,verbs=*
 
 type Reconciler struct {
 	*client.Client
@@ -129,12 +132,7 @@ type Reconciler struct {
 func (r *Reconciler) init(ctx context.Context) error {
 	c := ctrlRt.NewControllerManagedBy(r.manager)
 
-	// TODO: as today, the controller can handle multiple Dapr CR however, the Dapr operator does
-	//       not seem to be designed to handle multiple installations on the same cluster hence
-	//       we must discuss if we want to limit to a single CR or even remove the Dapr CR and
-	//       use a simple ConfigMap (which should be less practical as having a place like the
-	//       status field where to report what's going on is highly desirable.
-	c = c.For(&daprvApi.DaprControlPlane{}, builder.WithPredicates(
+	c = c.For(&daprvApi.DaprInstance{}, builder.WithPredicates(
 		predicate.Or(
 			predicate.GenerationChangedPredicate{},
 		)))

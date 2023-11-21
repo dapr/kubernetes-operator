@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/mergemap"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/maputils"
 	"github.com/rs/xid"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -46,6 +46,6 @@ func (h *Helm) Install(ctx context.Context, chart string, options ...InstallOpti
 	return client.RunWithContext(
 		ctx,
 		chartRequested,
-		mergemap.Merge(map[string]interface{}{}, io.Values),
+		maputils.Merge(map[string]interface{}{}, io.Values),
 	)
 }

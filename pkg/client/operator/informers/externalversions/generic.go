@@ -54,6 +54,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=operator, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("daprcontrolplanes"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1alpha1().DaprControlPlanes().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("daprcruisecontrols"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1alpha1().DaprCruiseControls().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("daprinstances"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1alpha1().DaprInstances().Informer()}, nil
 
 	}
 

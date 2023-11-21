@@ -9,6 +9,9 @@ import (
 	"sort"
 	"strings"
 
+	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/cli"
+
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -18,28 +21,60 @@ import (
 	k8syaml "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 
 	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/mergemap"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/maputils"
 )
+
+const (
+	ReleaseGeneration = "helm.operator.dapr.io/release.generation"
+	ReleaseName       = "helm.operator.dapr.io/release.name"
+	ReleaseNamespace  = "helm.operator.dapr.io/release.namespace"
+
+	ChartsDir = "helm-charts/dapr"
+)
+
+type ValuesCustomizer func(map[string]any) (map[string]any, error)
+
+type Options struct {
+	ChartsDir string
+}
 
 func NewEngine() *Engine {
 	return &Engine{
-		e:       engine.Engine{},
-		decoder: k8syaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme),
+		e:                 engine.Engine{},
+		env:               cli.New(),
+		decoder:           k8syaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme),
+		valuesCustomizers: make([]ValuesCustomizer, 0),
 	}
 }
 
 type Engine struct {
-	e       engine.Engine
-	decoder runtime.Serializer
+	e                 engine.Engine
+	env               *cli.EnvSettings
+	decoder           runtime.Serializer
+	valuesCustomizers []ValuesCustomizer
 }
 
-func (e *Engine) Render(c *chart.Chart, dapr *daprApi.DaprControlPlane, overrides map[string]interface{}) ([]unstructured.Unstructured, error) {
+func (e *Engine) Customizer(customizer ValuesCustomizer, customizers ...ValuesCustomizer) {
+	e.valuesCustomizers = append(e.valuesCustomizers, customizer)
+	e.valuesCustomizers = append(e.valuesCustomizers, customizers...)
+}
+
+func (e *Engine) Load(options ChartOptions) (*chart.Chart, error) {
+	path, err := options.LocateChart(options.Name, e.env)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load chart (repo: %s, name: %s, version: %s), reson: %w", options.RepoURL, options.Name, options.Version, err)
+	}
+
+	return loader.Load(path)
+}
+
+func (e *Engine) Render(c *chart.Chart, dapr *daprApi.DaprInstance, overrides map[string]interface{}) ([]unstructured.Unstructured, error) {
 	rv, err := e.renderValues(c, dapr, overrides)
 	if err != nil {
 		return nil, fmt.Errorf("cannot render values: %w", err)
 	}
 
-	files, err := engine.Engine{}.Render(c, rv)
+	files, err := e.e.Render(c, rv)
 	if err != nil {
 		return nil, fmt.Errorf("cannot render a chart: %w", err)
 	}
@@ -119,7 +154,11 @@ func (e *Engine) decode(content []byte) ([]unstructured.Unstructured, error) {
 	return results, nil
 }
 
-func (e *Engine) renderValues(c *chart.Chart, dapr *daprApi.DaprControlPlane, overrides map[string]interface{}) (chartutil.Values, error) {
+func (e *Engine) renderValues(
+	c *chart.Chart,
+	dapr *daprApi.DaprInstance,
+	overrides map[string]interface{},
+) (chartutil.Values, error) {
 	values := make(map[string]interface{})
 
 	if dapr.Spec.Values != nil {
@@ -128,7 +167,16 @@ func (e *Engine) renderValues(c *chart.Chart, dapr *daprApi.DaprControlPlane, ov
 		}
 	}
 
-	values = mergemap.Merge(values, overrides)
+	for i := range e.valuesCustomizers {
+		nv, err := e.valuesCustomizers[i](values)
+		if err != nil {
+			return chartutil.Values{}, fmt.Errorf("unable to cusomize values: %w", err)
+		}
+
+		values = nv
+	}
+
+	values = maputils.Merge(values, overrides)
 
 	err := chartutil.ProcessDependencies(c, values)
 	if err != nil {

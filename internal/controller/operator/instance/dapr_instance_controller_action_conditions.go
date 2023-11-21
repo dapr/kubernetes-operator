@@ -1,4 +1,4 @@
-package operator
+package instance
 
 import (
 	"context"
@@ -14,14 +14,13 @@ import (
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
 	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 )
 
-func NewConditionsAction() Action {
+func NewConditionsAction(l logr.Logger) Action {
 	return &ConditionsAction{
 		engine:        helm.NewEngine(),
-		l:             ctrl.Log.WithName("action").WithName("apply"),
+		l:             l.WithName("action").WithName("conditions"),
 		subscriptions: make(map[string]struct{}),
 		gc:            gc.New(),
 	}
@@ -64,7 +63,7 @@ func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) e
 	if len(deployments.Items) > 0 {
 		if ready == len(deployments.Items) {
 			readyCondition = metav1.Condition{
-				Type:               DaprConditionReady,
+				Type:               conditions.TypeReady,
 				Status:             metav1.ConditionTrue,
 				Reason:             "Ready",
 				Message:            fmt.Sprintf("%d/%d deployments ready", ready, len(deployments.Items)),
@@ -72,7 +71,7 @@ func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) e
 			}
 		} else {
 			readyCondition = metav1.Condition{
-				Type:               DaprConditionReady,
+				Type:               conditions.TypeReady,
 				Status:             metav1.ConditionFalse,
 				Reason:             "InProgress",
 				Message:            fmt.Sprintf("%d/%d deployments ready", ready, len(deployments.Items)),
@@ -81,7 +80,7 @@ func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) e
 		}
 	} else {
 		readyCondition = metav1.Condition{
-			Type:               DaprConditionReady,
+			Type:               conditions.TypeReady,
 			Status:             metav1.ConditionFalse,
 			Reason:             "InProgress",
 			Message:            "no deployments",

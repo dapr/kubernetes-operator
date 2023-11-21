@@ -18,7 +18,6 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type DaprControlPlaneSpec struct {
@@ -30,6 +29,7 @@ type DaprControlPlaneStatus struct {
 	Phase              string             `json:"phase"`
 	Conditions         []metav1.Condition `json:"conditions,omitempty"`
 	ObservedGeneration int64              `json:"observedGeneration,omitempty"`
+	Chart              *ChartMeta         `json:"chart,omitempty"`
 }
 
 // +genclient
@@ -39,9 +39,10 @@ type DaprControlPlaneStatus struct {
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`,description="The phase"
 // +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[?(@.type=="Ready")].status`,description="Ready"
 // +kubebuilder:printcolumn:name="Reason",type=string,JSONPath=`.status.conditions[?(@.type=="Ready")].reason`,description="Reason"
-// +kubebuilder:printcolumn:name="Reconciled",type=string,JSONPath=`.status.conditions[?(@.type=="Reconcile")].status`,description="Ready"
-// +kubebuilder:printcolumn:name="Reconciled Reason",type=string,JSONPath=`.status.conditions[?(@.type=="Reconcile")].reason`,description="Reason"
+// +kubebuilder:printcolumn:name="Reconciled",type=string,JSONPath=`.status.conditions[?(@.type=="Reconciled")].status`,description="Ready"
+// +kubebuilder:printcolumn:name="Reconciled Reason",type=string,JSONPath=`.status.conditions[?(@.type=="Reconciled")].reason`,description="Reason"
 // +kubebuilder:resource:path=daprcontrolplanes,scope=Namespaced,shortName=dcp,categories=dapr
+// +kubebuilder:deprecatedversion:warning="v1alpha1.DaprControlPlane is deprecated, please, use v1alpha1.DaprInstance instead"
 
 type DaprControlPlane struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -51,7 +52,7 @@ type DaprControlPlane struct {
 	Status DaprControlPlaneStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
 type DaprControlPlaneList struct {
 	metav1.TypeMeta `json:",inline"`
@@ -61,8 +62,4 @@ type DaprControlPlaneList struct {
 
 func init() {
 	SchemeBuilder.Register(&DaprControlPlane{}, &DaprControlPlaneList{})
-}
-
-func Resource(resource string) schema.GroupResource {
-	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }

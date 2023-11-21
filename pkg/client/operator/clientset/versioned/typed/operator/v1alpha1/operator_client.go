@@ -28,6 +28,8 @@ import (
 type OperatorV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	DaprControlPlanesGetter
+	DaprCruiseControlsGetter
+	DaprInstancesGetter
 }
 
 // OperatorV1alpha1Client is used to interact with features provided by the operator group.
@@ -37,6 +39,14 @@ type OperatorV1alpha1Client struct {
 
 func (c *OperatorV1alpha1Client) DaprControlPlanes(namespace string) DaprControlPlaneInterface {
 	return newDaprControlPlanes(c, namespace)
+}
+
+func (c *OperatorV1alpha1Client) DaprCruiseControls(namespace string) DaprCruiseControlInterface {
+	return newDaprCruiseControls(c, namespace)
+}
+
+func (c *OperatorV1alpha1Client) DaprInstances(namespace string) DaprInstanceInterface {
+	return newDaprInstances(c, namespace)
 }
 
 // NewForConfig creates a new OperatorV1alpha1Client for the given config.

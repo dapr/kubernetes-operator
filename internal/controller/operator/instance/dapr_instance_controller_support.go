@@ -1,9 +1,11 @@
-package operator
+package instance
 
 import (
 	"context"
 	"fmt"
 	"strconv"
+
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
 
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
@@ -18,7 +20,7 @@ import (
 func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {
 
 	namespace, err := labels.NewRequirement(
-		DaprReleaseNamespace,
+		helm.ReleaseNamespace,
 		selection.Equals,
 		[]string{rc.Resource.Namespace})
 
@@ -27,7 +29,7 @@ func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {
 	}
 
 	name, err := labels.NewRequirement(
-		DaprReleaseName,
+		helm.ReleaseName,
 		selection.Equals,
 		[]string{rc.Resource.Name})
 
@@ -36,7 +38,7 @@ func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {
 	}
 
 	generation, err := labels.NewRequirement(
-		DaprReleaseGeneration,
+		helm.ReleaseGeneration,
 		selection.LessThan,
 		[]string{strconv.FormatInt(rc.Resource.Generation, 10)})
 
@@ -57,11 +59,11 @@ func labelsToRequest(_ context.Context, object ctrlCli.Object) []reconcile.Reque
 	if allLabels == nil {
 		return nil
 	}
-	name := allLabels[DaprReleaseName]
+	name := allLabels[helm.ReleaseName]
 	if name == "" {
 		return nil
 	}
-	namespace := allLabels[DaprReleaseNamespace]
+	namespace := allLabels[helm.ReleaseNamespace]
 	if namespace == "" {
 		return nil
 	}
@@ -77,10 +79,10 @@ func labelsToRequest(_ context.Context, object ctrlCli.Object) []reconcile.Reque
 func dependantWithLabels(watchUpdate bool, watchDelete bool, watchStatus bool) predicate.Predicate {
 	return predicate.And(
 		&predicates.HasLabel{
-			Name: DaprReleaseName,
+			Name: helm.ReleaseName,
 		},
 		&predicates.HasLabel{
-			Name: DaprReleaseNamespace,
+			Name: helm.ReleaseNamespace,
 		},
 		&predicates.DependentPredicate{
 			WatchUpdate: watchUpdate,
@@ -90,27 +92,9 @@ func dependantWithLabels(watchUpdate bool, watchDelete bool, watchStatus bool) p
 	)
 }
 
-func ReleaseSelector() (labels.Selector, error) {
-	hasReleaseNameLabel, err := labels.NewRequirement(DaprReleaseName, selection.Exists, []string{})
-	if err != nil {
-		return nil, err
-	}
-
-	hasReleaseNamespaceLabel, err := labels.NewRequirement(DaprReleaseNamespace, selection.Exists, []string{})
-	if err != nil {
-		return nil, err
-	}
-
-	selector := labels.NewSelector().
-		Add(*hasReleaseNameLabel).
-		Add(*hasReleaseNamespaceLabel)
-
-	return selector, nil
-}
-
 func CurrentReleaseSelector(rc *ReconciliationRequest) (labels.Selector, error) {
 	namespace, err := labels.NewRequirement(
-		DaprReleaseNamespace,
+		helm.ReleaseNamespace,
 		selection.Equals,
 		[]string{rc.Resource.Namespace})
 
@@ -119,7 +103,7 @@ func CurrentReleaseSelector(rc *ReconciliationRequest) (labels.Selector, error) 
 	}
 
 	name, err := labels.NewRequirement(
-		DaprReleaseName,
+		helm.ReleaseName,
 		selection.Equals,
 		[]string{rc.Resource.Name})
 
@@ -128,7 +112,7 @@ func CurrentReleaseSelector(rc *ReconciliationRequest) (labels.Selector, error) 
 	}
 
 	generation, err := labels.NewRequirement(
-		DaprReleaseGeneration,
+		helm.ReleaseGeneration,
 		selection.Equals,
 		[]string{strconv.FormatInt(rc.Resource.Generation, 10)})
 

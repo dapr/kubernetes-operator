@@ -48,6 +48,12 @@ mkdir -p "${PROJECT_ROOT}/pkg/client/operator"
 sed -i \
   's/WithAPIVersion(\"operator\/v1alpha1\")/WithAPIVersion(\"operator.dapr.io\/v1alpha1\")/g' \
   "${TMP_DIR}"/client/github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/applyconfiguration/operator/v1alpha1/daprcontrolplane.go
+sed -i \
+  's/WithAPIVersion(\"operator\/v1alpha1\")/WithAPIVersion(\"operator.dapr.io\/v1alpha1\")/g' \
+  "${TMP_DIR}"/client/github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/applyconfiguration/operator/v1alpha1/daprinstance.go
+sed -i \
+  's/WithAPIVersion(\"operator\/v1alpha1\")/WithAPIVersion(\"operator.dapr.io\/v1alpha1\")/g' \
+  "${TMP_DIR}"/client/github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/applyconfiguration/operator/v1alpha1/daprcruisecontrol.go
 
 cp -r \
   "${TMP_DIR}"/client/github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/* \

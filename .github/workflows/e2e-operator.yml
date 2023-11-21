@@ -22,7 +22,7 @@ jobs:
           export UUID=$(uuidgen | tr "[:upper:]" "[:lower:]")
           export CONTAINER_IMAGE="ttl.sh/${UUID}-${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}:1h"
           
-          echo CONTAINER_IMAGE
+          echo ${CONTAINER_IMAGE}
           echo "image=${CONTAINER_IMAGE}" >> "$GITHUB_OUTPUT"
           
           make docker/build docker/push

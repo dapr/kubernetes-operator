@@ -121,11 +121,11 @@ test: manifests generate fmt vet ## Run tests.
 
 .PHONY: test/e2e/operator
 test/e2e/operator: manifests generate fmt vet ## Run e2e operator tests.
-	go test -ldflags="$(GOLDFLAGS)" -v ./test/e2e/operator/...
+	go test -ldflags="$(GOLDFLAGS)" -p 1 -v ./test/e2e/operator/...
 
 .PHONY: test/e2e/olm
 test/e2e/olm: ## Run e2e catalog tests.
-	go test -ldflags="$(GOLDFLAGS)" -v ./test/e2e/olm/...
+	go test -ldflags="$(GOLDFLAGS)" -p 1 -v ./test/e2e/olm/...
 
 ##@ Build
 
@@ -135,11 +135,19 @@ build: manifests generate fmt vet ## Build manager binary.
 
 .PHONY: run
 run: ## Run a controller from your host.
-	go run -ldflags="$(GOLDFLAGS)" cmd/main.go run --leader-election=false --zap-devel
+	go run -ldflags="$(GOLDFLAGS)" cmd/main.go run \
+		--leader-election=false \
+		--zap-devel \
+		--health-probe-bind-address ":0" \
+		--metrics-bind-address ":0"
 
 .PHONY: run/local
 run/local: install ## Install and Run a controller from your host.
-	go run -ldflags="$(GOLDFLAGS)" cmd/main.go run --leader-election=false --zap-devel
+	go run -ldflags="$(GOLDFLAGS)" cmd/main.go run \
+		--leader-election=false \
+		--zap-devel \
+		--health-probe-bind-address ":0" \
+		--metrics-bind-address ":0"
 
 
 .PHONY: deps

@@ -24,3 +24,19 @@ type DaprControlPlaneListerExpansion interface{}
 // DaprControlPlaneNamespaceListerExpansion allows custom methods to be added to
 // DaprControlPlaneNamespaceLister.
 type DaprControlPlaneNamespaceListerExpansion interface{}
+
+// DaprCruiseControlListerExpansion allows custom methods to be added to
+// DaprCruiseControlLister.
+type DaprCruiseControlListerExpansion interface{}
+
+// DaprCruiseControlNamespaceListerExpansion allows custom methods to be added to
+// DaprCruiseControlNamespaceLister.
+type DaprCruiseControlNamespaceListerExpansion interface{}
+
+// DaprInstanceListerExpansion allows custom methods to be added to
+// DaprInstanceLister.
+type DaprInstanceListerExpansion interface{}
+
+// DaprInstanceNamespaceListerExpansion allows custom methods to be added to
+// DaprInstanceNamespaceLister.
+type DaprInstanceNamespaceListerExpansion interface{}

@@ -19,6 +19,17 @@ spec:
         kind: DaprControlPlane
         name: daprcontrolplanes.operator.dapr.io
         version: v1alpha1
+        deprecated: true
+      - description: DaprInstance is the Schema for the Dapr Instance API.
+        displayName: DaprInstance
+        kind: DaprInstance
+        name: daprinstances.operator.dapr.io
+        version: v1alpha1
+      - description: DaprCruiseControl is the Schema for the Dapr CruiseControl API.
+        displayName: DaprCruiseControl
+        kind: DaprCruiseControl
+        name: daprcruisecontrols.operator.dapr.io
+        version: v1alpha1
   description: Dapr Control Plane Operator
   displayName: Dapr Control Plane Operator
   icon:

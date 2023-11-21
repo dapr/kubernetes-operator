@@ -4,57 +4,42 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/pointer"
-	netv1 "k8s.io/api/networking/v1"
-
-	appsv1 "k8s.io/api/apps/v1"
-
-	corev1 "k8s.io/api/core/v1"
+	"github.com/onsi/gomega"
+	"github.com/rs/xid"
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/helm"
-	"github.com/onsi/gomega"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/dapr"
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/matchers"
+
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 func ValidateDaprApp(test support.Test, namespace string) {
 	test.T().Helper()
 
+	appName := "testing-app-" + xid.New().String()
+
 	//
 	// Install Dapr Test App
 	//
 
-	test.InstallChart(
-		"oci://docker.io/salaboy/testing-app",
-		helm.WithInstallName("testing-app"),
-		helm.WithInstallNamespace(namespace),
-		helm.WithInstallVersion("v0.1.0"),
-	)
+	dapr.DeployTestApp(test, appName, namespace)
 
-	test.Eventually(support.Deployment(test, "testing-app-deployment", namespace), support.TestTimeoutShort).Should(
+	test.Eventually(support.Deployment(test, appName, namespace), support.TestTimeoutShort).Should(
 		gomega.WithTransform(support.ConditionStatus(appsv1.DeploymentAvailable), gomega.Equal(corev1.ConditionTrue)),
+		"Failure checking for App Deployment",
 	)
-	test.Eventually(support.Service(test, "testing-app-service", namespace), support.TestTimeoutShort).Should(
+	test.Eventually(support.PodList(test, "app="+appName, namespace), support.TestTimeoutShort).Should(
+		gomega.WithTransform(matchers.AsJSON(), matchers.MatchJQ(".items[0].spec.containers | length == 2")),
+		"Failure checking for App Pods (sidecar injection)",
+	)
+
+	test.Eventually(support.Service(test, appName, namespace), support.TestTimeoutShort).Should(
 		gomega.Not(gomega.BeNil()),
+		"Failure checking for App Service",
 	)
-
-	//
-	// Expose app
-	//
-
-	ing := test.SetUpIngress(namespace, netv1.HTTPIngressPath{
-		PathType: pointer.Any(netv1.PathTypePrefix),
-		Path:     "/",
-		Backend: netv1.IngressBackend{
-			Service: &netv1.IngressServiceBackend{
-				Name: "testing-app-service",
-				Port: netv1.ServiceBackendPort{
-					Number: 80,
-				},
-			},
-		},
-	})
-
-	test.Eventually(support.Ingress(test, ing.Name, ing.Namespace), support.TestTimeoutLong).Should(
+	test.Eventually(support.Ingress(test, appName, namespace), support.TestTimeoutLong).Should(
 		gomega.WithTransform(
 			support.ExtractFirstLoadBalancerIngressHostname(),
 			gomega.Equal("localhost")),
@@ -64,31 +49,32 @@ func ValidateDaprApp(test support.Test, namespace string) {
 	// Test the app
 	//
 
-	test.T().Log("test app")
+	test.T().Logf("Testing the app with name %s", appName)
 
-	base := fmt.Sprintf("http://localhost:%d", 8081)
+	base := fmt.Sprintf("http://localhost:%d/%s", 8081, appName)
+	value := xid.New().String()
 
 	//nolint:bodyclose
-	test.Eventually(test.GET(base+"/read"), support.TestTimeoutLong).Should(
+	test.Eventually(dapr.GET(test, base+"/read"), support.TestTimeoutLong).Should(
 		gomega.And(
 			gomega.HaveHTTPStatus(http.StatusOK),
-			gomega.HaveHTTPBody(gomega.MatchJSON(`{ "Values": null }`)),
+			gomega.HaveHTTPBody(gomega.Not(matchers.MatchJQf(`.Values | any(. == "%s")`, value))),
 		),
-		"Failure to invoke initial read",
+		"Failure to read initial values",
 	)
 
 	//nolint:bodyclose
-	test.Eventually(test.POST(base+"/write?message=hello", "text/plain", nil), support.TestTimeoutLong).Should(
+	test.Eventually(dapr.POST(test, base+"/write?message="+value, "text/plain", nil), support.TestTimeoutLong).Should(
 		gomega.HaveHTTPStatus(http.StatusOK),
-		"Failure to invoke post",
+		"Failure to store value",
 	)
 
 	//nolint:bodyclose
-	test.Eventually(test.GET(base+"/read"), support.TestTimeoutLong).Should(
+	test.Eventually(dapr.GET(test, base+"/read"), support.TestTimeoutLong).Should(
 		gomega.And(
 			gomega.HaveHTTPStatus(http.StatusOK),
-			gomega.HaveHTTPBody(gomega.MatchJSON(`{ "Values":["hello"] }`)),
+			gomega.HaveHTTPBody(matchers.MatchJQf(`.Values | any(. == "%s")`, value)),
 		),
-		"Failure to invoke read",
+		"Failure to read final values",
 	)
 }

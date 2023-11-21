@@ -3,6 +3,8 @@
 # It should be run by config/default
 resources:
 - bases/operator.dapr.io_daprcontrolplanes.yaml
+- bases/operator.dapr.io_daprinstances.yaml
+- bases/operator.dapr.io_daprcruiscontrols.yaml
 - dapr
 #+kubebuilder:scaffold:crdkustomizeresource
 

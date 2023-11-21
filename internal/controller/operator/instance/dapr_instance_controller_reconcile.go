@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package operator
+package instance
 
 import (
 	"context"
@@ -22,6 +22,10 @@ import (
 	"fmt"
 	"os"
 	"sort"
+
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
+
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/conditions"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -46,7 +50,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		},
 		ClusterType: r.ClusterType,
 		Reconciler:  r,
-		Resource:    &daprvApi.DaprControlPlane{},
+		Resource:    &daprvApi.DaprInstance{},
 		Chart:       r.c,
 		Overrides: map[string]interface{}{
 			"dapr_operator":  map[string]interface{}{"runAsNonRoot": "true"},
@@ -64,24 +68,24 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		}
 	}
 
-	// by default, the controller expect the DaprControlPlane resource to be created
+	// by default, the controller expect the DaprInstance resource to be created
 	// in the same namespace where it runs, if not fallback to the default namespace
 	// dapr-system
-	ns := os.Getenv(DaprControlPlaneNamespaceEnv)
+	ns := os.Getenv(controller.NamespaceEnv)
 	if ns == "" {
-		ns = DaprControlPlaneNamespaceDefault
+		ns = controller.NamespaceDefault
 	}
 
-	if req.Name != DaprControlPlaneName || req.Namespace != ns {
-		rr.Resource.Status.Phase = DaprPhaseError
+	if req.Name != DaprInstanceResourceName || req.Namespace != ns {
+		rr.Resource.Status.Phase = conditions.TypeError
 
 		meta.SetStatusCondition(&rr.Resource.Status.Conditions, metav1.Condition{
-			Type:   DaprConditionReconciled,
+			Type:   conditions.TypeReconciled,
 			Status: metav1.ConditionFalse,
-			Reason: DaprConditionReasonUnsupportedConfiguration,
+			Reason: conditions.ReasonUnsupportedConfiguration,
 			Message: fmt.Sprintf(
-				"Unsupported resource, the operator handles a single resource named %s in namespace %s",
-				DaprControlPlaneName,
+				"Unsupported resource, the operator handles a single DaprInstance resource named %s in namespace %s",
+				DaprInstanceResourceName,
 				ns),
 		})
 
@@ -101,7 +105,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		// Add finalizer
 		//
 
-		if ctrlutil.AddFinalizer(rr.Resource, DaprFinalizerName) {
+		if ctrlutil.AddFinalizer(rr.Resource, DaprInstanceFinalizerName) {
 			if err := r.Update(ctx, rr.Resource); err != nil {
 				if k8serrors.IsConflict(err) {
 					return ctrl.Result{}, err
@@ -126,7 +130,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		// Handle finalizer
 		//
 
-		if ctrlutil.RemoveFinalizer(rr.Resource, DaprFinalizerName) {
+		if ctrlutil.RemoveFinalizer(rr.Resource, DaprInstanceFinalizerName) {
 			if err := r.Update(ctx, rr.Resource); err != nil {
 				if k8serrors.IsConflict(err) {
 					return ctrl.Result{}, err
@@ -144,10 +148,10 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	//
 
 	reconcileCondition := metav1.Condition{
-		Type:               DaprConditionReconciled,
+		Type:               conditions.TypeReconciled,
 		Status:             metav1.ConditionTrue,
-		Reason:             "Reconciled",
-		Message:            "Reconciled",
+		Reason:             conditions.ReasonReconciled,
+		Message:            conditions.ReasonReconciled,
 		ObservedGeneration: rr.Resource.Generation,
 	}
 
@@ -160,13 +164,13 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 
 	if len(errs) > 0 {
 		reconcileCondition.Status = metav1.ConditionFalse
-		reconcileCondition.Reason = "Failure"
-		reconcileCondition.Message = "Failure"
+		reconcileCondition.Reason = conditions.ReasonFailure
+		reconcileCondition.Message = conditions.ReasonFailure
 
-		rr.Resource.Status.Phase = DaprPhaseError
+		rr.Resource.Status.Phase = conditions.TypeError
 	} else {
 		rr.Resource.Status.ObservedGeneration = rr.Resource.Generation
-		rr.Resource.Status.Phase = DaprPhaseReady
+		rr.Resource.Status.Phase = conditions.TypeReady
 	}
 
 	meta.SetStatusCondition(&rr.Resource.Status.Conditions, reconcileCondition)
