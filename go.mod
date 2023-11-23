@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/itchyny/gojq v0.12.13
 	github.com/onsi/gomega v1.30.0
-	github.com/operator-framework/api v0.19.0
+	github.com/operator-framework/api v0.20.0
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
 	github.com/rs/xid v1.5.0
 	github.com/spf13/cobra v1.8.0
