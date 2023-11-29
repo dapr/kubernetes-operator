@@ -1,14 +1,18 @@
 package client
 
 import (
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"time"
+
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/openshift"
+	"golang.org/x/time/rate"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/discovery"
-	memory "k8s.io/client-go/discovery/cached"
+	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -25,15 +29,18 @@ var codecs = serializer.NewCodecFactory(scaleConverter.Scheme())
 type Client struct {
 	ctrl.Client
 	kubernetes.Interface
+	apiextv1.ApiextensionsV1Interface
 
 	Dapr      daprClient.Interface
 	Discovery discovery.DiscoveryInterface
 
-	dynamic *dynamic.DynamicClient
-	scheme  *runtime.Scheme
-	config  *rest.Config
-	rest    rest.Interface
-	mapper  *restmapper.DeferredDiscoveryRESTMapper
+	dynamic          *dynamic.DynamicClient
+	scheme           *runtime.Scheme
+	config           *rest.Config
+	rest             rest.Interface
+	mapper           meta.RESTMapper
+	discoveryCache   discovery.CachedDiscoveryInterface
+	discoveryLimiter *rate.Limiter
 }
 
 func NewClient(cfg *rest.Config, scheme *runtime.Scheme, cc ctrl.Client) (*Client, error) {
@@ -58,18 +65,26 @@ func NewClient(cfg *rest.Config, scheme *runtime.Scheme, cc ctrl.Client) (*Clien
 	if err != nil {
 		return nil, err
 	}
+	apiextCl, err := apiextv1.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
 
 	c := Client{
-		Client:    cc,
-		Interface: kubeCl,
-		Discovery: discoveryCl,
-		Dapr:      daprCl,
-		dynamic:   dynCl,
-		mapper:    restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(discoveryCl)),
-		scheme:    scheme,
-		config:    cfg,
-		rest:      restCl,
+		Client:                   cc,
+		Interface:                kubeCl,
+		ApiextensionsV1Interface: apiextCl,
+		Discovery:                discoveryCl,
+		Dapr:                     daprCl,
+		dynamic:                  dynCl,
+		scheme:                   scheme,
+		config:                   cfg,
+		rest:                     restCl,
 	}
+
+	c.discoveryLimiter = rate.NewLimiter(rate.Every(time.Second), 30)
+	c.discoveryCache = memory.NewMemCacheClient(discoveryCl)
+	c.mapper = restmapper.NewDeferredDiscoveryRESTMapper(c.discoveryCache)
 
 	return &c, nil
 }
@@ -92,10 +107,16 @@ func (c *Client) IsOpenShift() (bool, error) {
 		return false, nil
 	}
 
-	return IsOpenShift(c.Discovery)
+	return openshift.IsOpenShift(c.Discovery)
 }
 
 func (c *Client) Dynamic(namespace string, obj *unstructured.Unstructured) (dynamic.ResourceInterface, error) {
+	if c.discoveryLimiter.Allow() {
+		c.discoveryCache.Invalidate()
+	}
+
+	c.discoveryCache.Fresh()
+
 	mapping, err := c.mapper.RESTMapping(obj.GroupVersionKind().GroupKind(), obj.GroupVersionKind().Version)
 	if err != nil {
 		return nil, err
@@ -116,13 +137,8 @@ func (c *Client) Dynamic(namespace string, obj *unstructured.Unstructured) (dyna
 	return dr, nil
 }
 
-func IsOpenShift(d discovery.DiscoveryInterface) (bool, error) {
-	_, err := d.ServerResourcesForGroupVersion("route.openshift.io/v1")
-	if err != nil && k8serrors.IsNotFound(err) {
-		return false, nil
-	} else if err != nil {
-		return false, err
+func (c *Client) Invalidate() {
+	if c.discoveryCache != nil {
+		c.discoveryCache.Invalidate()
 	}
-
-	return true, nil
 }

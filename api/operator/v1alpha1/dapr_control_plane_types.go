@@ -36,11 +36,11 @@ type DaprControlPlaneStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
-// +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`,description="The phase"
 // +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[?(@.type=="Ready")].status`,description="Ready"
 // +kubebuilder:printcolumn:name="Reason",type=string,JSONPath=`.status.conditions[?(@.type=="Ready")].reason`,description="Reason"
-// +kubebuilder:printcolumn:name="Reconciled",type=string,JSONPath=`.status.conditions[?(@.type=="Reconciled")].status`,description="Ready"
-// +kubebuilder:printcolumn:name="Reconciled Reason",type=string,JSONPath=`.status.conditions[?(@.type=="Reconciled")].reason`,description="Reason"
+// +kubebuilder:printcolumn:name="Chart Name",type=string,JSONPath=`.status.chart.name`,description="Chart Name"
+// +kubebuilder:printcolumn:name="Chart Repo",type=string,JSONPath=`.status.chart.repo`,description="Chart Repo"
+// +kubebuilder:printcolumn:name="Chart Version",type=string,JSONPath=`.status.chart.version`,description="Chart Version"
 // +kubebuilder:resource:path=daprcontrolplanes,scope=Namespaced,shortName=dcp,categories=dapr
 // +kubebuilder:deprecatedversion:warning="v1alpha1.DaprControlPlane is deprecated, please, use v1alpha1.DaprInstance instead"
 

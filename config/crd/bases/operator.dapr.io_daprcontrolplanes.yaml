@@ -19,10 +19,6 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - description: The phase
-      jsonPath: .status.phase
-      name: Phase
-      type: string
     - description: Ready
       jsonPath: .status.conditions[?(@.type=="Ready")].status
       name: Ready
@@ -31,13 +27,17 @@ spec:
       jsonPath: .status.conditions[?(@.type=="Ready")].reason
       name: Reason
       type: string
-    - description: Ready
-      jsonPath: .status.conditions[?(@.type=="Reconciled")].status
-      name: Reconciled
+    - description: Chart Name
+      jsonPath: .status.chart.name
+      name: Chart Name
       type: string
-    - description: Reason
-      jsonPath: .status.conditions[?(@.type=="Reconciled")].reason
-      name: Reconciled Reason
+    - description: Chart Repo
+      jsonPath: .status.chart.repo
+      name: Chart Repo
+      type: string
+    - description: Chart Version
+      jsonPath: .status.chart.version
+      name: Chart Version
       type: string
     deprecated: true
     deprecationWarning: v1alpha1.DaprControlPlane is deprecated, please, use v1alpha1.DaprInstance

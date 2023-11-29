@@ -1,7 +1,12 @@
 package resources
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"io"
+
+	"gopkg.in/yaml.v3"
 
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -59,7 +64,7 @@ func Labels(target *unstructured.Unstructured, labels map[string]string) {
 	target.SetLabels(m)
 }
 
-func Ref(obj *unstructured.Unstructured) string {
+func Ref(obj client.Object) string {
 	name := obj.GetName()
 	if obj.GetNamespace() == "" {
 		name = obj.GetNamespace() + ":" + obj.GetName()
@@ -67,8 +72,8 @@ func Ref(obj *unstructured.Unstructured) string {
 
 	return fmt.Sprintf(
 		"%s:%s:%s",
-		obj.GroupVersionKind().Kind,
-		obj.GroupVersionKind().GroupVersion().String(),
+		obj.GetObjectKind().GroupVersionKind().Kind,
+		obj.GetObjectKind().GroupVersionKind().GroupVersion().String(),
 		name,
 	)
 }
@@ -111,4 +116,51 @@ func ToUnstructured(s *runtime.Scheme, obj runtime.Object) (*unstructured.Unstru
 
 		return &u, nil
 	}
+}
+
+func Decode(decoder runtime.Decoder, content []byte) ([]unstructured.Unstructured, error) {
+	results := make([]unstructured.Unstructured, 0)
+
+	r := bytes.NewReader(content)
+	yd := yaml.NewDecoder(r)
+
+	for {
+		var out map[string]interface{}
+
+		err := yd.Decode(&out)
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+
+			return nil, err
+		}
+
+		if len(out) == 0 {
+			continue
+		}
+		if out["Kind"] == "" {
+			continue
+		}
+
+		encoded, err := yaml.Marshal(out)
+		if err != nil {
+			return nil, err
+		}
+
+		var obj unstructured.Unstructured
+
+		if _, _, err = decoder.Decode(encoded, nil, &obj); err != nil {
+			if runtime.IsMissingKind(err) {
+				continue
+			}
+
+			return nil, err
+		}
+
+		results = append(results, obj)
+
+	}
+
+	return results, nil
 }
