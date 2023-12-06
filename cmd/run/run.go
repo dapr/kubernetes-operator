@@ -3,6 +3,8 @@ package run
 import (
 	"fmt"
 
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator/controlplane"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator/instance"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
@@ -19,11 +21,11 @@ import (
 
 	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
 )
 
 func init() {
 	utilruntime.Must(daprApi.AddToScheme(controller.Scheme))
+	utilruntime.Must(apiextensions.AddToScheme(controller.Scheme))
 }
 
 func NewRunCmd() *cobra.Command {
@@ -63,8 +65,6 @@ func NewRunCmd() *cobra.Command {
 				&corev1.ServiceAccount{}:                 {Label: selector},
 				&appsv1.StatefulSet{}:                    {Label: selector},
 				&appsv1.Deployment{}:                     {Label: selector},
-				// dapr
-				resources.UnstructuredFor("dapr.io", "v1alpha1", "Configuration"): {Label: selector},
 			}
 
 			return controller.Start(controllerOpts, func(manager manager.Manager, opts controller.Options) error {

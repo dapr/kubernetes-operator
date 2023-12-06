@@ -67,7 +67,8 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 	}
 
 	rec.actions = append(rec.actions, NewChartAction(rec.l))
-	rec.actions = append(rec.actions, NewApplyAction(rec.l))
+	rec.actions = append(rec.actions, NewApplyCRDsAction(rec.l))
+	rec.actions = append(rec.actions, NewApplyResourcesAction(rec.l))
 	rec.actions = append(rec.actions, NewConditionsAction(rec.l))
 
 	hc, err := loader.Load(o.ChartsDir)
@@ -88,6 +89,8 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 	return &rec, nil
 }
 
+// +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions,verbs=get;list;create;update;patch
+// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfigurations,verbs=*
 // +kubebuilder:rbac:groups=operator.dapr.io,resources=daprinstances,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=operator.dapr.io,resources=daprinstances/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=operator.dapr.io,resources=daprinstances/finalizers,verbs=update
@@ -95,7 +98,7 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles,verbs=*
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=*
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=*
-// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfigurations,verbs=*
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=*
 // +kubebuilder:rbac:groups="",resources=events,verbs=*
 // +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=*
 // +kubebuilder:rbac:groups="",resources=secrets,verbs=*

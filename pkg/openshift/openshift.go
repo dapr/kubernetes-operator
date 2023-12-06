@@ -6,7 +6,7 @@ import (
 )
 
 // IsOpenShift returns true if we are connected to a OpenShift cluster.
-func IsOpenShift(client *discovery.DiscoveryClient) (bool, error) {
+func IsOpenShift(client discovery.DiscoveryInterface) (bool, error) {
 	if client == nil {
 		return false, nil
 	}

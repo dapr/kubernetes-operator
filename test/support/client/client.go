@@ -19,10 +19,12 @@ import (
 
 	daprClient "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/clientset/versioned"
 	olmAC "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned"
+	apiextClient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 )
 
 type Client struct {
 	kubernetes.Interface
+	apiextClient.ApiextensionsV1Interface
 
 	dapr      daprClient.Interface
 	discovery discovery.DiscoveryInterface
@@ -52,6 +54,10 @@ func New(t *testing.T) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	extClient, err := apiextClient.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
 
 	dpClient, err := daprClient.NewForConfig(cfg)
 	if err != nil {
@@ -64,13 +70,14 @@ func New(t *testing.T) (*Client, error) {
 	}
 
 	c := Client{
-		Interface: kubeClient,
-		discovery: discoveryClient,
-		dynamic:   dynamicClient,
-		dapr:      dpClient,
-		olm:       oClient,
-		config:    cfg,
-		scheme:    scheme.Scheme,
+		Interface:                kubeClient,
+		ApiextensionsV1Interface: extClient,
+		discovery:                discoveryClient,
+		dynamic:                  dynamicClient,
+		dapr:                     dpClient,
+		olm:                      oClient,
+		config:                   cfg,
+		scheme:                   scheme.Scheme,
 	}
 
 	return &c, nil

@@ -1,18 +1,16 @@
 package helm
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"sort"
 	"strings"
+
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
 
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
 
-	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/engine"
@@ -91,9 +89,10 @@ func (e *Engine) Render(c *chart.Chart, dapr *daprApi.DaprInstance, overrides ma
 	sort.Strings(keys)
 
 	result := make([]unstructured.Unstructured, 0)
+
 	for _, k := range keys {
 		v := files[k]
-		ul, err := e.decode([]byte(v))
+		ul, err := resources.Decode(e.decoder, []byte(v))
 		if err != nil {
 			return nil, fmt.Errorf("cannot decode %s: %w", k, err)
 		}
@@ -105,53 +104,6 @@ func (e *Engine) Render(c *chart.Chart, dapr *daprApi.DaprInstance, overrides ma
 	}
 
 	return result, nil
-}
-
-func (e *Engine) decode(content []byte) ([]unstructured.Unstructured, error) {
-	results := make([]unstructured.Unstructured, 0)
-
-	r := bytes.NewReader(content)
-	decoder := yaml.NewDecoder(r)
-
-	for {
-		var out map[string]interface{}
-
-		err := decoder.Decode(&out)
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				break
-			}
-
-			return nil, err
-		}
-
-		if len(out) == 0 {
-			continue
-		}
-		if out["Kind"] == "" {
-			continue
-		}
-
-		encoded, err := yaml.Marshal(out)
-		if err != nil {
-			return nil, err
-		}
-
-		var obj unstructured.Unstructured
-
-		if _, _, err = e.decoder.Decode(encoded, nil, &obj); err != nil {
-			if runtime.IsMissingKind(err) {
-				continue
-			}
-
-			return nil, err
-		}
-
-		results = append(results, obj)
-
-	}
-
-	return results, nil
 }
 
 func (e *Engine) renderValues(

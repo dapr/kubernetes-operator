@@ -5,6 +5,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -131,5 +132,21 @@ func Resource(t Test, ri dynamic.ResourceInterface, un *unstructured.Unstructure
 		}
 
 		return raw, err
+	}
+}
+
+func CustomResourceDefinition(t Test, name string) func(g gomega.Gomega) (*apiextv1.CustomResourceDefinition, error) {
+	return func(g gomega.Gomega) (*apiextv1.CustomResourceDefinition, error) {
+		answer, err := t.Client().CustomResourceDefinitions().Get(
+			t.Ctx(),
+			name,
+			metav1.GetOptions{},
+		)
+
+		if k8serrors.IsNotFound(err) {
+			return nil, nil
+		}
+
+		return answer, err
 	}
 }

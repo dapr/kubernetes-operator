@@ -33,10 +33,10 @@ then
 end
 `
 
-func NewApplyAction(l logr.Logger) Action {
-	action := ApplyAction{
+func NewApplyResourcesAction(l logr.Logger) Action {
+	action := ApplyResourcesAction{
 		engine:        helm.NewEngine(),
-		l:             l.WithName("action").WithName("apply"),
+		l:             l.WithName("action").WithName("apply").WithName("resources"),
 		subscriptions: make(map[string]struct{}),
 		gc:            gc.New(),
 	}
@@ -48,18 +48,18 @@ func NewApplyAction(l logr.Logger) Action {
 	return &action
 }
 
-type ApplyAction struct {
+type ApplyResourcesAction struct {
 	engine        *helm.Engine
 	gc            *gc.GC
 	l             logr.Logger
 	subscriptions map[string]struct{}
 }
 
-func (a *ApplyAction) Configure(_ context.Context, _ *client.Client, b *builder.Builder) (*builder.Builder, error) {
+func (a *ApplyResourcesAction) Configure(_ context.Context, _ *client.Client, b *builder.Builder) (*builder.Builder, error) {
 	return b, nil
 }
 
-func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error {
+func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationRequest) error {
 	items, err := a.engine.Render(rc.Chart, rc.Resource, rc.Overrides)
 	if err != nil {
 		return fmt.Errorf("cannot render a chart: %w", err)
@@ -249,7 +249,7 @@ func (a *ApplyAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 	return nil
 }
 
-func (a *ApplyAction) Cleanup(ctx context.Context, rc *ReconciliationRequest) error {
+func (a *ApplyResourcesAction) Cleanup(ctx context.Context, rc *ReconciliationRequest) error {
 	items, err := a.engine.Render(rc.Chart, rc.Resource, rc.Overrides)
 	if err != nil {
 		return fmt.Errorf("cannot render a chart: %w", err)
@@ -280,18 +280,21 @@ func (a *ApplyAction) Cleanup(ctx context.Context, rc *ReconciliationRequest) er
 	return nil
 }
 
-func (a *ApplyAction) watchForUpdates(gvk schema.GroupVersionKind) bool {
+func (a *ApplyResourcesAction) watchForUpdates(gvk schema.GroupVersionKind) bool {
 	if gvk.Group == "" && gvk.Version == "v1" && gvk.Kind == "Secret" {
 		return false
 	}
 	if gvk.Group == "admissionregistration.k8s.io" && gvk.Version == "v1" && gvk.Kind == "MutatingWebhookConfiguration" {
 		return false
 	}
+	if gvk.Group == "apiextensions.k8s.io" && gvk.Version == "v1" && gvk.Kind == "CustomResourceDefinition" {
+		return false
+	}
 
 	return true
 }
 
-func (a *ApplyAction) watchStatus(gvk schema.GroupVersionKind) bool {
+func (a *ApplyResourcesAction) watchStatus(gvk schema.GroupVersionKind) bool {
 	if gvk.Group == "apps" && gvk.Version == "v1" && gvk.Kind == "Deployment" {
 		return true
 	}
@@ -299,11 +302,14 @@ func (a *ApplyAction) watchStatus(gvk schema.GroupVersionKind) bool {
 	return false
 }
 
-func (a *ApplyAction) installOnly(gvk schema.GroupVersionKind) bool {
+func (a *ApplyResourcesAction) installOnly(gvk schema.GroupVersionKind) bool {
 	if gvk.Group == "" && gvk.Version == "v1" && gvk.Kind == "Secret" {
 		return true
 	}
 	if gvk.Group == "admissionregistration.k8s.io" && gvk.Version == "v1" && gvk.Kind == "MutatingWebhookConfiguration" {
+		return true
+	}
+	if gvk.Group == "apiextensions.k8s.io" && gvk.Version == "v1" && gvk.Kind == "CustomResourceDefinition" {
 		return true
 	}
 
