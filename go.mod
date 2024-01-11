@@ -3,7 +3,7 @@ module github.com/dapr-sandbox/dapr-kubernetes-operator
 go 1.21
 
 require (
-	github.com/go-logr/logr v1.4.0
+	github.com/go-logr/logr v1.4.1
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/itchyny/gojq v0.12.14
 	github.com/onsi/gomega v1.30.0
