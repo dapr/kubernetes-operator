@@ -11,7 +11,7 @@ func formattedMessage(comparisonMessage string, failurePath []interface{}) strin
 	if len(failurePath) == 0 {
 		diffMessage = ""
 	} else {
-		diffMessage = fmt.Sprintf("\n\nfirst mismatched key: %s", formattedFailurePath(failurePath))
+		diffMessage = "\n\nfirst mismatched key: " + formattedFailurePath(failurePath)
 	}
 	return fmt.Sprintf("%s%s", comparisonMessage, diffMessage)
 }

@@ -14,7 +14,7 @@ CATALOG_VERSION ?= latest
 CATALOG_CONTAINER_IMAGE ?= $(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_ORG)/$(PROJECT_NAME)-catalog:$(CATALOG_VERSION)
 
 LINT_GOGC ?= 10
-LINT_DEADLINE ?= 10m
+LINT_TIMEOUT ?= 10m
 
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJECT_PATH := $(patsubst %/,%,$(dir $(MKFILE_PATH)))
@@ -26,13 +26,13 @@ HELM_CHART_VERSION ?= 1.13.1
 HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr-$(HELM_CHART_VERSION).tgz
 
 ## Tool Versions
-CODEGEN_VERSION ?= v0.28.3
-KUSTOMIZE_VERSION ?= v5.2.1
-CONTROLLER_TOOLS_VERSION ?= v0.13.0
-KIND_VERSION ?= v0.20.0
-LINTER_VERSION ?= v1.55.1
-OPERATOR_SDK_VERSION ?= v1.32.0
-OPM_VERSION ?= v1.30.1
+CODEGEN_VERSION ?= v0.28.8
+KUSTOMIZE_VERSION ?= v5.3.0
+CONTROLLER_TOOLS_VERSION ?= v0.14.0
+KIND_VERSION ?= v0.22.0
+LINTER_VERSION ?= v1.57.2
+OPERATOR_SDK_VERSION ?= v1.34.1
+OPM_VERSION ?= v1.38.0
 GOVULNCHECK_VERSION ?= latest
 
 ## Tool Binaries
@@ -164,8 +164,8 @@ check/lint: golangci-lint
 	@$(LINTER) run \
 		--config .golangci.yml \
 		--out-format tab \
-		--skip-dirs etc \
-		--deadline $(LINT_DEADLINE) \
+		--exclude-dirs etc \
+		--timeout $(LINT_TIMEOUT) \
 		--verbose
 
 .PHONY: check/lint/fix
@@ -173,8 +173,8 @@ check/lint/fix: golangci-lint
 	@$(LINTER) run \
 		--config .golangci.yml \
 		--out-format tab \
-		--skip-dirs etc \
-		--deadline $(LINT_DEADLINE) \
+		--exclude-dirs etc \
+		--timeout $(LINT_TIMEOUT) \
 		--fix
 
 .PHONY: check/vuln

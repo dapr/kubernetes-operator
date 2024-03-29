@@ -37,6 +37,7 @@ jobs:
         kubernetes-version:
           - "1.27.11"
           - "1.28.7"
+          - "1.29.2"
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -46,7 +47,7 @@ jobs:
           go-version-file: 'go.mod'
           check-latest: true
       - name: 'SetUp KinD'
-        uses: container-tools/kind-action@v2
+        uses: container-tools/kind-action@v2.0.4
         with:
           version: "v0.22.0"
           kubectl_version: v${{ matrix.kubernetes-version }}
@@ -57,15 +58,8 @@ jobs:
         run: |
           ./hack/scripts/deploy_ingress.sh
       - name: "SetUp Dapr Kubernetes Operator"
-        run: |          
-          make deploy/e2e
-          
-          kubectl wait \
-            --namespace=dapr-system \
-            --for=condition=ready \
-            pod \
-            --selector=control-plane=dapr-control-plane \
-            --timeout=90s
+        run: |
+          ./hack/scripts/deploy_e2e.sh
       - name: "Run Dapr Kubernetes Operator e2e"
         run: |
           make test/e2e/operator

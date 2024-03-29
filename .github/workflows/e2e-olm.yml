@@ -57,6 +57,7 @@ jobs:
         kubernetes-version:
           - "1.27.11"
           - "1.28.7"
+          - "1.29.2"
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -66,7 +67,7 @@ jobs:
           go-version-file: 'go.mod'
           check-latest: true
       - name: 'SetUp KinD'
-        uses: container-tools/kind-action@v2
+        uses: container-tools/kind-action@v2.0.4
         with:
           version: "v0.22.0"
           kubectl_version: v${{ matrix.kubernetes-version }}
