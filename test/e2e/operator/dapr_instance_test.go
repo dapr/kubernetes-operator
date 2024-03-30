@@ -46,7 +46,7 @@ func TestDaprInstanceDeployWithDefaults(t *testing.T) {
 		WithTransform(AsJSON(), And(
 			MatchJQ(`.status.chart.name == "dapr"`),
 			MatchJQ(`.status.chart.repo == "embedded"`),
-			MatchJQ(`.status.chart.version == "1.12.0"`),
+			MatchJQ(`.status.chart.version == "1.13.1"`),
 		)),
 	)
 }
@@ -58,7 +58,7 @@ func TestDaprInstanceDeployWithCustomChart(t *testing.T) {
 		test,
 		daprAc.DaprInstanceSpec().
 			WithChart(daprAc.ChartSpec().
-				WithVersion("1.11.3")).
+				WithVersion("1.13.0")).
 			WithValues(nil),
 	)
 
@@ -79,7 +79,7 @@ func TestDaprInstanceDeployWithCustomChart(t *testing.T) {
 		WithTransform(AsJSON(), And(
 			MatchJQ(`.status.chart.name == "dapr"`),
 			MatchJQ(`.status.chart.repo == "https://dapr.github.io/helm-charts"`),
-			MatchJQ(`.status.chart.version == "1.11.3"`),
+			MatchJQ(`.status.chart.version == "1.13.0"`),
 		)),
 	)
 }
@@ -116,7 +116,7 @@ func TestDaprInstanceDeployWithCustomSidecarImage(t *testing.T) {
 		WithTransform(AsJSON(), And(
 			MatchJQ(`.status.chart.name == "dapr"`),
 			MatchJQ(`.status.chart.repo == "embedded"`),
-			MatchJQ(`.status.chart.version == "1.12.0"`),
+			MatchJQ(`.status.chart.version == "1.13.1"`),
 		)),
 	)
 
@@ -162,7 +162,7 @@ func TestDaprInstanceDeployWithApp(t *testing.T) {
 		WithTransform(AsJSON(), And(
 			MatchJQ(`.status.chart.name == "dapr"`),
 			MatchJQ(`.status.chart.repo == "embedded"`),
-			MatchJQ(`.status.chart.version == "1.12.0"`),
+			MatchJQ(`.status.chart.version == "1.13.1"`),
 		)),
 	)
 

@@ -1,6 +1,7 @@
 package maputils
 
 import (
+	"errors"
 	"fmt"
 	"maps"
 )
@@ -25,7 +26,7 @@ func Merge(dst map[string]interface{}, source map[string]interface{}) map[string
 
 func Lookup(m map[string]interface{}, ks ...string) (interface{}, error) {
 	if len(ks) == 0 { // degenerate input
-		return nil, fmt.Errorf("lookup needs at least one key")
+		return nil, errors.New("lookup needs at least one key")
 	}
 	if rval, ok := m[ks[0]]; !ok {
 		return nil, fmt.Errorf("key not found; remaining keys: %v", ks)
