@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/go-logr/logr v1.4.1
 	github.com/hashicorp/go-cleanhttp v0.5.2
-	github.com/itchyny/gojq v0.12.14
+	github.com/itchyny/gojq v0.12.15
 	github.com/onsi/gomega v1.32.0
 	github.com/operator-framework/api v0.22.0
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
@@ -117,7 +117,7 @@ require (
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.45.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
-	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rubenv/sql-migrate v1.5.2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
@@ -144,7 +144,7 @@ require (
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/oauth2 v0.12.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/term v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
