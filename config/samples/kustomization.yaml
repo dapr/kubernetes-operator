@@ -2,4 +2,5 @@
 resources:
 - sample-daprcontrolplane.yaml
 - sample-daprinstance.yaml
+- sample-daprcruisecontrol.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples
