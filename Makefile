@@ -25,6 +25,8 @@ HELM_CHART ?= dapr
 HELM_CHART_VERSION ?= 1.13.1
 HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr-$(HELM_CHART_VERSION).tgz
 
+OPENSHIFT_VERSIONS ?= v4.13-v4.15
+
 ## Tool Versions
 CODEGEN_VERSION ?= v0.28.8
 KUSTOMIZE_VERSION ?= v5.3.0
@@ -238,7 +240,8 @@ bundle/generate: generate manifests kustomize operator-sdk yq ## Generate bundle
 	$(PROJECT_PATH)/hack/scripts/gen_bundle.sh \
 		$(PROJECT_PATH) \
 		$(PROJECT_NAME) \
-		$(BUNDLE_VERSION)
+		$(BUNDLE_VERSION) \
+		$(OPENSHIFT_VERSIONS)
 
 .PHONY: bundle/build
 bundle/build: ## Build bundle image.
