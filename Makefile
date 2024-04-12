@@ -1,6 +1,6 @@
 
 PROJECT_NAME ?= dapr-kubernetes-operator
-PROJECT_VERSION ?= 0.0.7
+PROJECT_VERSION ?= 0.0.8
 
 CONTAINER_REGISTRY ?= ghcr.io
 CONTAINER_REGISTRY_ORG ?= dapr-sandbox
