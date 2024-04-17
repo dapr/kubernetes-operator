@@ -28,8 +28,8 @@ HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr
 OPENSHIFT_VERSIONS ?= v4.12-v4.15
 
 ## Tool Versions
-CODEGEN_VERSION ?= v0.28.8
-KUSTOMIZE_VERSION ?= v5.3.0
+CODEGEN_VERSION ?= v0.29.4
+KUSTOMIZE_VERSION ?= v5.4.1
 CONTROLLER_TOOLS_VERSION ?= v0.14.0
 KIND_VERSION ?= v0.22.0
 LINTER_VERSION ?= v1.57.2
