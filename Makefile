@@ -25,7 +25,7 @@ HELM_CHART ?= dapr
 HELM_CHART_VERSION ?= 1.13.2
 HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr-$(HELM_CHART_VERSION).tgz
 
-OPENSHIFT_VERSIONS ?= v4.12-v4.15
+OPENSHIFT_VERSIONS ?= v4.12
 
 ## Tool Versions
 CODEGEN_VERSION ?= v0.28.8
