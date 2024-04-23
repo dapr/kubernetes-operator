@@ -36,6 +36,7 @@ LINTER_VERSION ?= v1.57.2
 OPERATOR_SDK_VERSION ?= v1.34.1
 OPM_VERSION ?= v1.38.0
 GOVULNCHECK_VERSION ?= latest
+KO_VERSION ?= latest
 
 ## Tool Binaries
 KUBECTL ?= kubectl
@@ -47,6 +48,7 @@ KIND ?= $(LOCALBIN)/kind
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
 OPM ?= $(LOCALBIN)/opm
 GOVULNCHECK ?= $(LOCALBIN)/govulncheck
+KO ?= $(LOCALBIN)/ko
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -128,6 +130,11 @@ test/e2e/operator: manifests generate fmt vet ## Run e2e operator tests.
 .PHONY: test/e2e/olm
 test/e2e/olm: ## Run e2e catalog tests.
 	go test -ldflags="$(GOLDFLAGS)" -p 1 -v ./test/e2e/olm/...
+
+
+.PHONY: test/e2e/app
+test/e2e/app: ko ## Deploy test app.
+	KO_DOCKER_REPO=kind.local $(LOCALBIN)/ko build -B ./test/e2e/support/dapr-test-app
 
 ##@ Build
 
@@ -316,20 +323,23 @@ $(YQ): $(LOCALBIN)
 	@test -s $(LOCALBIN)/yq || \
 	GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@latest
 
-
 .PHONY: kind
 kind: $(KIND)
 $(KIND): $(LOCALBIN)
 	@test -s $(LOCALBIN)/kind || \
 	GOBIN=$(LOCALBIN) go install sigs.k8s.io/kind@$(KIND_VERSION)
 
+.PHONY: ko
+ko: $(KO)
+$(KO): $(LOCALBIN)
+	@test -s $(LOCALBIN)/ko || \
+	GOBIN=$(LOCALBIN) go install github.com/google/ko@$(KO_VERSION)
 
 .PHONY: govulncheck
 govulncheck: $(GOVULNCHECK)
 $(GOVULNCHECK): $(LOCALBIN)
 	@test -s $(GOVULNCHECK) || \
 	GOBIN=$(LOCALBIN) go install golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION)
-
 
 .PHONY: codegen-tools-install
 codegen-tools-install: $(LOCALBIN)
@@ -341,7 +351,6 @@ operator-sdk: $(OPERATOR_SDK)
 $(OPERATOR_SDK): $(LOCALBIN)
 	@echo "Installing operator-sdk"
 	$(PROJECT_PATH)/hack/scripts/install_operator_sdk.sh $(PROJECT_PATH) $(OPERATOR_SDK_VERSION)
-
 
 .PHONY: opm
 opm: $(OPM)

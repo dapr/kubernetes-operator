@@ -59,7 +59,7 @@ func ValidateDaprApp(test support.Test, namespace string) {
 	test.Eventually(dapr.GET(test, base+"/read"), support.TestTimeoutLong).Should(
 		gomega.And(
 			gomega.HaveHTTPStatus(http.StatusOK),
-			gomega.HaveHTTPBody(gomega.Not(jq.Match(`.Values | any(. == "%s")`, value))),
+			gomega.HaveHTTPBody(gomega.Not(jq.Match(`.values | any(. == "%s")`, value))),
 		),
 		"Failure to read initial values",
 	)
@@ -74,7 +74,7 @@ func ValidateDaprApp(test support.Test, namespace string) {
 	test.Eventually(dapr.GET(test, base+"/read"), support.TestTimeoutLong).Should(
 		gomega.And(
 			gomega.HaveHTTPStatus(http.StatusOK),
-			gomega.HaveHTTPBody(jq.Match(`.Values | any(. == "%s")`, value)),
+			gomega.HaveHTTPBody(jq.Match(`.values | any(. == "%s")`, value)),
 		),
 		"Failure to read final values",
 	)

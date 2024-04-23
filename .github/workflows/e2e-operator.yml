@@ -60,6 +60,9 @@ jobs:
       - name: "SetUp Dapr Kubernetes Operator"
         run: |
           ./hack/scripts/deploy_e2e.sh
+      - name: "Publish Dapr test Application"
+        run: |
+          make test/e2e/app
       - name: "Run Dapr Kubernetes Operator e2e"
         run: |
           make test/e2e/operator

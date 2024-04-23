@@ -109,8 +109,8 @@ func DeployTestApp(t support.Test, name string, namespace string) {
 					}).
 					WithSpec(corev1ac.PodSpec().
 						WithContainers(corev1ac.Container().
-							WithImage("ghcr.io/lburgazzoli/dapr-testing-app:latest").
-							WithImagePullPolicy(corev1.PullAlways).
+							WithImage("kind.local/dapr-test-app:latest").
+							WithImagePullPolicy(corev1.PullNever).
 							WithName("app").
 							WithPorts(resources.WithPort("http", 8080)).
 							WithReadinessProbe(resources.WithHTTPProbe("/health/readiness", 8080)).
