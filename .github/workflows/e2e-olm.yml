@@ -80,6 +80,9 @@ jobs:
       - name: "SetUp Dapr Kubernetes Operator OLM"
         run: |
           ./hack/scripts/deploy_olm.sh
+      - name: "Publish Dapr test Application"
+        run: |
+          make test/e2e/app
       - name: "Run Dapr Kubernetes Operator OLM e2e"
         run: |
           make test/e2e/olm
