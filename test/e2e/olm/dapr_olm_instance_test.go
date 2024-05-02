@@ -8,7 +8,7 @@ import (
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/dapr"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/olm"
 
-	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/applyconfiguration/operator/v1alpha1"
+	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
 	daprTC "github.com/dapr-sandbox/dapr-kubernetes-operator/test/e2e/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

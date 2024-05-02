@@ -3,7 +3,7 @@ package dapr
 import (
 	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator/controlplane"
-	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/applyconfiguration/operator/v1alpha1"
+	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support"
 	"github.com/onsi/gomega"
