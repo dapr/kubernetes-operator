@@ -161,9 +161,13 @@ func (r *Reconciler) init(ctx context.Context) error {
 
 func (r *Reconciler) Watch(obj ctrlCli.Object, eh handler.EventHandler, predicates ...predicate.Predicate) error {
 	return r.controller.Watch(
-		source.Kind(r.manager.GetCache(), obj),
-		eh,
-		predicates...)
+		source.Kind(
+			r.manager.GetCache(),
+			obj,
+			eh,
+			predicates...,
+		),
+	)
 }
 
 func (r *Reconciler) EnqueueRequestForOwner(owner ctrlCli.Object, opts ...handler.OwnerOption) handler.EventHandler {

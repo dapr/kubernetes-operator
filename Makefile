@@ -28,13 +28,13 @@ HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr
 OPENSHIFT_VERSIONS ?= v4.12
 
 ## Tool Versions
-CODEGEN_VERSION ?= v0.29.4
+CODEGEN_VERSION ?= v0.30.0
 KUSTOMIZE_VERSION ?= v5.4.1
-CONTROLLER_TOOLS_VERSION ?= v0.14.0
+CONTROLLER_TOOLS_VERSION ?= v0.15.0
 KIND_VERSION ?= v0.22.0
 LINTER_VERSION ?= v1.57.2
 OPERATOR_SDK_VERSION ?= v1.34.1
-OPM_VERSION ?= v1.38.0
+OPM_VERSION ?= v1.40.0
 GOVULNCHECK_VERSION ?= latest
 KO_VERSION ?= latest
 
@@ -49,6 +49,8 @@ OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
 OPM ?= $(LOCALBIN)/opm
 GOVULNCHECK ?= $(LOCALBIN)/govulncheck
 KO ?= $(LOCALBIN)/ko
+CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
+
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -282,15 +284,6 @@ olm/install: operator-sdk ## Install olm.
 ## Location to install dependencies to
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
-
-## Tool Binaries
-KUBECTL ?= kubectl
-KUSTOMIZE ?= $(LOCALBIN)/kustomize
-CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
-
-## Tool Versions
-KUSTOMIZE_VERSION ?= v5.0.1
-CONTROLLER_TOOLS_VERSION ?= v0.12.0
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.

@@ -14,7 +14,7 @@ import (
 	. "github.com/dapr-sandbox/dapr-kubernetes-operator/test/support"
 	. "github.com/onsi/gomega"
 
-	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/applyconfiguration/operator/v1alpha1"
+	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
 	daprTC "github.com/dapr-sandbox/dapr-kubernetes-operator/test/e2e/common"
 )
 

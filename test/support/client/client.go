@@ -17,7 +17,7 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	daprClient "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/operator/clientset/versioned"
+	daprClient "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/clientset/versioned"
 	olmAC "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned"
 	apiextClient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 )
