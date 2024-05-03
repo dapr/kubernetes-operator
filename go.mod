@@ -10,7 +10,7 @@ require (
 	github.com/itchyny/gojq v0.12.15
 	github.com/lburgazzoli/gomega-matchers v0.0.0-20240423093716-45891b1edc66
 	github.com/onsi/gomega v1.33.1
-	github.com/operator-framework/api v0.23.0
+	github.com/operator-framework/api v0.24.0
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
 	github.com/rs/xid v1.5.0
 	github.com/spf13/cobra v1.8.0
