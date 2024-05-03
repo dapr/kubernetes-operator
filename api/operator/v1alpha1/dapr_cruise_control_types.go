@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/conditions"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -50,6 +51,10 @@ type DaprCruiseControl struct {
 
 	Spec   DaprCruiseControlSpec   `json:"spec,omitempty"`
 	Status DaprCruiseControlStatus `json:"status,omitempty"`
+}
+
+func (in *DaprCruiseControl) GetConditions() conditions.Conditions {
+	return in.Status.Conditions
 }
 
 // +kubebuilder:object:root=true

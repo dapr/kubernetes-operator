@@ -1,7 +1,6 @@
 package conditions
 
 import (
-	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -71,30 +70,6 @@ func ConditionStatus[T GenericConditionType](object any, conditionType T) corev1
 				}
 			}
 		}
-	case *daprApi.DaprControlPlane:
-		if o != nil {
-			for i := range o.Status.Conditions {
-				if o.Status.Conditions[i].Type == string(conditionType) {
-					return corev1.ConditionStatus(o.Status.Conditions[i].Status)
-				}
-			}
-		}
-	case *daprApi.DaprInstance:
-		if o != nil {
-			for i := range o.Status.Conditions {
-				if o.Status.Conditions[i].Type == string(conditionType) {
-					return corev1.ConditionStatus(o.Status.Conditions[i].Status)
-				}
-			}
-		}
-	case *daprApi.DaprCruiseControl:
-		if o != nil {
-			for i := range o.Status.Conditions {
-				if o.Status.Conditions[i].Type == string(conditionType) {
-					return corev1.ConditionStatus(o.Status.Conditions[i].Status)
-				}
-			}
-		}
 	}
 
 	return corev1.ConditionUnknown
@@ -124,30 +99,6 @@ func ConditionReason[T GenericConditionType](object any, conditionType T) string
 		if o != nil {
 			for i := range o.Status.Conditions {
 				if string(o.Status.Conditions[i].Type) == string(conditionType) {
-					return o.Status.Conditions[i].Reason
-				}
-			}
-		}
-	case *daprApi.DaprControlPlane:
-		if o != nil {
-			for i := range o.Status.Conditions {
-				if o.Status.Conditions[i].Type == string(conditionType) {
-					return o.Status.Conditions[i].Reason
-				}
-			}
-		}
-	case *daprApi.DaprInstance:
-		if o != nil {
-			for i := range o.Status.Conditions {
-				if o.Status.Conditions[i].Type == string(conditionType) {
-					return o.Status.Conditions[i].Reason
-				}
-			}
-		}
-	case *daprApi.DaprCruiseControl:
-		if o != nil {
-			for i := range o.Status.Conditions {
-				if o.Status.Conditions[i].Type == string(conditionType) {
 					return o.Status.Conditions[i].Reason
 				}
 			}
