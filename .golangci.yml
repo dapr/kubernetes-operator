@@ -38,8 +38,13 @@ linters-settings:
 linters:
   enable-all: true
   disable:
+    # abandoned
+    - deadcode
+    - golint
+    - ifshort
+    - varcheck
+    # others
     - cyclop
-    - dupl
     - exhaustive
     - exhaustivestruct
     - exhaustruct
