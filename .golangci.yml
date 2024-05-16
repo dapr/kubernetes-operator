@@ -52,6 +52,7 @@ linters:
     - scopelint
     - nosnakecase
     - maligned
+    - exhaustivestruct
     # keep
     - varnamelen
     - godox # there are a bunch of TODOs that must be solved
@@ -62,7 +63,6 @@ linters:
     # validate
     - cyclop
     - exhaustive
-    - exhaustivestruct
     - funlen
     - gochecknoglobals
     - gochecknoinits
