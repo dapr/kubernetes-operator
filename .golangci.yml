@@ -62,7 +62,6 @@ linters:
     - paralleltest
     # validate
     - cyclop
-    - exhaustive
     - funlen
     - gochecknoglobals
     - gochecknoinits
