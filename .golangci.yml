@@ -76,7 +76,6 @@ linters:
     - scopelint
     - structcheck
     - sqlclosecheck
-    - tagliatelle
     - testpackage
     - wrapcheck
     - depguard
