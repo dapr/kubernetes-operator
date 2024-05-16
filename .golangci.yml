@@ -46,7 +46,9 @@ linters:
     - golint
     - ifshort
     - varcheck
-    # others
+    # keep
+    - varnamelen
+    # validate
     - cyclop
     - exhaustive
     - exhaustivestruct
@@ -77,6 +79,5 @@ linters:
     - tagliatelle
     - tenv
     - testpackage
-    - varnamelen
     - wrapcheck
     - depguard
