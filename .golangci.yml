@@ -55,6 +55,7 @@ linters:
     - varnamelen
     - godox # there are a bunch of TODOs that must be solved
     - gci
+    - gofumpt
     # validate
     - cyclop
     - exhaustive
@@ -66,7 +67,6 @@ linters:
     - gochecknoinits
     - gocognit
     - gocyclo
-    - gofumpt
     - interfacer
     - ireturn
     - maligned
