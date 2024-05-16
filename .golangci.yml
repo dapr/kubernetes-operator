@@ -79,6 +79,5 @@ linters:
     - testpackage
     - varnamelen
     - wastedassign
-    - whitespace
     - wrapcheck
     - depguard
