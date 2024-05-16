@@ -55,7 +55,6 @@ linters:
     - goerr113
     - gofumpt
     - golint
-    - gomoddirectives
     - interfacer
     - ireturn
     - lll
