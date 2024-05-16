@@ -59,13 +59,13 @@ type Test interface {
 	Ctx() context.Context
 
 	ID() string
-	Cleanup(func() []runtime.Object)
+	Cleanup(f func() []runtime.Object)
 
 	Client() *supportclient.Client
 	Helm() *helmsupport.Helm
 	HTTPClient() *http.Client
 
-	NewTestNamespace(...Option[*corev1.Namespace]) *corev1.Namespace
+	NewTestNamespace(opts ...Option[*corev1.Namespace]) *corev1.Namespace
 }
 
 type Option[T any] interface {

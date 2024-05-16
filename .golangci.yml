@@ -77,5 +77,4 @@ linters:
     - varcheck
     - deadcode
     - ifshort
-    - inamedparam
     - depguard
