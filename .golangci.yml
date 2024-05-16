@@ -61,6 +61,7 @@ linters:
     - gofumpt
     - exhaustruct
     - paralleltest
+    - ireturn
     # validate
     - cyclop
     - funlen
@@ -68,7 +69,6 @@ linters:
     - gochecknoinits
     - gocognit
     - gocyclo
-    - ireturn
     - testpackage
     - wrapcheck
     - depguard
