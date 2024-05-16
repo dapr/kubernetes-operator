@@ -56,11 +56,11 @@ linters:
     - godox # there are a bunch of TODOs that must be solved
     - gci
     - gofumpt
+    - exhaustruct
     # validate
     - cyclop
     - exhaustive
     - exhaustivestruct
-    - exhaustruct
     - funlen
     - gochecknoglobals
     - gochecknoinits
