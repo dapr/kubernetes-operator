@@ -76,5 +76,4 @@ linters:
     - wsl
     - varcheck
     - deadcode
-    - ifshort
     - depguard
