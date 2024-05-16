@@ -63,9 +63,9 @@ linters:
     - paralleltest
     - ireturn
     - funlen
+    - gochecknoglobals
     # validate
     - cyclop
-    - gochecknoglobals
     - gochecknoinits
     - gocognit
     - testpackage
