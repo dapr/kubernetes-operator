@@ -75,7 +75,6 @@ linters:
     - rowserrcheck
     - scopelint
     - structcheck
-    - sqlclosecheck
     - testpackage
     - wrapcheck
     - depguard
