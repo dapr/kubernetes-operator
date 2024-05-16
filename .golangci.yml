@@ -53,6 +53,7 @@ linters:
     - nosnakecase
     # keep
     - varnamelen
+    - godox # there are a bunch of TODOs that must be solved
     # validate
     - cyclop
     - exhaustive
@@ -65,7 +66,6 @@ linters:
     - gochecknoinits
     - gocognit
     - gocyclo
-    - godox
     - goerr113
     - gofumpt
     - interfacer
