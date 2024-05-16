@@ -28,6 +28,18 @@ import (
 	olmV1Alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
 )
 
+const (
+	TestTimeoutMini   = 5 * time.Second
+	TestTimeoutShort  = 1 * time.Minute
+	TestTimeoutMedium = 2 * time.Minute
+	TestTimeoutLong   = 5 * time.Minute
+
+	DefaultEventuallyPollingInterval   = 500 * time.Millisecond
+	DefaultEventuallyTimeout           = TestTimeoutLong
+	DefaultConsistentlyDuration        = 500 * time.Millisecond
+	DefaultConsistentlyPollingInterval = 500 * time.Millisecond
+)
+
 func init() {
 	if err := daprApi.AddToScheme(scheme.Scheme); err != nil {
 		panic(err)
@@ -81,10 +93,10 @@ func With(t *testing.T) Test {
 		cleanup: make([]func() []runtime.Object, 0),
 	}
 
-	answer.SetDefaultEventuallyPollingInterval(500 * time.Millisecond)
-	answer.SetDefaultEventuallyTimeout(TestTimeoutLong)
-	answer.SetDefaultConsistentlyDuration(500 * time.Millisecond)
-	answer.SetDefaultConsistentlyDuration(TestTimeoutLong)
+	answer.SetDefaultEventuallyPollingInterval(DefaultEventuallyPollingInterval)
+	answer.SetDefaultEventuallyTimeout(DefaultEventuallyTimeout)
+	answer.SetDefaultConsistentlyDuration(DefaultConsistentlyDuration)
+	answer.SetDefaultConsistentlyPollingInterval(DefaultConsistentlyPollingInterval)
 
 	t.Cleanup(func() {
 		t.Log("Run Test cleanup")

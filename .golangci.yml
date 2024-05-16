@@ -24,6 +24,17 @@ linters-settings:
     rules:
       - name: dot-imports
         disabled: true
+  mnd:
+    checks:
+      - argument
+      - case
+      - operation
+      - return
+      - assign
+    ignored-functions:
+      - '^len\.'
+      - '^strings\.SplitN$'
+      - '^make$'
 linters:
   enable-all: true
   disable:
@@ -44,7 +55,6 @@ linters:
     - goerr113
     - gofumpt
     - golint
-    - gomnd
     - gomoddirectives
     - interfacer
     - ireturn

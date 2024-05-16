@@ -23,6 +23,10 @@ import (
 	daprClient "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/clientset/versioned"
 )
 
+const (
+	DiscoveryLimiterBurst = 30
+)
+
 var scaleConverter = scale.NewScaleConverter()
 var codecs = serializer.NewCodecFactory(scaleConverter.Scheme())
 
@@ -82,7 +86,7 @@ func NewClient(cfg *rest.Config, scheme *runtime.Scheme, cc ctrl.Client) (*Clien
 		rest:                     restCl,
 	}
 
-	c.discoveryLimiter = rate.NewLimiter(rate.Every(time.Second), 30)
+	c.discoveryLimiter = rate.NewLimiter(rate.Every(time.Second), DiscoveryLimiterBurst)
 	c.discoveryCache = memory.NewMemCacheClient(discoveryCl)
 	c.mapper = restmapper.NewDeferredDiscoveryRESTMapper(c.discoveryCache)
 

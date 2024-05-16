@@ -17,6 +17,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	CatalogRegistryPollInterval = 10 * time.Minute
+)
+
 func DeployOperator(test support.Test, ns *corev1.Namespace, image string) {
 	//
 	// Install OperatorGroups
@@ -91,7 +95,7 @@ func DeployOperator(test support.Test, ns *corev1.Namespace, image string) {
 				UpdateStrategy: &olmV1Alpha1.UpdateStrategy{
 					RegistryPoll: &olmV1Alpha1.RegistryPoll{
 						Interval: &metav1.Duration{
-							Duration: 10 * time.Minute,
+							Duration: CatalogRegistryPollInterval,
 						},
 					},
 				},

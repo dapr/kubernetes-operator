@@ -2,6 +2,7 @@ package dapr
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/pointer"
@@ -23,6 +24,11 @@ import (
 	appsv1ac "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1ac "k8s.io/client-go/applyconfigurations/core/v1"
 	metav1ac "k8s.io/client-go/applyconfigurations/meta/v1"
+)
+
+const (
+	TestAppPort        = 8080
+	TestAppServicePort = 80
 )
 
 func DeployTestApp(t support.Test, name string, namespace string) {
@@ -103,7 +109,7 @@ func DeployTestApp(t support.Test, name string, namespace string) {
 					}).
 					WithAnnotations(map[string]string{
 						"dapr.io/app-id":             name,
-						"dapr.io/app-port":           "8080",
+						"dapr.io/app-port":           strconv.Itoa(TestAppPort),
 						"dapr.io/enabled":            "true",
 						"dapr.io/enable-api-logging": "true",
 					}).
@@ -112,9 +118,9 @@ func DeployTestApp(t support.Test, name string, namespace string) {
 							WithImage("kind.local/dapr-test-app:latest").
 							WithImagePullPolicy(corev1.PullNever).
 							WithName("app").
-							WithPorts(resources.WithPort("http", 8080)).
-							WithReadinessProbe(resources.WithHTTPProbe("/health/readiness", 8080)).
-							WithLivenessProbe(resources.WithHTTPProbe("/health/liveness", 8080)).
+							WithPorts(resources.WithPort("http", TestAppPort)).
+							WithReadinessProbe(resources.WithHTTPProbe("/health/readiness", TestAppPort)).
+							WithLivenessProbe(resources.WithHTTPProbe("/health/liveness", TestAppPort)).
 							WithEnv(resources.WithEnv("STATESTORE_NAME", name)),
 						),
 					),
@@ -148,8 +154,8 @@ func DeployTestApp(t support.Test, name string, namespace string) {
 				WithPorts(corev1ac.ServicePort().
 					WithName("http").
 					WithProtocol(corev1.ProtocolTCP).
-					WithPort(80).
-					WithTargetPort(intstr.FromInt32(8080))).
+					WithPort(TestAppServicePort).
+					WithTargetPort(intstr.FromInt32(TestAppPort))).
 				WithSelector(map[string]string{
 					"app": name,
 				}).
@@ -198,7 +204,7 @@ func DeployTestApp(t support.Test, name string, namespace string) {
 								WithService(netv1ac.IngressServiceBackend().
 									WithName(name).
 									WithPort(netv1ac.ServiceBackendPort().
-										WithNumber(80),
+										WithNumber(TestAppServicePort),
 									),
 								),
 							),
