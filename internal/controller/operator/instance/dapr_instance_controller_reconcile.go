@@ -99,6 +99,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		return ctrl.Result{}, err
 	}
 
+	//nolint:nestif
 	if rr.Resource.ObjectMeta.DeletionTimestamp.IsZero() {
 
 		//
