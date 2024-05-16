@@ -74,5 +74,4 @@ linters:
     - whitespace
     - wrapcheck
     - wsl
-    - varcheck
     - depguard
