@@ -53,6 +53,7 @@ linters:
     - nosnakecase
     - maligned
     - exhaustivestruct
+    - interfacer
     # keep
     - varnamelen
     - godox # there are a bunch of TODOs that must be solved
@@ -67,7 +68,6 @@ linters:
     - gochecknoinits
     - gocognit
     - gocyclo
-    - interfacer
     - ireturn
     - testpackage
     - wrapcheck
