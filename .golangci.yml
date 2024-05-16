@@ -50,6 +50,7 @@ linters:
     - varcheck
     - structcheck
     - scopelint
+    - nosnakecase
     # keep
     - varnamelen
     # validate
@@ -73,7 +74,6 @@ linters:
     - maligned
     - nakedret
     - nilnil
-    - nosnakecase
     - paralleltest
     - testpackage
     - wrapcheck
