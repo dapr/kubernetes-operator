@@ -46,6 +46,7 @@ linters:
     - golint
     - ifshort
     - varcheck
+    - structcheck
     # keep
     - varnamelen
     # validate
@@ -74,7 +75,6 @@ linters:
     - paralleltest
     - rowserrcheck
     - scopelint
-    - structcheck
     - testpackage
     - wrapcheck
     - depguard
