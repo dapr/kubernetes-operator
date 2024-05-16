@@ -70,7 +70,6 @@ linters:
     - interfacer
     - ireturn
     - maligned
-    - nakedret
     - nilnil
     - paralleltest
     - testpackage
