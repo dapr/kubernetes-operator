@@ -38,6 +38,8 @@ linters-settings:
   wsl:
     allow-cuddle-declarations: true
     allow-separated-leading-comment: true
+  nlreturn:
+    block-size: 2
 linters:
   enable-all: true
   disable:
@@ -71,7 +73,6 @@ linters:
     - maligned
     - nakedret
     - nilnil
-    - nlreturn
     - nosnakecase
     - paralleltest
     - testpackage

@@ -67,6 +67,7 @@ func (gc *GC) deleteEachOf(ctx context.Context, c *client.Client, selector label
 		if err := c.List(ctx, &items, options...); err != nil {
 			if k8serrors.IsForbidden(err) {
 				gc.l.Info("cannot gc, forbidden", "gvk", GVK.String())
+
 				continue
 			}
 
