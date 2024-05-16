@@ -54,7 +54,6 @@ linters:
     - godox
     - goerr113
     - gofumpt
-    - golint
     - interfacer
     - ireturn
     - maligned
