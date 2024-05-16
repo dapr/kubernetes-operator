@@ -18,6 +18,7 @@ func Merge(dst map[string]interface{}, source map[string]interface{}) map[string
 				}
 			}
 		}
+
 		out[k] = v
 	}
 
@@ -28,6 +29,7 @@ func Lookup(m map[string]interface{}, ks ...string) (interface{}, error) {
 	if len(ks) == 0 { // degenerate input
 		return nil, errors.New("lookup needs at least one key")
 	}
+
 	if rval, ok := m[ks[0]]; !ok {
 		return nil, fmt.Errorf("key not found; remaining keys: %v", ks)
 	} else if len(ks) == 1 { // we've reached the final key

@@ -69,5 +69,4 @@ func TestDaprControlPlaneDeployWrongCR(t *testing.T) {
 		WithTransform(ConditionStatus(conditions.TypeReconciled), Equal(corev1.ConditionFalse)))
 	test.Eventually(dapr.ControlPlane(test, instance), TestTimeoutLong).Should(
 		WithTransform(ConditionReason(conditions.TypeReconciled), Equal(conditions.ReasonUnsupportedConfiguration)))
-
 }

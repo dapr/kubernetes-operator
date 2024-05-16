@@ -20,7 +20,6 @@ func GET(t support.Test, url string) func(g gomega.Gomega) (*http.Response, erro
 }
 
 func POST(t support.Test, url string, contentType string, content []byte) func(g gomega.Gomega) (*http.Response, error) {
-
 	return func(g gomega.Gomega) (*http.Response, error) {
 		data := content
 		if data == nil {

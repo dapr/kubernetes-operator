@@ -44,9 +44,11 @@ func init() {
 	if err := daprApi.AddToScheme(scheme.Scheme); err != nil {
 		panic(err)
 	}
+
 	if err := olmV1.AddToScheme(scheme.Scheme); err != nil {
 		panic(err)
 	}
+
 	if err := olmV1Alpha1.AddToScheme(scheme.Scheme); err != nil {
 		panic(err)
 	}
@@ -82,8 +84,10 @@ func With(t *testing.T) Test {
 	if deadline, ok := t.Deadline(); ok {
 		withDeadline, cancel := context.WithDeadline(ctx, deadline)
 		t.Cleanup(cancel)
+
 		ctx = withDeadline
 	}
+
 	answer := &T{
 		WithT:   gomega.NewWithT(t),
 		id:      xid.New().String(),
@@ -158,8 +162,10 @@ func (t *T) Client() *supportclient.Client {
 		if err != nil {
 			t.T().Fatalf("Error creating client: %v", err)
 		}
+
 		t.client = c
 	})
+
 	return t.client
 }
 

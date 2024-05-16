@@ -69,6 +69,7 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		return fmt.Errorf("unable to set up health check: %w", err)
 	}
+
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		return fmt.Errorf("unable to set up readiness check: %w", err)
 	}

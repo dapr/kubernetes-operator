@@ -72,11 +72,12 @@ func (a *ApplyCRDsAction) Run(ctx context.Context, rc *ReconciliationRequest) er
 			})
 
 			apply := rc.Resource.Generation != rc.Resource.Status.ObservedGeneration
-			_, err = dc.Get(ctx, obj.GetName(), metav1.GetOptions{})
 
+			_, err = dc.Get(ctx, obj.GetName(), metav1.GetOptions{})
 			if err != nil && !k8serrors.IsNotFound(err) {
 				return fmt.Errorf("cannot determine if CRD %s exists: %w", resources.Ref(&obj), err)
 			}
+
 			if err != nil && k8serrors.IsNotFound(err) {
 				apply = true
 			}
@@ -105,7 +106,6 @@ func (a *ApplyCRDsAction) Run(ctx context.Context, rc *ReconciliationRequest) er
 				"apply", "true",
 				"gen", rc.Resource.Generation,
 				"ref", resources.Ref(&obj))
-
 		}
 	}
 

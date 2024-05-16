@@ -35,6 +35,9 @@ linters-settings:
       - '^len\.'
       - '^strings\.SplitN$'
       - '^make$'
+  wsl:
+    allow-cuddle-declarations: true
+    allow-separated-leading-comment: true
 linters:
   enable-all: true
   disable:
@@ -78,5 +81,4 @@ linters:
     - wastedassign
     - whitespace
     - wrapcheck
-    - wsl
     - depguard

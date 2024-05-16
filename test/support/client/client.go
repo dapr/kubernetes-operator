@@ -46,14 +46,17 @@ func New(t *testing.T) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	dynamicClient, err := dynamic.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
+
 	kubeClient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
+
 	extClient, err := apiextClient.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -106,8 +109,8 @@ func (c *Client) RESTMapper() (meta.RESTMapper, error) {
 	}
 
 	return restmapper.NewDiscoveryRESTMapper(gr), nil
-
 }
+
 func (c *Client) ForResource(in *unstructured.Unstructured) (dynamic.ResourceInterface, error) {
 	gvk := in.GetObjectKind().GroupVersionKind()
 	gk := schema.GroupKind{Group: gvk.Group, Kind: gvk.Kind}

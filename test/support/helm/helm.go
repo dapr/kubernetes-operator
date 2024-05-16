@@ -22,7 +22,6 @@ func WithLog(value func(string, ...interface{})) ConfigurationOption {
 }
 
 func New(options ...ConfigurationOption) (*Helm, error) {
-
 	settings := cli.New()
 	config := action.Configuration{}
 

@@ -18,7 +18,6 @@ import (
 )
 
 func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {
-
 	namespace, err := labels.NewRequirement(
 		helm.ReleaseNamespace,
 		selection.Equals,
@@ -59,10 +58,12 @@ func labelsToRequest(_ context.Context, object ctrlCli.Object) []reconcile.Reque
 	if allLabels == nil {
 		return nil
 	}
+
 	name := allLabels[helm.ReleaseName]
 	if name == "" {
 		return nil
 	}
+
 	namespace := allLabels[helm.ReleaseNamespace]
 	if namespace == "" {
 		return nil

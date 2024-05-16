@@ -51,7 +51,6 @@ func (gc *GC) Run(ctx context.Context, ns string, c *client.Client, selector lab
 }
 
 func (gc *GC) deleteEachOf(ctx context.Context, c *client.Client, selector labels.Selector) (int, error) {
-
 	deleted := 0
 
 	for GVK := range gc.collectableGVKs {
@@ -70,9 +69,11 @@ func (gc *GC) deleteEachOf(ctx context.Context, c *client.Client, selector label
 				gc.l.Info("cannot gc, forbidden", "gvk", GVK.String())
 				continue
 			}
+
 			if !k8serrors.IsNotFound(err) {
 				return 0, fmt.Errorf("cannot list child resources %s: %w", GVK.String(), err)
 			}
+
 			continue
 		}
 
@@ -154,9 +155,11 @@ func (gc *GC) computeDeletableTypes(ctx context.Context, ns string, c *client.Cl
 	}
 
 	GVKs := make(map[schema.GroupVersionKind]struct{})
+
 	for _, res := range apiResourceLists {
 		for i := range res.APIResources {
 			resourceGroup := res.APIResources[i].Group
+
 			if resourceGroup == "" {
 				// Empty implies the group of the containing resource list should be used
 				gv, err := schema.ParseGroupVersion(res.GroupVersion)
@@ -166,6 +169,7 @@ func (gc *GC) computeDeletableTypes(ctx context.Context, ns string, c *client.Cl
 
 				resourceGroup = gv.Group
 			}
+
 		rule:
 			for _, rule := range ssrr.Status.ResourceRules {
 				if !slices.Contains(rule.Verbs, "delete") && !slices.Contains(rule.Verbs, "*") {
@@ -179,6 +183,7 @@ func (gc *GC) computeDeletableTypes(ctx context.Context, ns string, c *client.Cl
 							if gc.canBeDeleted(ctx, GVK) {
 								GVKs[GVK] = struct{}{}
 							}
+
 							break rule
 						}
 					}

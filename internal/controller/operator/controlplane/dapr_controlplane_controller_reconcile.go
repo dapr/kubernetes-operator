@@ -94,11 +94,9 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 
 	//nolint:nestif
 	if rr.Resource.ObjectMeta.DeletionTimestamp.IsZero() {
-
 		//
 		// Add finalizer
 		//
-
 		if ctrlutil.AddFinalizer(rr.Resource, DaprControlPlaneFinalizerName) {
 			if err := r.Update(ctx, rr.Resource); err != nil {
 				if k8serrors.IsConflict(err) {
@@ -109,11 +107,9 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 			}
 		}
 	} else {
-
 		//
 		// Cleanup leftovers if needed
 		//
-
 		for i := len(r.actions) - 1; i >= 0; i-- {
 			if err := r.actions[i].Cleanup(ctx, &rr); err != nil {
 				return ctrl.Result{}, err
@@ -123,7 +119,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		//
 		// Handle finalizer
 		//
-
 		if ctrlutil.RemoveFinalizer(rr.Resource, DaprControlPlaneFinalizerName) {
 			if err := r.Update(ctx, rr.Resource); err != nil {
 				if k8serrors.IsConflict(err) {
@@ -150,6 +145,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	}
 
 	errs := make([]error, 0, len(r.actions)+1)
+
 	for i := range r.actions {
 		if err := r.actions[i].Run(ctx, &rr); err != nil {
 			errs = append(errs, err)

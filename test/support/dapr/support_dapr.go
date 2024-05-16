@@ -183,6 +183,7 @@ func DeployTestApp(t support.Test, name string, namespace string) {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
+
 	if !strings.HasSuffix(path, "(/|$)(.*)") {
 		path += "(/|$)(.*)"
 	}
@@ -226,7 +227,6 @@ func DeployTestApp(t support.Test, name string, namespace string) {
 	t.Cleanup(func() []runtime.Object {
 		return []runtime.Object{ing}
 	})
-
 }
 
 func Values(t support.Test, in map[string]any) *daprAc.JSONApplyConfiguration {
@@ -245,5 +245,4 @@ func Values(t support.Test, in map[string]any) *daprAc.JSONApplyConfiguration {
 	cfg.RawMessage = data
 
 	return cfg
-
 }

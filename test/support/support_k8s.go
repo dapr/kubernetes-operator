@@ -127,6 +127,7 @@ func Resource(t Test, ri dynamic.ResourceInterface, un *unstructured.Unstructure
 		if err != nil && !k8serrors.IsNotFound(err) {
 			return nil, err
 		}
+
 		if err != nil && k8serrors.IsNotFound(err) {
 			return nil, nil
 		}

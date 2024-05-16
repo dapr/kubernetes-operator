@@ -107,7 +107,6 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 		})
 
 		switch dc.(type) {
-
 		//
 		// NamespacedResource: in this case, filtering with ownership can be implemented
 		// as all the namespaced resources created by this controller have the Dapr CR as
@@ -120,7 +119,6 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 			r := gvk.GroupVersion().String() + ":" + gvk.Kind
 
 			if _, ok := a.subscriptions[r]; !ok {
-
 				a.l.Info("watch", "ref", r)
 
 				err = rc.Reconciler.Watch(
@@ -152,7 +150,6 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 			r := gvk.GroupVersion().String() + ":" + gvk.Kind
 
 			if _, ok := a.subscriptions[r]; !ok {
-
 				a.l.Info("watch", "ref", r)
 
 				err = rc.Reconciler.Watch(
@@ -196,7 +193,6 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 				// - https://github.com/dapr/dapr/issues/3968
 				// - https://github.com/dapr/dapr/issues/6500
 				//
-
 				a.l.Info("run",
 					"apply", "false",
 					"ref", resources.Ref(&obj),
@@ -284,9 +280,11 @@ func (a *ApplyResourcesAction) watchForUpdates(gvk schema.GroupVersionKind) bool
 	if gvk.Group == "" && gvk.Version == "v1" && gvk.Kind == "Secret" {
 		return false
 	}
+
 	if gvk.Group == "admissionregistration.k8s.io" && gvk.Version == "v1" && gvk.Kind == "MutatingWebhookConfiguration" {
 		return false
 	}
+
 	if gvk.Group == "apiextensions.k8s.io" && gvk.Version == "v1" && gvk.Kind == "CustomResourceDefinition" {
 		return false
 	}
@@ -306,9 +304,11 @@ func (a *ApplyResourcesAction) installOnly(gvk schema.GroupVersionKind) bool {
 	if gvk.Group == "" && gvk.Version == "v1" && gvk.Kind == "Secret" {
 		return true
 	}
+
 	if gvk.Group == "admissionregistration.k8s.io" && gvk.Version == "v1" && gvk.Kind == "MutatingWebhookConfiguration" {
 		return true
 	}
+
 	if gvk.Group == "apiextensions.k8s.io" && gvk.Version == "v1" && gvk.Kind == "CustomResourceDefinition" {
 		return true
 	}

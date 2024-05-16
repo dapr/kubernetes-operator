@@ -40,6 +40,7 @@ func (m RawMessage) MarshalJSON() ([]byte, error) {
 	if m == nil {
 		return []byte("null"), nil
 	}
+
 	return m, nil
 }
 
@@ -48,7 +49,9 @@ func (m *RawMessage) UnmarshalJSON(data []byte) error {
 	if m == nil {
 		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
 	}
+
 	*m = append((*m)[0:0], data...)
+
 	return nil
 }
 
@@ -57,10 +60,12 @@ func (m *RawMessage) String() string {
 	if m == nil {
 		return ""
 	}
+
 	b, err := m.MarshalJSON()
 	if err != nil {
 		return ""
 	}
+
 	return string(b)
 }
 

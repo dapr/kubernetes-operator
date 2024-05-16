@@ -52,6 +52,7 @@ func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) e
 	}
 
 	ready := 0
+
 	for i := range deployments.Items {
 		if conditions.ConditionStatus(deployments.Items[i], appsv1.DeploymentAvailable) == corev1.ConditionTrue {
 			ready++

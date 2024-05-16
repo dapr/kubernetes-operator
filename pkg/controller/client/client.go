@@ -48,27 +48,31 @@ type Client struct {
 }
 
 func NewClient(cfg *rest.Config, scheme *runtime.Scheme, cc ctrl.Client) (*Client, error) {
-
 	discoveryCl, err := discovery.NewDiscoveryClientForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
+
 	kubeCl, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
+
 	restCl, err := newRESTClientForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
+
 	dynCl, err := dynamic.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
+
 	daprCl, err := daprClient.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
+
 	apiextCl, err := apiextv1.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -98,6 +102,7 @@ func newRESTClientForConfig(config *rest.Config) (*rest.RESTClient, error) {
 	// so that the RESTClientFor doesn't complain
 	cfg.GroupVersion = &schema.GroupVersion{}
 	cfg.NegotiatedSerializer = codecs.WithoutConversion()
+
 	if len(cfg.UserAgent) == 0 {
 		cfg.UserAgent = rest.DefaultKubernetesUserAgent()
 	}

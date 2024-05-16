@@ -25,7 +25,6 @@ func DeployOperator(test support.Test, ns *corev1.Namespace, image string) {
 	//
 	// Install OperatorGroups
 	//
-
 	og, err := test.Client().OLM().OperatorsV1().OperatorGroups(ns.Name).Create(
 		test.Ctx(),
 		&olmV1.OperatorGroup{
@@ -176,9 +175,11 @@ func OperatorGroup(t support.Test, name string, namespace string) func(g gomega.
 			name,
 			metav1.GetOptions{},
 		)
+
 		if err != nil && !k8serrors.IsNotFound(err) {
 			return nil, err
 		}
+
 		if err != nil && k8serrors.IsNotFound(err) {
 			return nil, nil
 		}

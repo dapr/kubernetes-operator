@@ -29,6 +29,7 @@ func runCleanup(t Test, in runtime.Object) error {
 		if err != nil && !k8serrors.IsNotFound(err) {
 			return fmt.Errorf("failed to get current object, %w", err)
 		}
+
 		if err != nil && k8serrors.IsNotFound(err) {
 			return nil
 		}

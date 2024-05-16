@@ -62,6 +62,7 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 	if err != nil {
 		return nil, err
 	}
+
 	if isOpenshift {
 		rec.ClusterType = controller.ClusterTypeOpenShift
 	}

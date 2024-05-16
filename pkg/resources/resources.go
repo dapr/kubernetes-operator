@@ -108,6 +108,7 @@ func ToUnstructured(s *runtime.Scheme, obj runtime.Object) (*unstructured.Unstru
 			if err != nil {
 				return nil, fmt.Errorf("failed to convert to unstructured - unable to get GVK %w", err)
 			}
+
 			apiv, k := gvks[0].ToAPIVersionAndKind()
 
 			u.SetAPIVersion(apiv)
@@ -139,6 +140,7 @@ func Decode(decoder runtime.Decoder, content []byte) ([]unstructured.Unstructure
 		if len(out) == 0 {
 			continue
 		}
+
 		if out["Kind"] == "" {
 			continue
 		}
@@ -159,7 +161,6 @@ func Decode(decoder runtime.Decoder, content []byte) ([]unstructured.Unstructure
 		}
 
 		results = append(results, obj)
-
 	}
 
 	return results, nil

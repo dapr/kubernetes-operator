@@ -86,6 +86,7 @@ func (a *ChartAction) loadChart(ctx context.Context, rc *ReconciliationRequest) 
 		if v, ok := s.Data[ChartRepoUsernameKey]; ok {
 			opts.Username = string(v)
 		}
+
 		if v, ok := s.Data[ChartRepoPasswordKey]; ok {
 			opts.Password = string(v)
 		}

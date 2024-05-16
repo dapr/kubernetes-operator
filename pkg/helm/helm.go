@@ -78,6 +78,7 @@ func (e *Engine) Render(c *chart.Chart, dapr *daprApi.DaprInstance, overrides ma
 	}
 
 	keys := make([]string, 0, len(files))
+
 	for k := range files {
 		if !strings.HasSuffix(k, ".yaml") && !strings.HasSuffix(k, ".yml") {
 			continue
@@ -92,10 +93,12 @@ func (e *Engine) Render(c *chart.Chart, dapr *daprApi.DaprInstance, overrides ma
 
 	for _, k := range keys {
 		v := files[k]
+
 		ul, err := resources.Decode(e.decoder, []byte(v))
 		if err != nil {
 			return nil, fmt.Errorf("cannot decode %s: %w", k, err)
 		}
+
 		if ul == nil {
 			continue
 		}
@@ -152,5 +155,4 @@ func (e *Engine) renderValues(
 	}
 
 	return rv, nil
-
 }

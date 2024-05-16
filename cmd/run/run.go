@@ -29,7 +29,6 @@ func init() {
 }
 
 func NewRunCmd() *cobra.Command {
-
 	co := controller.Options{
 		MetricsAddr:                   ":8080",
 		ProbeAddr:                     ":8081",

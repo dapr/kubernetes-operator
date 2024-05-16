@@ -21,7 +21,6 @@ import (
 )
 
 func TestDaprDeploy(t *testing.T) {
-
 	t.Run("With ControlPlane", func(t *testing.T) {
 		testDaprDeploy(
 			With(t),
@@ -65,7 +64,6 @@ func TestDaprDeploy(t *testing.T) {
 			},
 		)
 	})
-
 }
 
 func testDaprDeploy(test Test, f func(t Test, ns *corev1.Namespace) client.Object) {
@@ -108,5 +106,4 @@ func testDaprDeploy(test Test, f func(t Test, ns *corev1.Namespace) client.Objec
 	//
 
 	daprTC.ValidateDaprApp(test, res.GetNamespace())
-
 }
