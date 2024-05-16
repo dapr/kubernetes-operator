@@ -51,6 +51,7 @@ linters:
     - structcheck
     - scopelint
     - nosnakecase
+    - maligned
     # keep
     - varnamelen
     - godox # there are a bunch of TODOs that must be solved
@@ -69,7 +70,6 @@ linters:
     - gocyclo
     - interfacer
     - ireturn
-    - maligned
     - testpackage
     - wrapcheck
     - depguard
