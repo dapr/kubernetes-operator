@@ -68,7 +68,6 @@ linters:
     - gochecknoglobals
     - gochecknoinits
     - gocognit
-    - gocyclo
     - testpackage
     - wrapcheck
     - depguard
