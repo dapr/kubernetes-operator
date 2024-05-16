@@ -62,9 +62,9 @@ linters:
     - exhaustruct
     - paralleltest
     - ireturn
+    - funlen
     # validate
     - cyclop
-    - funlen
     - gochecknoglobals
     - gochecknoinits
     - gocognit
