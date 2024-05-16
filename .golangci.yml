@@ -54,6 +54,7 @@ linters:
     # keep
     - varnamelen
     - godox # there are a bunch of TODOs that must be solved
+    - gci
     # validate
     - cyclop
     - exhaustive
@@ -61,7 +62,6 @@ linters:
     - exhaustruct
     - forbidigo
     - funlen
-    - gci
     - gochecknoglobals
     - gochecknoinits
     - gocognit
