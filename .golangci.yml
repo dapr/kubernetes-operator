@@ -61,7 +61,6 @@ linters:
     - exhaustive
     - exhaustivestruct
     - exhaustruct
-    - forbidigo
     - funlen
     - gochecknoglobals
     - gochecknoinits
