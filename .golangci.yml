@@ -57,6 +57,7 @@ linters:
     - gci
     - gofumpt
     - exhaustruct
+    - paralleltest
     # validate
     - cyclop
     - exhaustive
@@ -69,7 +70,6 @@ linters:
     - interfacer
     - ireturn
     - maligned
-    - paralleltest
     - testpackage
     - wrapcheck
     - depguard
