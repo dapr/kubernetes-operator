@@ -70,7 +70,6 @@ linters:
     - interfacer
     - ireturn
     - maligned
-    - nilnil
     - paralleltest
     - testpackage
     - wrapcheck
