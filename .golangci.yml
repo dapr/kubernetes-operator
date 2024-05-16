@@ -78,6 +78,5 @@ linters:
     - tenv
     - testpackage
     - varnamelen
-    - wastedassign
     - wrapcheck
     - depguard
