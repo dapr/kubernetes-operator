@@ -1,6 +1,7 @@
 package helm
 
 import (
+	"fmt"
 	"os"
 
 	"helm.sh/helm/v3/pkg/action"
@@ -43,7 +44,7 @@ func New(options ...ConfigurationOption) (*Helm, error) {
 
 	err = config.Init(settings.RESTClientGetter(), settings.Namespace(), "memory", config.Log)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to initialize action config: %w", err)
 	}
 
 	h := Helm{

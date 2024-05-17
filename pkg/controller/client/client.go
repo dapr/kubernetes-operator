@@ -1,9 +1,9 @@
 package client
 
 import (
+	"fmt"
 	"time"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/openshift"
 	"golang.org/x/time/rate"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -50,32 +50,32 @@ type Client struct {
 func NewClient(cfg *rest.Config, scheme *runtime.Scheme, cc ctrl.Client) (*Client, error) {
 	discoveryCl, err := discovery.NewDiscoveryClientForConfig(cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to construct a Discovery client: %w", err)
 	}
 
 	kubeCl, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to construct a Kubernetes client: %w", err)
 	}
 
 	restCl, err := newRESTClientForConfig(cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to construct a REST client: %w", err)
 	}
 
 	dynCl, err := dynamic.NewForConfig(cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to construct a Dynamic client: %w", err)
 	}
 
 	daprCl, err := daprClient.NewForConfig(cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to construct a Dapr client: %w", err)
 	}
 
 	apiextCl, err := apiextv1.NewForConfig(cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to construct an API Extension client: %w", err)
 	}
 
 	c := Client{
@@ -107,16 +107,12 @@ func newRESTClientForConfig(config *rest.Config) (*rest.RESTClient, error) {
 		cfg.UserAgent = rest.DefaultKubernetesUserAgent()
 	}
 
-	return rest.RESTClientFor(cfg)
-}
-
-// IsOpenShift returns true if we are connected to a OpenShift cluster.
-func (c *Client) IsOpenShift() (bool, error) {
-	if c.Discovery == nil {
-		return false, nil
+	rc, err := rest.RESTClientFor(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("unable to construct a REST client: %w", err)
 	}
 
-	return openshift.IsOpenShift(c.Discovery)
+	return rc, nil
 }
 
 func (c *Client) Dynamic(namespace string, obj *unstructured.Unstructured) (dynamic.ResourceInterface, error) {
@@ -128,7 +124,11 @@ func (c *Client) Dynamic(namespace string, obj *unstructured.Unstructured) (dyna
 
 	mapping, err := c.mapper.RESTMapping(obj.GroupVersionKind().GroupKind(), obj.GroupVersionKind().Version)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(
+			"unable to identify preferred resource mapping for %s/%s: %w",
+			obj.GroupVersionKind().GroupKind(),
+			obj.GroupVersionKind().Version,
+			err)
 	}
 
 	var dr dynamic.ResourceInterface

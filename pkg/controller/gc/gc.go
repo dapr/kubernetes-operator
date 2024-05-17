@@ -135,7 +135,7 @@ func (gc *GC) computeDeletableTypes(ctx context.Context, ns string, c *client.Cl
 	// an aggregated API for custom.metrics.k8s.io that requires special
 	// authentication scheme while discovering preferred resources.
 	if err != nil && !discovery.IsGroupDiscoveryFailedError(err) {
-		return err
+		return fmt.Errorf("failure retireving supported namespaced resources: %w", err)
 	}
 
 	// We only take types that support the "delete" verb,
@@ -152,7 +152,7 @@ func (gc *GC) computeDeletableTypes(ctx context.Context, ns string, c *client.Cl
 
 	ssrr, err = c.AuthorizationV1().SelfSubjectRulesReviews().Create(ctx, ssrr, metav1.CreateOptions{})
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to create SelfSubjectRulesReviews: %w", err)
 	}
 
 	GVKs := make(map[schema.GroupVersionKind]struct{})
@@ -165,7 +165,7 @@ func (gc *GC) computeDeletableTypes(ctx context.Context, ns string, c *client.Cl
 				// Empty implies the group of the containing resource list should be used
 				gv, err := schema.ParseGroupVersion(res.GroupVersion)
 				if err != nil {
-					return err
+					return fmt.Errorf("failure creating SelfSubjectRulesReview: %w", err)
 				}
 
 				resourceGroup = gv.Group

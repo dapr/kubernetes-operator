@@ -2,6 +2,7 @@ package controlplane
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator/instance"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -44,7 +45,7 @@ func (a *StatusAction) Run(ctx context.Context, rr *ReconciliationRequest) error
 	)
 
 	if err != nil && !k8serrors.IsNotFound(err) {
-		return err
+		return fmt.Errorf("failure to lookup resource %s: %w", rr.NamespacedName, err)
 	}
 
 	for i := range di.Status.Conditions {

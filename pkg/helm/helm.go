@@ -60,10 +60,15 @@ func (e *Engine) Customizer(customizer ValuesCustomizer, customizers ...ValuesCu
 func (e *Engine) Load(options ChartOptions) (*chart.Chart, error) {
 	path, err := options.LocateChart(options.Name, e.env)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load chart (repo: %s, name: %s, version: %s), reson: %w", options.RepoURL, options.Name, options.Version, err)
+		return nil, fmt.Errorf("unable to load chart (repo: %s, name: %s, version: %s): %w", options.RepoURL, options.Name, options.Version, err)
 	}
 
-	return loader.Load(path)
+	c, err := loader.Load(path)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load chart (repo: %s, name: %s, version: %s): %w", options.RepoURL, options.Name, options.Version, err)
+	}
+
+	return c, nil
 }
 
 func (e *Engine) Render(c *chart.Chart, dapr *daprApi.DaprInstance, overrides map[string]interface{}) ([]unstructured.Unstructured, error) {

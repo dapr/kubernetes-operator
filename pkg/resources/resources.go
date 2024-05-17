@@ -134,7 +134,7 @@ func Decode(decoder runtime.Decoder, content []byte) ([]unstructured.Unstructure
 				break
 			}
 
-			return nil, err
+			return nil, fmt.Errorf("unable to decode resource: %w", err)
 		}
 
 		if len(out) == 0 {
@@ -147,7 +147,7 @@ func Decode(decoder runtime.Decoder, content []byte) ([]unstructured.Unstructure
 
 		encoded, err := yaml.Marshal(out)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("unable to marshal resource: %w", err)
 		}
 
 		var obj unstructured.Unstructured
@@ -157,7 +157,7 @@ func Decode(decoder runtime.Decoder, content []byte) ([]unstructured.Unstructure
 				continue
 			}
 
-			return nil, err
+			return nil, fmt.Errorf("unable to decode resource: %w", err)
 		}
 
 		results = append(results, obj)

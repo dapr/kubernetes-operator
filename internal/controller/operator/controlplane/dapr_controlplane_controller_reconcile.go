@@ -89,7 +89,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 			return ctrl.Result{Requeue: true}, nil
 		}
 
-		return ctrl.Result{}, err
+		return ctrl.Result{}, fmt.Errorf("error updating DaprControlPlane resource: %w", err)
 	}
 
 	//nolint:nestif
@@ -100,10 +100,10 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		if ctrlutil.AddFinalizer(rr.Resource, DaprControlPlaneFinalizerName) {
 			if err := r.Update(ctx, rr.Resource); err != nil {
 				if k8serrors.IsConflict(err) {
-					return ctrl.Result{}, err
+					return ctrl.Result{}, fmt.Errorf("conflict when adding finalizer to %s: %w", req.NamespacedName, err)
 				}
 
-				return ctrl.Result{}, fmt.Errorf("failure adding finalizer to connector cluster %s: %w", req.NamespacedName, err)
+				return ctrl.Result{}, fmt.Errorf("failure adding finalizer to %s: %w", req.NamespacedName, err)
 			}
 		}
 	} else {
@@ -112,6 +112,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		//
 		for i := len(r.actions) - 1; i >= 0; i-- {
 			if err := r.actions[i].Cleanup(ctx, &rr); err != nil {
+				//nolint:wrapcheck
 				return ctrl.Result{}, err
 			}
 		}
@@ -122,7 +123,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		if ctrlutil.RemoveFinalizer(rr.Resource, DaprControlPlaneFinalizerName) {
 			if err := r.Update(ctx, rr.Resource); err != nil {
 				if k8serrors.IsConflict(err) {
-					return ctrl.Result{}, err
+					return ctrl.Result{}, fmt.Errorf("conflict when removing finalizer to %s: %w", req.NamespacedName, err)
 				}
 
 				return ctrl.Result{}, fmt.Errorf("failure removing finalizer from %s: %w", req.NamespacedName, err)

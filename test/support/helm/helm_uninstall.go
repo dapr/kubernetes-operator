@@ -2,6 +2,7 @@ package helm
 
 import (
 	"context"
+	"fmt"
 
 	"helm.sh/helm/v3/pkg/action"
 )
@@ -24,7 +25,7 @@ func (h *Helm) Uninstall(_ context.Context, name string, options ...UninstallOpt
 
 	_, err := client.Run(name)
 	if err != nil {
-		return err
+		return fmt.Errorf("unabele to uninstall release %s: %w", name, err)
 	}
 
 	return nil

@@ -94,6 +94,7 @@ func (a *ChartAction) loadChart(ctx context.Context, rc *ReconciliationRequest) 
 
 	c, err := a.engine.Load(opts)
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 

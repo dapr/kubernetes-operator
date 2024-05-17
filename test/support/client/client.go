@@ -39,37 +39,37 @@ func New(t *testing.T) (*Client, error) {
 
 	cfg, err := config.GetConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to get Kubernetes config: %w", err)
 	}
 
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(cfg)
 	if err != nil {
-		return nil, err
-	}
-
-	dynamicClient, err := dynamic.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to construct a Discovery client: %w", err)
 	}
 
 	kubeClient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to construct a Kubernetes client: %w", err)
 	}
 
-	extClient, err := apiextClient.NewForConfig(cfg)
+	dynamicClient, err := dynamic.NewForConfig(cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to construct a Dynamic client: %w", err)
 	}
 
 	dpClient, err := daprClient.NewForConfig(cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to construct a Dapr client: %w", err)
+	}
+
+	extClient, err := apiextClient.NewForConfig(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("unable to construct an API Extension client: %w", err)
 	}
 
 	oClient, err := olmAC.NewForConfig(cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to construct an OLM client: %w", err)
 	}
 
 	c := Client{
@@ -105,7 +105,7 @@ func (c *Client) Scheme() *runtime.Scheme {
 func (c *Client) RESTMapper() (meta.RESTMapper, error) {
 	gr, err := restmapper.GetAPIGroupResources(c.Discovery())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error computing API/Group resources, %w", err)
 	}
 
 	return restmapper.NewDiscoveryRESTMapper(gr), nil

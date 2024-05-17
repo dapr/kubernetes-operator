@@ -5,6 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/selection"
 )
 
+//nolint:wrapcheck
 func ReleaseSelector() (labels.Selector, error) {
 	hasReleaseNameLabel, err := labels.NewRequirement(ReleaseName, selection.Exists, []string{})
 	if err != nil {
