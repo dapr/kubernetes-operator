@@ -40,6 +40,8 @@ linters-settings:
     allow-separated-leading-comment: true
   nlreturn:
     block-size: 2
+  testpackage:
+    skip-regexp: test/e2e/...
 linters:
   enable-all: true
   disable:
@@ -68,6 +70,5 @@ linters:
     # validate
     - cyclop
     - gocognit
-    - testpackage
     - wrapcheck
     - depguard
