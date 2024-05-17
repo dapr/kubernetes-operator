@@ -30,6 +30,7 @@ func (p AnnotationChanged) Update(e event.UpdateEvent) bool {
 		log.Error(nil, "Update event has no old object to update", "event", e)
 		return false
 	}
+
 	if e.ObjectOld.GetAnnotations() == nil {
 		log.Error(nil, "Update event has no old object annotations to update", "event", e)
 		return false

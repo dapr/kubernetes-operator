@@ -28,13 +28,27 @@ import (
 	olmV1Alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
 )
 
+const (
+	TestTimeoutMini   = 5 * time.Second
+	TestTimeoutShort  = 1 * time.Minute
+	TestTimeoutMedium = 2 * time.Minute
+	TestTimeoutLong   = 5 * time.Minute
+
+	DefaultEventuallyPollingInterval   = 500 * time.Millisecond
+	DefaultEventuallyTimeout           = TestTimeoutLong
+	DefaultConsistentlyDuration        = 500 * time.Millisecond
+	DefaultConsistentlyPollingInterval = 500 * time.Millisecond
+)
+
 func init() {
 	if err := daprApi.AddToScheme(scheme.Scheme); err != nil {
 		panic(err)
 	}
+
 	if err := olmV1.AddToScheme(scheme.Scheme); err != nil {
 		panic(err)
 	}
+
 	if err := olmV1Alpha1.AddToScheme(scheme.Scheme); err != nil {
 		panic(err)
 	}
@@ -47,13 +61,13 @@ type Test interface {
 	Ctx() context.Context
 
 	ID() string
-	Cleanup(func() []runtime.Object)
+	Cleanup(f func() []runtime.Object)
 
 	Client() *supportclient.Client
 	Helm() *helmsupport.Helm
 	HTTPClient() *http.Client
 
-	NewTestNamespace(...Option[*corev1.Namespace]) *corev1.Namespace
+	NewTestNamespace(opts ...Option[*corev1.Namespace]) *corev1.Namespace
 }
 
 type Option[T any] interface {
@@ -70,8 +84,10 @@ func With(t *testing.T) Test {
 	if deadline, ok := t.Deadline(); ok {
 		withDeadline, cancel := context.WithDeadline(ctx, deadline)
 		t.Cleanup(cancel)
+
 		ctx = withDeadline
 	}
+
 	answer := &T{
 		WithT:   gomega.NewWithT(t),
 		id:      xid.New().String(),
@@ -81,10 +97,10 @@ func With(t *testing.T) Test {
 		cleanup: make([]func() []runtime.Object, 0),
 	}
 
-	answer.SetDefaultEventuallyPollingInterval(500 * time.Millisecond)
-	answer.SetDefaultEventuallyTimeout(TestTimeoutLong)
-	answer.SetDefaultConsistentlyDuration(500 * time.Millisecond)
-	answer.SetDefaultConsistentlyDuration(TestTimeoutLong)
+	answer.SetDefaultEventuallyPollingInterval(DefaultEventuallyPollingInterval)
+	answer.SetDefaultEventuallyTimeout(DefaultEventuallyTimeout)
+	answer.SetDefaultConsistentlyDuration(DefaultConsistentlyDuration)
+	answer.SetDefaultConsistentlyPollingInterval(DefaultConsistentlyPollingInterval)
 
 	t.Cleanup(func() {
 		t.Log("Run Test cleanup")
@@ -146,8 +162,10 @@ func (t *T) Client() *supportclient.Client {
 		if err != nil {
 			t.T().Fatalf("Error creating client: %v", err)
 		}
+
 		t.client = c
 	})
+
 	return t.client
 }
 

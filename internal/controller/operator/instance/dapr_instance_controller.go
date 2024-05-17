@@ -18,6 +18,9 @@ package instance
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/openshift"
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
 
@@ -47,6 +50,7 @@ import (
 func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) (*Reconciler, error) {
 	c, err := client.NewClient(manager.GetConfig(), manager.GetScheme(), manager.GetClient())
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -58,10 +62,12 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 	rec.manager = manager
 	rec.recorder = manager.GetEventRecorderFor(controller.FieldManager)
 
-	isOpenshift, err := c.IsOpenShift()
+	isOpenshift, err := openshift.IsOpenShift(c.Discovery)
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
+
 	if isOpenshift {
 		rec.ClusterType = controller.ClusterTypeOpenShift
 	}
@@ -73,7 +79,7 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 
 	hc, err := loader.Load(o.ChartsDir)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to load chart from dir %s: %w", o.ChartsDir, err)
 	}
 
 	rec.c = hc
@@ -143,6 +149,7 @@ func (r *Reconciler) init(ctx context.Context) error {
 	for i := range r.actions {
 		b, err := r.actions[i].Configure(ctx, r.Client, c)
 		if err != nil {
+			//nolint:wrapcheck
 			return err
 		}
 
@@ -151,7 +158,7 @@ func (r *Reconciler) init(ctx context.Context) error {
 
 	ct, err := c.Build(r)
 	if err != nil {
-		return err
+		return fmt.Errorf("failure building the application controller for DaprInstance resource: %w", err)
 	}
 
 	r.controller = ct
@@ -160,7 +167,7 @@ func (r *Reconciler) init(ctx context.Context) error {
 }
 
 func (r *Reconciler) Watch(obj ctrlCli.Object, eh handler.EventHandler, predicates ...predicate.Predicate) error {
-	return r.controller.Watch(
+	err := r.controller.Watch(
 		source.Kind(
 			r.manager.GetCache(),
 			obj,
@@ -168,6 +175,16 @@ func (r *Reconciler) Watch(obj ctrlCli.Object, eh handler.EventHandler, predicat
 			predicates...,
 		),
 	)
+
+	if err != nil {
+		return fmt.Errorf(
+			"error configuring watcher for resource %s:%s, reson: %w",
+			obj.GetObjectKind().GroupVersionKind().String(),
+			obj.GetName(),
+			err)
+	}
+
+	return nil
 }
 
 func (r *Reconciler) EnqueueRequestForOwner(owner ctrlCli.Object, opts ...handler.OwnerOption) handler.EventHandler {

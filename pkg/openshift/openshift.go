@@ -1,6 +1,8 @@
 package openshift
 
 import (
+	"fmt"
+
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/discovery"
 )
@@ -14,8 +16,10 @@ func IsOpenShift(client discovery.DiscoveryInterface) (bool, error) {
 	_, err := client.ServerResourcesForGroupVersion("route.openshift.io/v1")
 	if err != nil && k8serrors.IsNotFound(err) {
 		return false, nil
-	} else if err != nil {
-		return false, err
+	}
+
+	if err != nil {
+		return false, fmt.Errorf("unable to determine if the Kubernetes distro is OpenShift: %w", err)
 	}
 
 	return true, nil

@@ -28,6 +28,11 @@ var (
 	Log    = ctrl.Log.WithName("controller")
 )
 
+const (
+	PprofReadTimeout  = 10 * time.Second
+	PprofWriteTimeout = 10 * time.Second
+)
+
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
 }
@@ -64,6 +69,7 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		return fmt.Errorf("unable to set up health check: %w", err)
 	}
+
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		return fmt.Errorf("unable to set up readiness check: %w", err)
 	}
@@ -78,8 +84,8 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 
 		server := &http.Server{
 			Addr:         options.PprofAddr,
-			ReadTimeout:  10 * time.Second,
-			WriteTimeout: 10 * time.Second,
+			ReadTimeout:  PprofReadTimeout,
+			WriteTimeout: PprofWriteTimeout,
 			Handler:      mux,
 		}
 

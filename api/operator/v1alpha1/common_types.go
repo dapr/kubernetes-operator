@@ -18,7 +18,10 @@ package v1alpha1
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 )
+
+var ErrUnmarshalOnNil = errors.New("UnmarshalJSON on nil pointer")
 
 // RawMessage is a raw encoded JSON value.
 // It implements Marshaler and Unmarshaler and can
@@ -40,15 +43,18 @@ func (m RawMessage) MarshalJSON() ([]byte, error) {
 	if m == nil {
 		return []byte("null"), nil
 	}
+
 	return m, nil
 }
 
 // UnmarshalJSON sets *m to a copy of data.
 func (m *RawMessage) UnmarshalJSON(data []byte) error {
 	if m == nil {
-		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
+		return fmt.Errorf("json.RawMessage: %w", ErrUnmarshalOnNil)
 	}
+
 	*m = append((*m)[0:0], data...)
+
 	return nil
 }
 
@@ -57,10 +63,12 @@ func (m *RawMessage) String() string {
 	if m == nil {
 		return ""
 	}
+
 	b, err := m.MarshalJSON()
 	if err != nil {
 		return ""
 	}
+
 	return string(b)
 }
 

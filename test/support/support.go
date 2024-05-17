@@ -3,7 +3,6 @@ package support
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/onsi/gomega"
 
@@ -12,13 +11,6 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-)
-
-const (
-	TestTimeoutMini   = 5 * time.Second
-	TestTimeoutShort  = 1 * time.Minute
-	TestTimeoutMedium = 2 * time.Minute
-	TestTimeoutLong   = 5 * time.Minute
 )
 
 func runCleanup(t Test, in runtime.Object) error {
@@ -37,6 +29,7 @@ func runCleanup(t Test, in runtime.Object) error {
 		if err != nil && !k8serrors.IsNotFound(err) {
 			return fmt.Errorf("failed to get current object, %w", err)
 		}
+
 		if err != nil && k8serrors.IsNotFound(err) {
 			return nil
 		}

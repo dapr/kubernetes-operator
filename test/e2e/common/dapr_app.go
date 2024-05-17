@@ -16,6 +16,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+const (
+	IngressPort = 8081
+)
+
 func ValidateDaprApp(test support.Test, namespace string) {
 	test.T().Helper()
 
@@ -52,7 +56,7 @@ func ValidateDaprApp(test support.Test, namespace string) {
 
 	test.T().Logf("Testing the app with name %s", appName)
 
-	base := fmt.Sprintf("http://localhost:%d/%s", 8081, appName)
+	base := fmt.Sprintf("http://localhost:%d/%s", IngressPort, appName)
 	value := xid.New().String()
 
 	//nolint:bodyclose

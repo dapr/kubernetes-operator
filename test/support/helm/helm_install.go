@@ -11,6 +11,10 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 )
 
+const (
+	DefaultInstallTimeout = 10 * time.Minute
+)
+
 type InstallOption func(*ReleaseOptions[action.Install])
 
 func (h *Helm) Install(ctx context.Context, chart string, options ...InstallOption) (*release.Release, error) {
@@ -21,7 +25,7 @@ func (h *Helm) Install(ctx context.Context, chart string, options ...InstallOpti
 	client.IncludeCRDs = true
 	client.Wait = true
 	client.Namespace = xid.New().String()
-	client.Timeout = 10 * time.Minute
+	client.Timeout = DefaultInstallTimeout
 
 	io := ReleaseOptions[action.Install]{
 		Client: client,

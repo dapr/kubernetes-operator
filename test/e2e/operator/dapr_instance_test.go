@@ -128,7 +128,6 @@ func TestDaprInstanceDeployWithCustomSidecarImage(t *testing.T) {
 			jq.Match(`.items[0].spec.containers[0].env[] | select(.name == "SIDECAR_IMAGE_PULL_POLICY") | .value == "%s"`, corev1.PullAlways),
 		)),
 	)
-
 }
 
 func TestDaprInstanceDeployWithApp(t *testing.T) {

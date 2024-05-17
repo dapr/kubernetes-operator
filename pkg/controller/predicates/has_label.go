@@ -33,6 +33,7 @@ func (p HasLabel) test(obj client.Object) bool {
 	if obj == nil {
 		return false
 	}
+
 	if obj.GetLabels() == nil {
 		return false
 	}

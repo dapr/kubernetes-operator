@@ -96,32 +96,30 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 			return ctrl.Result{Requeue: true}, nil
 		}
 
-		return ctrl.Result{}, err
+		return ctrl.Result{}, fmt.Errorf("error updating DaprInstance resource: %w", err)
 	}
 
+	//nolint:nestif
 	if rr.Resource.ObjectMeta.DeletionTimestamp.IsZero() {
-
 		//
 		// Add finalizer
 		//
-
 		if ctrlutil.AddFinalizer(rr.Resource, DaprInstanceFinalizerName) {
 			if err := r.Update(ctx, rr.Resource); err != nil {
 				if k8serrors.IsConflict(err) {
-					return ctrl.Result{}, err
+					return ctrl.Result{}, fmt.Errorf("conflict when adding finalizer to %s: %w", req.NamespacedName, err)
 				}
 
-				return ctrl.Result{}, fmt.Errorf("failure adding finalizer to connector cluster %s: %w", req.NamespacedName, err)
+				return ctrl.Result{}, fmt.Errorf("failure adding finalizer to %s: %w", req.NamespacedName, err)
 			}
 		}
 	} else {
-
 		//
 		// Cleanup leftovers if needed
 		//
-
 		for i := len(r.actions) - 1; i >= 0; i-- {
 			if err := r.actions[i].Cleanup(ctx, &rr); err != nil {
+				//nolint:wrapcheck
 				return ctrl.Result{}, err
 			}
 		}
@@ -129,11 +127,10 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		//
 		// Handle finalizer
 		//
-
 		if ctrlutil.RemoveFinalizer(rr.Resource, DaprInstanceFinalizerName) {
 			if err := r.Update(ctx, rr.Resource); err != nil {
 				if k8serrors.IsConflict(err) {
-					return ctrl.Result{}, err
+					return ctrl.Result{}, fmt.Errorf("conflict when removing finalizer to %s: %w", req.NamespacedName, err)
 				}
 
 				return ctrl.Result{}, fmt.Errorf("failure removing finalizer from %s: %w", req.NamespacedName, err)
@@ -156,6 +153,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	}
 
 	errs := make([]error, 0, len(r.actions)+1)
+
 	for i := range r.actions {
 		if err := r.actions[i].Run(ctx, &rr); err != nil {
 			errs = append(errs, err)
@@ -184,6 +182,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	//
 
 	err = r.Status().Update(ctx, rr.Resource)
+
 	if err != nil && k8serrors.IsConflict(err) {
 		l.Info(err.Error())
 		return ctrl.Result{Requeue: true}, nil

@@ -2,6 +2,7 @@ package controlplane
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
 
@@ -61,7 +62,11 @@ func (a *ApplyAction) Run(ctx context.Context, rr *ReconciliationRequest) error 
 			FieldManager: controller.FieldManager,
 		})
 
-	return err
+	if err != nil {
+		return fmt.Errorf("failure to apply changes to %s: %w", rr.NamespacedName, err)
+	}
+
+	return nil
 }
 
 func (a *ApplyAction) Cleanup(_ context.Context, _ *ReconciliationRequest) error {

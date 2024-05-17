@@ -19,6 +19,10 @@ var (
 	once           sync.Once
 )
 
+const (
+	HTTPReadHeaderTimeout = 3 * time.Second
+)
+
 func init() {
 	appPort = os.Getenv("APP_PORT")
 	if appPort == "" {
@@ -110,7 +114,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:              ":" + appPort,
-		ReadHeaderTimeout: 3 * time.Second,
+		ReadHeaderTimeout: HTTPReadHeaderTimeout,
 	}
 
 	err := server.ListenAndServe()

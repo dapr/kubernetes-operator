@@ -10,6 +10,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	DefaultProbeInitialDelay     = 5
+	DefaultProbePeriod           = 10
+	DefaultProbeTimeout          = 10
+	DefaultProbeFailureThreshold = 10
+	DefaultProbeSuccessThreshold = 1
+)
+
 func WithOwnerReference(object client.Object) *metav1ac.OwnerReferenceApplyConfiguration {
 	return metav1ac.OwnerReference().
 		WithAPIVersion(object.GetObjectKind().GroupVersionKind().GroupVersion().String()).
@@ -22,11 +30,11 @@ func WithOwnerReference(object client.Object) *metav1ac.OwnerReferenceApplyConfi
 
 func WithHTTPProbe(path string, port int32) *corev1ac.ProbeApplyConfiguration {
 	return corev1ac.Probe().
-		WithInitialDelaySeconds(5).
-		WithPeriodSeconds(10).
-		WithFailureThreshold(10).
-		WithSuccessThreshold(1).
-		WithTimeoutSeconds(10).
+		WithInitialDelaySeconds(DefaultProbeInitialDelay).
+		WithPeriodSeconds(DefaultProbePeriod).
+		WithFailureThreshold(DefaultProbeFailureThreshold).
+		WithSuccessThreshold(DefaultProbeSuccessThreshold).
+		WithTimeoutSeconds(DefaultProbeTimeout).
 		WithHTTPGet(corev1ac.HTTPGetAction().
 			WithPath(path).
 			WithPort(intstr.IntOrString{IntVal: port}).
