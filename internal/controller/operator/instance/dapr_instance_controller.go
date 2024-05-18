@@ -37,7 +37,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	daprvApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
+	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
 	"github.com/go-logr/logr"
@@ -56,7 +56,7 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 
 	rec := Reconciler{}
 	rec.l = ctrlRt.Log.WithName("dapr-instance-controller")
-	rec.Client = c
+	rec.client = c
 	rec.Scheme = manager.GetScheme()
 	rec.ClusterType = controller.ClusterTypeVanilla
 	rec.manager = manager
@@ -126,8 +126,7 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 // +kubebuilder:rbac:groups=dapr.io,resources=subscriptions/finalizers,verbs=*
 
 type Reconciler struct {
-	*client.Client
-
+	client      *client.Client
 	Scheme      *runtime.Scheme
 	ClusterType controller.ClusterType
 	actions     []Action
@@ -138,16 +137,20 @@ type Reconciler struct {
 	recorder    record.EventRecorder
 }
 
+func (r *Reconciler) Client() *client.Client {
+	return r.client
+}
+
 func (r *Reconciler) init(ctx context.Context) error {
 	c := ctrlRt.NewControllerManagedBy(r.manager)
 
-	c = c.For(&daprvApi.DaprInstance{}, builder.WithPredicates(
+	c = c.For(&daprApi.DaprInstance{}, builder.WithPredicates(
 		predicate.Or(
 			predicate.GenerationChangedPredicate{},
 		)))
 
 	for i := range r.actions {
-		b, err := r.actions[i].Configure(ctx, r.Client, c)
+		b, err := r.actions[i].Configure(ctx, r.Client(), c)
 		if err != nil {
 			//nolint:wrapcheck
 			return err
@@ -156,7 +159,9 @@ func (r *Reconciler) init(ctx context.Context) error {
 		c = b
 	}
 
-	ct, err := c.Build(r)
+	objRec := reconcile.AsReconciler[*daprApi.DaprInstance](r.manager.GetClient(), r)
+
+	ct, err := c.Build(objRec)
 	if err != nil {
 		return fmt.Errorf("failure building the application controller for DaprInstance resource: %w", err)
 	}

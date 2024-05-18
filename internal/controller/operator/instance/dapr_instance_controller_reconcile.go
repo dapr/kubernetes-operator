@@ -23,6 +23,8 @@ import (
 	"os"
 	"sort"
 
+	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/reconciler"
+
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/conditions"
@@ -32,25 +34,23 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	daprvApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
+	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
 )
 
-func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprInstance) (ctrl.Result, error) {
 	l := log.FromContext(ctx)
-	l.Info("Reconciling", "resource", req.NamespacedName.String())
 
 	rr := ReconciliationRequest{
-		Client: r.Client,
+		Client: r.Client(),
 		NamespacedName: types.NamespacedName{
-			Name:      req.Name,
-			Namespace: req.Namespace,
+			Name:      res.Name,
+			Namespace: res.Namespace,
 		},
 		ClusterType: r.ClusterType,
 		Reconciler:  r,
-		Resource:    &daprvApi.DaprInstance{},
+		Resource:    res,
 		Chart:       r.c,
 		Overrides: map[string]interface{}{
 			"dapr_operator":  map[string]interface{}{"runAsNonRoot": "true"},
@@ -60,13 +60,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		},
 	}
 
-	err := r.Get(ctx, req.NamespacedName, rr.Resource)
-	if err != nil {
-		if k8serrors.IsNotFound(err) {
-			// no CR found anymore, maybe deleted
-			return ctrl.Result{}, nil
-		}
-	}
+	l.Info("Reconciling", "resource", rr.NamespacedName.String())
 
 	// by default, the controller expect the DaprInstance resource to be created
 	// in the same namespace where it runs, if not fallback to the default namespace
@@ -76,7 +70,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		ns = controller.NamespaceDefault
 	}
 
-	if req.Name != DaprInstanceResourceName || req.Namespace != ns {
+	if res.Name != DaprInstanceResourceName || res.Namespace != ns {
 		rr.Resource.Status.Phase = conditions.TypeError
 
 		meta.SetStatusCondition(&rr.Resource.Status.Conditions, metav1.Condition{
@@ -89,7 +83,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 				ns),
 		})
 
-		err = r.Status().Update(ctx, rr.Resource)
+		err := r.Client().Status().Update(ctx, rr.Resource)
 
 		if err != nil && k8serrors.IsConflict(err) {
 			l.Info(err.Error())
@@ -99,42 +93,23 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		return ctrl.Result{}, fmt.Errorf("error updating DaprInstance resource: %w", err)
 	}
 
-	//nolint:nestif
+	//nolint:wrapcheck
 	if rr.Resource.ObjectMeta.DeletionTimestamp.IsZero() {
-		//
-		// Add finalizer
-		//
-		if ctrlutil.AddFinalizer(rr.Resource, DaprInstanceFinalizerName) {
-			if err := r.Update(ctx, rr.Resource); err != nil {
-				if k8serrors.IsConflict(err) {
-					return ctrl.Result{}, fmt.Errorf("conflict when adding finalizer to %s: %w", req.NamespacedName, err)
-				}
-
-				return ctrl.Result{}, fmt.Errorf("failure adding finalizer to %s: %w", req.NamespacedName, err)
-			}
+		err := reconciler.AddFinalizer(ctx, r.Client(), rr.Resource, DaprInstanceFinalizerName)
+		if err != nil {
+			return ctrl.Result{}, err
 		}
 	} else {
-		//
 		// Cleanup leftovers if needed
-		//
 		for i := len(r.actions) - 1; i >= 0; i-- {
 			if err := r.actions[i].Cleanup(ctx, &rr); err != nil {
-				//nolint:wrapcheck
 				return ctrl.Result{}, err
 			}
 		}
 
-		//
-		// Handle finalizer
-		//
-		if ctrlutil.RemoveFinalizer(rr.Resource, DaprInstanceFinalizerName) {
-			if err := r.Update(ctx, rr.Resource); err != nil {
-				if k8serrors.IsConflict(err) {
-					return ctrl.Result{}, fmt.Errorf("conflict when removing finalizer to %s: %w", req.NamespacedName, err)
-				}
-
-				return ctrl.Result{}, fmt.Errorf("failure removing finalizer from %s: %w", req.NamespacedName, err)
-			}
+		err := reconciler.RemoveFinalizer(ctx, r.Client(), rr.Resource, DaprInstanceFinalizerName)
+		if err != nil {
+			return ctrl.Result{}, err
 		}
 
 		return ctrl.Result{}, nil
@@ -181,7 +156,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	// Update status
 	//
 
-	err = r.Status().Update(ctx, rr.Resource)
+	err := r.Client().Status().Update(ctx, rr.Resource)
 
 	if err != nil && k8serrors.IsConflict(err) {
 		l.Info(err.Error())
