@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/openshift"
 
 	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
@@ -50,7 +52,7 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 
 	rec := Reconciler{}
 	rec.l = ctrlRt.Log.WithName("dapr-controlplane-controller")
-	rec.Client = c
+	rec.client = c
 	rec.Scheme = manager.GetScheme()
 	rec.ClusterType = controller.ClusterTypeVanilla
 	rec.manager = manager
@@ -94,8 +96,7 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 // +kubebuilder:rbac:groups=operator.dapr.io,resources=daprinstances/status,verbs=get
 
 type Reconciler struct {
-	*client.Client
-
+	client      *client.Client
 	Scheme      *runtime.Scheme
 	ClusterType controller.ClusterType
 	actions     []Action
@@ -104,6 +105,10 @@ type Reconciler struct {
 	manager     ctrlRt.Manager
 	controller  ctrl.Controller
 	recorder    record.EventRecorder
+}
+
+func (r *Reconciler) Client() *client.Client {
+	return r.client
 }
 
 func (r *Reconciler) init(ctx context.Context) error {
@@ -115,7 +120,7 @@ func (r *Reconciler) init(ctx context.Context) error {
 		)))
 
 	for i := range r.actions {
-		b, err := r.actions[i].Configure(ctx, r.Client, c)
+		b, err := r.actions[i].Configure(ctx, r.Client(), c)
 		if err != nil {
 			//nolint:wrapcheck
 			return err
@@ -124,7 +129,9 @@ func (r *Reconciler) init(ctx context.Context) error {
 		c = b
 	}
 
-	ct, err := c.Build(r)
+	objRec := reconcile.AsReconciler[*daprApi.DaprControlPlane](r.manager.GetClient(), r)
+
+	ct, err := c.Build(objRec)
 	if err != nil {
 		return fmt.Errorf("failure building the application controller for DaprControlPlane resource: %w", err)
 	}
