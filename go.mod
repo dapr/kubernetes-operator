@@ -4,7 +4,7 @@ go 1.22.3
 
 require (
 	github.com/dapr/go-sdk v1.10.1
-	github.com/go-logr/logr v1.4.1
+	github.com/go-logr/logr v1.4.2
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/itchyny/gojq v0.12.15
