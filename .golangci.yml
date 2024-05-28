@@ -51,17 +51,9 @@ issues:
 linters:
   enable-all: true
   disable:
-    # abandoned
-    - deadcode
-    - golint
-    - ifshort
-    - varcheck
-    - structcheck
-    - scopelint
-    - nosnakecase
-    - maligned
-    - exhaustivestruct
-    - interfacer
+    #deprecated
+    - gomnd
+    - execinquery
     # keep
     - varnamelen
     - godox # there are a bunch of TODOs that must be solved
