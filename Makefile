@@ -22,7 +22,7 @@ LOCALBIN := $(PROJECT_PATH)/bin
 
 HELM_CHART_REPO ?= https://dapr.github.io/helm-charts
 HELM_CHART ?= dapr
-HELM_CHART_VERSION ?= 1.13.2
+HELM_CHART_VERSION ?= 1.13.3
 HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr-$(HELM_CHART_VERSION).tgz
 
 OPENSHIFT_VERSIONS ?= v4.12
@@ -123,15 +123,15 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: manifests generate fmt vet ## Run tests.
-	go test -ldflags="$(GOLDFLAGS)" -v ./pkg/... ./internal/...
+	DAPR_HELM_CHART_VERSION="$(HELM_CHART_VERSION)" go test -ldflags="$(GOLDFLAGS)" -v ./pkg/... ./internal/...
 
 .PHONY: test/e2e/operator
 test/e2e/operator: manifests generate fmt vet ## Run e2e operator tests.
-	go test -ldflags="$(GOLDFLAGS)" -p 1 -v ./test/e2e/operator/...
+	DAPR_HELM_CHART_VERSION="$(HELM_CHART_VERSION)" go test -ldflags="$(GOLDFLAGS)" -p 1 -v ./test/e2e/operator/...
 
 .PHONY: test/e2e/olm
 test/e2e/olm: ## Run e2e catalog tests.
-	go test -ldflags="$(GOLDFLAGS)" -p 1 -v ./test/e2e/olm/...
+	DAPR_HELM_CHART_VERSION="$(HELM_CHART_VERSION)" go test -ldflags="$(GOLDFLAGS)" -p 1 -v ./test/e2e/olm/...
 
 
 .PHONY: test/e2e/app
