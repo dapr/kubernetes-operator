@@ -7,7 +7,7 @@ layout:
 - go.kubebuilder.io/v4
 multigroup: true
 projectName: dapr-kubernetes-operator
-repo: github.com/dapr-sandbox/dapr-kubernetes-operator
+repo: github.com/dapr/kubernetes-operator
 resources:
 - api:
     crdVersion: v1
@@ -16,7 +16,7 @@ resources:
   domain: dapr.io
   group: operator
   kind: DaprControlPlane
-  path: github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1
+  path: github.com/dapr/kubernetes-operator/api/operator/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -24,7 +24,7 @@ resources:
   domain: dapr.io
   group: operator
   kind: DaprInstance
-  path: github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1
+  path: github.com/dapr/kubernetes-operator/api/operator/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -32,6 +32,6 @@ resources:
   domain: dapr.io
   group: operator
   kind: DaprCruiseControl
-  path: github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1
+  path: github.com/dapr/kubernetes-operator/api/operator/v1alpha1
   version: v1alpha1
 version: "3"

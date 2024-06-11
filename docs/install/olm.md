@@ -65,10 +65,10 @@ That's it, OLM should be installed and availble to manage the Dapr Operator.
 
 ## Operator Install
 
-The [dapr-kubernetes-operator](https://github.com/dapr-sandbox/dapr-kubernetes-operator/) provides a pre-made kustomization file to deploy the Dapr Kubernetes Operator with OLM:
+The [dapr-kubernetes-operator](https://github.com/dapr/kubernetes-operator/) provides a pre-made kustomization file to deploy the Dapr Kubernetes Operator with OLM:
 
 ```bash
-kubectl apply -k https://github.com/dapr-sandbox/dapr-kubernetes-operator//config/samples/olm
+kubectl apply -k https://github.com/dapr/kubernetes-operator//config/samples/olm
 ```
 
 This command should:
@@ -109,5 +109,5 @@ Once the operator is installed and running, new `DaprControlPlane` resources can
 You can clean up the operator resources by running the following commands.
 
 ```bash
-kubectl delete -k https://github.com/dapr-sandbox/dapr-kubernetes-operator//config/samples/olm
+kubectl delete -k https://github.com/dapr/kubernetes-operator//config/samples/olm
 ```

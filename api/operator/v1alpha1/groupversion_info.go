@@ -20,7 +20,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator"
+	"github.com/dapr/kubernetes-operator/api/operator"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )

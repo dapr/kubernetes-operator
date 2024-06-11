@@ -6,8 +6,8 @@ import (
 
 	"github.com/onsi/gomega"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/pointer"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
+	"github.com/dapr/kubernetes-operator/pkg/pointer"
+	"github.com/dapr/kubernetes-operator/pkg/resources"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

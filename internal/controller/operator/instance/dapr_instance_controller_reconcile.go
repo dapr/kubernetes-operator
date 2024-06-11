@@ -23,11 +23,11 @@ import (
 	"os"
 	"sort"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/reconciler"
+	"github.com/dapr/kubernetes-operator/pkg/controller/reconciler"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
+	"github.com/dapr/kubernetes-operator/pkg/controller"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/conditions"
+	"github.com/dapr/kubernetes-operator/pkg/conditions"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -36,7 +36,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
 )
 
 func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprInstance) (ctrl.Result, error) {

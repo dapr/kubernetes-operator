@@ -5,16 +5,16 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/pointer"
+	"github.com/dapr/kubernetes-operator/pkg/pointer"
 
 	"k8s.io/apimachinery/pkg/runtime"
 
 	netv1 "k8s.io/api/networking/v1"
 	netv1ac "k8s.io/client-go/applyconfigurations/networking/v1"
 
-	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support"
+	daprAc "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
+	"github.com/dapr/kubernetes-operator/pkg/resources"
+	"github.com/dapr/kubernetes-operator/test/support"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

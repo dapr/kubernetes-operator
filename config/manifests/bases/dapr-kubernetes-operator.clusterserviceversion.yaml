@@ -6,7 +6,7 @@ metadata:
     capabilities: "Basic Install"
     categories: "Application Runtime"
     certified: "false"
-    repository: "https://github.com/dapr-sandbox/dapr-kubernetes-operator"
+    repository: "https://github.com/dapr/kubernetes-operator"
     containerImage: ""
     support: contact@dapr.io
     description: "Dapr Control Plane Operator"
@@ -56,7 +56,7 @@ spec:
     - name: Dapr
       url: https://dapr.io
     - name: Dapr Kubernetes Operator
-      url: https://github.com/dapr-sandbox/dapr-kubernetes-operator
+      url: https://github.com/dapr/kubernetes-operator
   maintainers:
     - email: "lburgazzoli@gmail.com"
       name: "Luca Burgazzoli"

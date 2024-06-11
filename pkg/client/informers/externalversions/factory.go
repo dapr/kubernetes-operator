@@ -22,9 +22,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/clientset/versioned"
-	internalinterfaces "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/informers/externalversions/internalinterfaces"
-	operator "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/informers/externalversions/operator"
+	versioned "github.com/dapr/kubernetes-operator/pkg/client/clientset/versioned"
+	internalinterfaces "github.com/dapr/kubernetes-operator/pkg/client/informers/externalversions/internalinterfaces"
+	operator "github.com/dapr/kubernetes-operator/pkg/client/informers/externalversions/operator"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

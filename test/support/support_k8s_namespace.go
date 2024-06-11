@@ -1,7 +1,7 @@
 package support
 
 import (
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/pointer"
+	"github.com/dapr/kubernetes-operator/pkg/pointer"
 	"github.com/onsi/gomega"
 	"github.com/rs/xid"
 	corev1 "k8s.io/api/core/v1"

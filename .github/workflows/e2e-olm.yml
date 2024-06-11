@@ -77,10 +77,10 @@ jobs:
           config: test/e2e/kind.yaml
       - name: 'SetUp Kind Ingress'
         run: |
-          ./hack/scripts/deploy_ingress.sh
+          make deploy/e2e/ingress
       - name: "SetUp Dapr Kubernetes Operator OLM"
         run: |
-          ./hack/scripts/deploy_olm.sh
+          make deploy/e2e/olm
       - name: "Publish Dapr test Application"
         run: |
           make test/e2e/app

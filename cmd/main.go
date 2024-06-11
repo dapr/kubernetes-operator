@@ -20,8 +20,8 @@ import (
 	"flag"
 	"os"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/cmd/run"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/logger"
+	"github.com/dapr/kubernetes-operator/cmd/run"
+	"github.com/dapr/kubernetes-operator/pkg/logger"
 
 	"github.com/spf13/cobra"
 

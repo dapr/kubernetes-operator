@@ -1,12 +1,14 @@
 
-PROJECT_NAME ?= dapr-kubernetes-operator
+PROJECT_NAME ?= kubernetes-operator
 PROJECT_VERSION ?= 0.0.8
 
 CONTAINER_REGISTRY ?= ghcr.io
-CONTAINER_REGISTRY_ORG ?= dapr-sandbox
+CONTAINER_REGISTRY_ORG ?= dapr
 CONTAINER_IMAGE_VERSION ?= $(PROJECT_VERSION)
 CONTAINER_IMAGE ?= $(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_ORG)/$(PROJECT_NAME):$(CONTAINER_IMAGE_VERSION)
 
+
+BUNDLE_NAME ?= dapr-kubernetes-operator
 BUNDLE_VERSION ?= $(PROJECT_VERSION)
 BUNDLE_CONTAINER_IMAGE ?= $(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_ORG)/$(PROJECT_NAME)-bundle:$(BUNDLE_VERSION)
 
@@ -133,7 +135,6 @@ test/e2e/operator: manifests generate fmt vet ## Run e2e operator tests.
 test/e2e/olm: ## Run e2e catalog tests.
 	DAPR_HELM_CHART_VERSION="$(HELM_CHART_VERSION)" go test -ldflags="$(GOLDFLAGS)" -p 1 -v ./test/e2e/olm/...
 
-
 .PHONY: test/e2e/app
 test/e2e/app: ko ## Deploy test app.
 	KO_DOCKER_REPO=kind.local $(LOCALBIN)/ko build -B ./test/e2e/support/dapr-test-app
@@ -224,17 +225,31 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/deploy/standalone | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
-
-.PHONY: deploy/e2e
-deploy/e2e: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
-	$(KUSTOMIZE) build config/deploy/e2e | kubectl apply -f -
 .PHONY: deploy/kind
 deploy/kind: manifests kustomize kind ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
 	kind load docker-image $(CONTAINER_IMAGE)
 	$(KUSTOMIZE) build config/deploy/standalone | kubectl apply -f -
 
+.PHONY: deploy/e2e/controller
+deploy/e2e/controller: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
+	$(KUSTOMIZE) build config/deploy/e2e | kubectl apply -f -
+	
+	kubectl wait \
+		--namespace=dapr-system \
+		--for=condition=ready \
+		pod \
+		--selector=control-plane=dapr-control-plane \
+		--timeout=90s
+
+.PHONY: deploy/e2e/ingress
+deploy/e2e/ingress: 
+	$(PROJECT_PATH)/hack/scripts/deploy_ingress.sh
+
+.PHONY: deploy/e2e/olm
+deploy/e2e/olm: 
+	$(PROJECT_PATH)/hack/scripts/deploy_olm.sh
 
 ##@ Bundles
 
@@ -248,7 +263,7 @@ bundle/generate: generate manifests kustomize operator-sdk yq ## Generate bundle
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
 	$(PROJECT_PATH)/hack/scripts/gen_bundle.sh \
 		$(PROJECT_PATH) \
-		$(PROJECT_NAME) \
+		$(BUNDLE_NAME) \
 		$(BUNDLE_VERSION) \
 		$(OPENSHIFT_VERSIONS)
 
