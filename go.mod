@@ -10,7 +10,7 @@ require (
 	github.com/itchyny/gojq v0.12.15
 	github.com/lburgazzoli/gomega-matchers v0.0.0-20240423093716-45891b1edc66
 	github.com/onsi/gomega v1.33.1
-	github.com/operator-framework/api v0.25.0
+	github.com/operator-framework/api v0.26.0
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
 	github.com/rs/xid v1.5.0
 	github.com/spf13/cobra v1.8.0
@@ -23,7 +23,7 @@ require (
 	k8s.io/apimachinery v0.30.1
 	k8s.io/client-go v0.30.1
 	k8s.io/klog/v2 v2.120.1
-	sigs.k8s.io/controller-runtime v0.18.3
+	sigs.k8s.io/controller-runtime v0.18.4
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 )
 
