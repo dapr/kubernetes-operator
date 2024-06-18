@@ -5,7 +5,7 @@ metadata:
   namespace: olm
 spec:
   sourceType: grpc
-  image: ghcr.io/dapr-sandbox/dapr-kubernetes-operator-catalog:latest
+  image: ghcr.io/dapr/kubernetes-operator-catalog:latest
   displayName: dapr.io catalog
   grpcPodConfig:
     securityContextConfig: restricted

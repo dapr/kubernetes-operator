@@ -20,23 +20,24 @@ import (
 	"context"
 	"fmt"
 
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	"github.com/dapr/kubernetes-operator/pkg/openshift"
-
-	"github.com/dapr/kubernetes-operator/pkg/helm"
-
 	"k8s.io/client-go/tools/record"
 
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"k8s.io/apimachinery/pkg/runtime"
+
 	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+
 	"github.com/dapr/kubernetes-operator/pkg/controller"
 	"github.com/dapr/kubernetes-operator/pkg/controller/client"
+	"github.com/dapr/kubernetes-operator/pkg/controller/reconciler"
+	"github.com/dapr/kubernetes-operator/pkg/helm"
+	"github.com/dapr/kubernetes-operator/pkg/openshift"
+
 	"github.com/go-logr/logr"
 
 	ctrlRt "sigs.k8s.io/controller-runtime"
@@ -129,9 +130,19 @@ func (r *Reconciler) init(ctx context.Context) error {
 		c = b
 	}
 
-	objRec := reconcile.AsReconciler[*daprApi.DaprControlPlane](r.manager.GetClient(), r)
+	// by default, the controller expect the DaprControlPlane resource to be created
+	// in the same namespace where it runs, if not fallback to the default namespace
+	rec := reconciler.BaseReconciler[*daprApi.DaprControlPlane]{
+		Delegate:        r,
+		Client:          r.client,
+		Log:             log.FromContext(ctx),
+		Name:            DaprControlPlaneResourceName,
+		Namespace:       controller.OperatorNamespace(),
+		FinalizerName:   DaprControlPlaneFinalizerName,
+		FinalizerAction: r.Cleanup,
+	}
 
-	ct, err := c.Build(objRec)
+	ct, err := c.Build(&rec)
 	if err != nil {
 		return fmt.Errorf("failure building the application controller for DaprControlPlane resource: %w", err)
 	}

@@ -27,10 +27,8 @@ type DaprCruiseControlSpec struct {
 
 // DaprCruiseControlStatus defines the observed state of DaprCruiseControl.
 type DaprCruiseControlStatus struct {
-	Phase              string             `json:"phase"`
-	Conditions         []metav1.Condition `json:"conditions,omitempty"`
-	ObservedGeneration int64              `json:"observedGeneration,omitempty"`
-	Chart              *ChartMeta         `json:"chart,omitempty"`
+	Status `json:",inline"`
+	Chart  *ChartMeta `json:"chart,omitempty"`
 }
 
 // +genclient
@@ -51,6 +49,10 @@ type DaprCruiseControl struct {
 
 	Spec   DaprCruiseControlSpec   `json:"spec,omitempty"`
 	Status DaprCruiseControlStatus `json:"status,omitempty"`
+}
+
+func (in *DaprCruiseControl) GetStatus() *Status {
+	return &in.Status.Status
 }
 
 func (in *DaprCruiseControl) GetConditions() conditions.Conditions {

@@ -20,12 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"sort"
-
-	"github.com/dapr/kubernetes-operator/pkg/controller/reconciler"
-
-	"github.com/dapr/kubernetes-operator/pkg/controller"
 
 	"github.com/dapr/kubernetes-operator/pkg/conditions"
 
@@ -39,10 +34,8 @@ import (
 	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
 )
 
-func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprControlPlane) (ctrl.Result, error) {
-	l := log.FromContext(ctx)
-
-	rr := ReconciliationRequest{
+func (r *Reconciler) reconciliationRequest(res *daprApi.DaprControlPlane) ReconciliationRequest {
+	return ReconciliationRequest{
 		Client: r.Client(),
 		NamespacedName: types.NamespacedName{
 			Name:      res.Name,
@@ -52,61 +45,13 @@ func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprControlPlan
 		Reconciler:  r,
 		Resource:    res,
 	}
+}
 
+func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprControlPlane) (ctrl.Result, error) {
+	rr := r.reconciliationRequest(res)
+
+	l := log.FromContext(ctx)
 	l.Info("Reconciling", "resource", rr.NamespacedName.String())
-
-	// by default, the controller expect the DaprControlPlane resource to be created
-	// in the same namespace where it runs, if not fallback to the default namespace
-	// dapr-system
-	ns := os.Getenv(controller.NamespaceEnv)
-	if ns == "" {
-		ns = controller.NamespaceDefault
-	}
-
-	if res.Name != DaprControlPlaneResourceName || res.Namespace != ns {
-		rr.Resource.Status.Phase = conditions.TypeError
-
-		meta.SetStatusCondition(&rr.Resource.Status.Conditions, metav1.Condition{
-			Type:   conditions.TypeReconciled,
-			Status: metav1.ConditionFalse,
-			Reason: conditions.ReasonUnsupportedConfiguration,
-			Message: fmt.Sprintf(
-				"Unsupported resource, the operator handles a single DaprControlPlane resource named %s in namespace %s",
-				DaprControlPlaneResourceName,
-				ns),
-		})
-
-		err := r.Client().Status().Update(ctx, rr.Resource)
-
-		if err != nil && k8serrors.IsConflict(err) {
-			l.Info(err.Error())
-			return ctrl.Result{Requeue: true}, nil
-		}
-
-		return ctrl.Result{}, fmt.Errorf("error updating DaprControlPlane resource: %w", err)
-	}
-
-	//nolint:wrapcheck
-	if rr.Resource.ObjectMeta.DeletionTimestamp.IsZero() {
-		err := reconciler.AddFinalizer(ctx, r.Client(), rr.Resource, DaprControlPlaneFinalizerName)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-	} else {
-		// Cleanup leftovers if needed
-		for i := len(r.actions) - 1; i >= 0; i-- {
-			if err := r.actions[i].Cleanup(ctx, &rr); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-
-		err := reconciler.RemoveFinalizer(ctx, r.Client(), rr.Resource, DaprControlPlaneFinalizerName)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-
-		return ctrl.Result{}, nil
-	}
 
 	//
 	// Reconcile
@@ -158,4 +103,20 @@ func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprControlPlan
 	}
 
 	return ctrl.Result{}, errors.Join(errs...)
+}
+
+func (r *Reconciler) Cleanup(ctx context.Context, res *daprApi.DaprControlPlane) error {
+	rr := r.reconciliationRequest(res)
+
+	l := log.FromContext(ctx)
+	l.Info("Cleanup", "resource", rr.NamespacedName.String())
+
+	// Cleanup leftovers if needed
+	for i := len(r.actions) - 1; i >= 0; i-- {
+		if err := r.actions[i].Cleanup(ctx, &rr); err != nil {
+			return fmt.Errorf("failure running cleanup action: %w", err)
+		}
+	}
+
+	return nil
 }

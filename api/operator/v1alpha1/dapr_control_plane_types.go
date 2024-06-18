@@ -27,10 +27,8 @@ type DaprControlPlaneSpec struct {
 }
 
 type DaprControlPlaneStatus struct {
-	Phase              string             `json:"phase"`
-	Conditions         []metav1.Condition `json:"conditions,omitempty"`
-	ObservedGeneration int64              `json:"observedGeneration,omitempty"`
-	Chart              *ChartMeta         `json:"chart,omitempty"`
+	Status `json:",inline"`
+	Chart  *ChartMeta `json:"chart,omitempty"`
 }
 
 // +genclient
@@ -51,6 +49,10 @@ type DaprControlPlane struct {
 
 	Spec   DaprControlPlaneSpec   `json:"spec,omitempty"`
 	Status DaprControlPlaneStatus `json:"status,omitempty"`
+}
+
+func (in *DaprControlPlane) GetStatus() *Status {
+	return &in.Status.Status
 }
 
 func (in *DaprControlPlane) GetConditions() conditions.Conditions {

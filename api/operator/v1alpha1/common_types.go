@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var ErrUnmarshalOnNil = errors.New("UnmarshalJSON on nil pointer")
@@ -93,4 +95,10 @@ type ChartMeta struct {
 	Repo    string `json:"repo,omitempty"`
 	Name    string `json:"name,omitempty"`
 	Version string `json:"version,omitempty"`
+}
+
+type Status struct {
+	Phase              string             `json:"phase"`
+	Conditions         []metav1.Condition `json:"conditions,omitempty"`
+	ObservedGeneration int64              `json:"observedGeneration,omitempty"`
 }
