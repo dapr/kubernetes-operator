@@ -3,9 +3,9 @@ package controlplane
 import (
 	"context"
 
-	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	"github.com/dapr/kubernetes-operator/pkg/controller"
+	"github.com/dapr/kubernetes-operator/pkg/controller/client"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 )

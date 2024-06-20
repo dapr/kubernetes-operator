@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
+	"github.com/dapr/kubernetes-operator/pkg/resources"
 
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
@@ -18,8 +18,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	k8syaml "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 
-	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/maputils"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	"github.com/dapr/kubernetes-operator/pkg/utils/maputils"
 )
 
 const (

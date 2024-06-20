@@ -18,8 +18,8 @@ limitations under the License.
 package applyconfiguration
 
 import (
-	v1alpha1 "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	operatorv1alpha1 "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
+	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
 

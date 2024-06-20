@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/conditions"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/gc"
+	"github.com/dapr/kubernetes-operator/pkg/conditions"
+	"github.com/dapr/kubernetes-operator/pkg/controller/gc"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
+	"github.com/dapr/kubernetes-operator/pkg/controller/client"
+	"github.com/dapr/kubernetes-operator/pkg/helm"
 	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/builder"

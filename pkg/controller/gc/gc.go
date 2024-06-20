@@ -19,8 +19,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlCli "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
+	"github.com/dapr/kubernetes-operator/pkg/controller/client"
+	"github.com/dapr/kubernetes-operator/pkg/resources"
 )
 
 func New() *GC {

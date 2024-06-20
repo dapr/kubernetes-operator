@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"net/http"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support"
+	"github.com/dapr/kubernetes-operator/test/support"
 	"github.com/onsi/gomega"
 )
 

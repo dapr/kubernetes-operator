@@ -4,19 +4,19 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator/controlplane"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator/instance"
-	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/dapr"
+	"github.com/dapr/kubernetes-operator/internal/controller/operator/controlplane"
+	"github.com/dapr/kubernetes-operator/internal/controller/operator/instance"
+	daprAc "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
+	"github.com/dapr/kubernetes-operator/test/support/dapr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/olm"
+	"github.com/dapr/kubernetes-operator/test/support/olm"
 
-	daprTC "github.com/dapr-sandbox/dapr-kubernetes-operator/test/e2e/common"
+	daprTC "github.com/dapr/kubernetes-operator/test/e2e/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
-	. "github.com/dapr-sandbox/dapr-kubernetes-operator/test/support"
+	. "github.com/dapr/kubernetes-operator/test/support"
 	. "github.com/onsi/gomega"
 )
 

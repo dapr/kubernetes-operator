@@ -20,7 +20,7 @@ import (
 	"k8s.io/client-go/scale"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
-	daprClient "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/clientset/versioned"
+	daprClient "github.com/dapr/kubernetes-operator/pkg/client/clientset/versioned"
 )
 
 const (

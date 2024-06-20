@@ -30,6 +30,6 @@ jobs:
       version: "${{ github.ref_name }}-${{ github.sha }}"
       olm: false
     secrets:
-      registry: "quay.io"
-      registry-username: ${{ secrets.QUAY_USERNAME }}
-      registry-password: ${{ secrets.QUAY_PASSWORD }}
+      registry: "ghcr.io"
+      registry-username: ${{ github.actor }}
+      registry-password: ${{ github.token }}

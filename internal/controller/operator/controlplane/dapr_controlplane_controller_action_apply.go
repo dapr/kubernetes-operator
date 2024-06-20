@@ -4,18 +4,18 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
+	"github.com/dapr/kubernetes-operator/pkg/controller"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
+	"github.com/dapr/kubernetes-operator/pkg/resources"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator/instance"
+	"github.com/dapr/kubernetes-operator/internal/controller/operator/instance"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	daprAc "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/predicates"
+	"github.com/dapr/kubernetes-operator/pkg/controller/client"
+	"github.com/dapr/kubernetes-operator/pkg/controller/predicates"
 	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"

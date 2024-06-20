@@ -18,8 +18,8 @@ limitations under the License.
 package operator
 
 import (
-	internalinterfaces "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/informers/externalversions/operator/v1alpha1"
+	internalinterfaces "github.com/dapr/kubernetes-operator/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/informers/externalversions/operator/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

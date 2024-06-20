@@ -1,7 +1,7 @@
 package support
 
 import (
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/conditions"
+	"github.com/dapr/kubernetes-operator/pkg/conditions"
 	corev1 "k8s.io/api/core/v1"
 )
 

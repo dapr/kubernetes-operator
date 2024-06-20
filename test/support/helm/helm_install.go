@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/maputils"
+	"github.com/dapr/kubernetes-operator/pkg/utils/maputils"
 	"github.com/rs/xid"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
