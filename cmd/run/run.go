@@ -5,9 +5,9 @@ import (
 
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator/controlplane"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/internal/controller/operator/instance"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
+	"github.com/dapr/kubernetes-operator/internal/controller/operator/controlplane"
+	"github.com/dapr/kubernetes-operator/internal/controller/operator/instance"
+	"github.com/dapr/kubernetes-operator/pkg/helm"
 
 	"github.com/spf13/cobra"
 	admregv1 "k8s.io/api/admissionregistration/v1"
@@ -19,8 +19,8 @@ import (
 	rtclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	"github.com/dapr/kubernetes-operator/pkg/controller"
 )
 
 func init() {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
+	"github.com/dapr/kubernetes-operator/pkg/helm"
 
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/predicates"
+	"github.com/dapr/kubernetes-operator/pkg/controller/predicates"
 )
 
 func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {

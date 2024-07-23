@@ -8,12 +8,12 @@ import (
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
+	"github.com/dapr/kubernetes-operator/pkg/controller"
+	"github.com/dapr/kubernetes-operator/pkg/helm"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
+	"github.com/dapr/kubernetes-operator/pkg/controller/client"
+	"github.com/dapr/kubernetes-operator/pkg/resources"
 	"github.com/go-logr/logr"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"

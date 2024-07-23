@@ -20,7 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/logger"
+	"github.com/dapr/kubernetes-operator/pkg/logger"
 )
 
 var (

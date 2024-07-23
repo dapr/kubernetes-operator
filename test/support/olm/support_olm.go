@@ -2,13 +2,12 @@ package olm
 
 import (
 	"fmt"
-	"time"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/pointer"
+	"github.com/dapr/kubernetes-operator/pkg/pointer"
 
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support"
+	"github.com/dapr/kubernetes-operator/test/support"
 	"github.com/onsi/gomega"
 	olmV1 "github.com/operator-framework/api/pkg/operators/v1"
 	olmV1Alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
@@ -18,7 +17,7 @@ import (
 )
 
 const (
-	CatalogRegistryPollInterval = 10 * time.Minute
+	CatalogRegistryPollInterval = "15m0s"
 )
 
 func DeployOperator(test support.Test, ns *corev1.Namespace, image string) {
@@ -93,9 +92,7 @@ func DeployOperator(test support.Test, ns *corev1.Namespace, image string) {
 				},
 				UpdateStrategy: &olmV1Alpha1.UpdateStrategy{
 					RegistryPoll: &olmV1Alpha1.RegistryPoll{
-						Interval: &metav1.Duration{
-							Duration: CatalogRegistryPollInterval,
-						},
+						RawInterval: "15m0s",
 					},
 				},
 			},

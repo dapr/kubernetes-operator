@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
+	"github.com/dapr/kubernetes-operator/pkg/controller/client"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"

@@ -6,9 +6,9 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm/customizers"
+	"github.com/dapr/kubernetes-operator/pkg/helm/customizers"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
+	"github.com/dapr/kubernetes-operator/pkg/controller"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -18,12 +18,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 
-	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/gc"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/pointer"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/resources"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	"github.com/dapr/kubernetes-operator/pkg/controller/client"
+	"github.com/dapr/kubernetes-operator/pkg/controller/gc"
+	"github.com/dapr/kubernetes-operator/pkg/helm"
+	"github.com/dapr/kubernetes-operator/pkg/pointer"
+	"github.com/dapr/kubernetes-operator/pkg/resources"
 )
 
 const autoPullPolicySidecarInjector = `

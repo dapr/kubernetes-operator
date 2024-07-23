@@ -8,8 +8,8 @@ import (
 	"github.com/onsi/gomega"
 	"github.com/rs/xid"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/dapr"
+	"github.com/dapr/kubernetes-operator/test/support"
+	"github.com/dapr/kubernetes-operator/test/support/dapr"
 	"github.com/lburgazzoli/gomega-matchers/pkg/matchers/jq"
 
 	appsv1 "k8s.io/api/apps/v1"

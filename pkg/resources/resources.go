@@ -12,7 +12,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/pointer"
+	"github.com/dapr/kubernetes-operator/pkg/pointer"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"

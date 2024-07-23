@@ -23,9 +23,9 @@ import (
 	"fmt"
 	"time"
 
-	v1alpha1 "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	operatorv1alpha1 "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
-	scheme "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/clientset/versioned/scheme"
+	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
+	scheme "github.com/dapr/kubernetes-operator/pkg/client/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"

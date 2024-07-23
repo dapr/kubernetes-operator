@@ -3,7 +3,7 @@ package helm
 import (
 	"time"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/utils/maputils"
+	"github.com/dapr/kubernetes-operator/pkg/utils/maputils"
 	"helm.sh/helm/v3/pkg/action"
 )
 

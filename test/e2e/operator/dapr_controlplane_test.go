@@ -3,19 +3,19 @@ package operator
 import (
 	"testing"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/conditions"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/dapr"
+	"github.com/dapr/kubernetes-operator/pkg/conditions"
+	"github.com/dapr/kubernetes-operator/pkg/controller"
+	"github.com/dapr/kubernetes-operator/test/support/dapr"
 
 	"github.com/rs/xid"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
-	. "github.com/dapr-sandbox/dapr-kubernetes-operator/test/support"
+	. "github.com/dapr/kubernetes-operator/test/support"
 	. "github.com/onsi/gomega"
 
-	daprAc "github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
-	daprTC "github.com/dapr-sandbox/dapr-kubernetes-operator/test/e2e/common"
+	daprAc "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
+	daprTC "github.com/dapr/kubernetes-operator/test/e2e/common"
 )
 
 func TestDaprControlPlaneDeployWithApp(t *testing.T) {

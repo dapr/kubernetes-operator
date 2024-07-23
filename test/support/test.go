@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 	"sync"
 	"testing"
 	"time"
 
-	helmsupport "github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/helm"
+	helmsupport "github.com/dapr/kubernetes-operator/test/support/helm"
 
-	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/go-logr/logr/testr"
@@ -18,7 +19,7 @@ import (
 	"github.com/onsi/gomega"
 	"github.com/rs/xid"
 
-	supportclient "github.com/dapr-sandbox/dapr-kubernetes-operator/test/support/client"
+	supportclient "github.com/dapr/kubernetes-operator/test/support/client"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
 
@@ -28,11 +29,32 @@ import (
 	olmV1Alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
 )
 
+func durationFromEnvOrDefault(name string, def time.Duration) time.Duration {
+	val := os.Getenv(name)
+	if val == "" {
+		return def
+	}
+
+	result, err := time.ParseDuration(val)
+	if err != nil {
+		panic(err)
+	}
+
+	return result
+}
+
 const (
-	TestTimeoutMini   = 5 * time.Second
-	TestTimeoutShort  = 1 * time.Minute
-	TestTimeoutMedium = 2 * time.Minute
-	TestTimeoutLong   = 5 * time.Minute
+	DefaultTestTimeoutMini   = 5 * time.Second
+	DefaultTestTimeoutShort  = 1 * time.Minute
+	DefaultTestTimeoutMedium = 2 * time.Minute
+	DefaultTestTimeoutLong   = 5 * time.Minute
+)
+
+var (
+	TestTimeoutMini   = durationFromEnvOrDefault("E2E_TEST_TIMEOUT_MINI", DefaultTestTimeoutMini)
+	TestTimeoutShort  = durationFromEnvOrDefault("E2E_TEST_TIMEOUT_SHORT", DefaultTestTimeoutShort)
+	TestTimeoutMedium = durationFromEnvOrDefault("E2E_TEST_TIMEOUT_MEDIUM", DefaultTestTimeoutMedium)
+	TestTimeoutLong   = durationFromEnvOrDefault("E2E_TEST_TIMEOUT_LONG", DefaultTestTimeoutLong)
 
 	DefaultEventuallyPollingInterval   = 500 * time.Millisecond
 	DefaultEventuallyTimeout           = TestTimeoutLong

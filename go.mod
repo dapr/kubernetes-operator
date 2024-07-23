@@ -1,4 +1,4 @@
-module github.com/dapr-sandbox/dapr-kubernetes-operator
+module github.com/dapr/kubernetes-operator
 
 go 1.22.5
 

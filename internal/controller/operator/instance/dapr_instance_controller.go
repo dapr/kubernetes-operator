@@ -20,9 +20,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/openshift"
+	"github.com/dapr/kubernetes-operator/pkg/openshift"
 
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/helm"
+	"github.com/dapr/kubernetes-operator/pkg/helm"
 
 	"k8s.io/client-go/tools/record"
 
@@ -37,9 +37,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	daprApi "github.com/dapr-sandbox/dapr-kubernetes-operator/api/operator/v1alpha1"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller"
-	"github.com/dapr-sandbox/dapr-kubernetes-operator/pkg/controller/client"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	"github.com/dapr/kubernetes-operator/pkg/controller"
+	"github.com/dapr/kubernetes-operator/pkg/controller/client"
 	"github.com/go-logr/logr"
 
 	ctrlRt "sigs.k8s.io/controller-runtime"
