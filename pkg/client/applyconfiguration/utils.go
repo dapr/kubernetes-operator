@@ -50,6 +50,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &operatorv1alpha1.DaprInstanceStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("JSON"):
 		return &operatorv1alpha1.JSONApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Status"):
+		return &operatorv1alpha1.StatusApplyConfiguration{}
 
 	}
 	return nil

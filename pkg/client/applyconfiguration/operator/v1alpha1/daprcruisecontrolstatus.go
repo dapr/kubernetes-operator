@@ -24,10 +24,8 @@ import (
 // DaprCruiseControlStatusApplyConfiguration represents an declarative configuration of the DaprCruiseControlStatus type for use
 // with apply.
 type DaprCruiseControlStatusApplyConfiguration struct {
-	Phase              *string                          `json:"phase,omitempty"`
-	Conditions         []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
-	ObservedGeneration *int64                           `json:"observedGeneration,omitempty"`
-	Chart              *ChartMetaApplyConfiguration     `json:"chart,omitempty"`
+	StatusApplyConfiguration `json:",inline"`
+	Chart                    *ChartMetaApplyConfiguration `json:"chart,omitempty"`
 }
 
 // DaprCruiseControlStatusApplyConfiguration constructs an declarative configuration of the DaprCruiseControlStatus type for use with

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/pprof"
+	"os"
 	"time"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -104,4 +105,15 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 	}
 
 	return nil
+}
+
+func OperatorNamespace() string {
+	// by default, the controller expect singleton resources to be created in the same
+	// namespace where it runs, if not fallback to the default namespace
+	ns := os.Getenv(NamespaceEnv)
+	if ns == "" {
+		ns = NamespaceDefault
+	}
+
+	return ns
 }

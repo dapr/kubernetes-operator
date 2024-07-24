@@ -21,23 +21,24 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// DaprInstanceStatusApplyConfiguration represents an declarative configuration of the DaprInstanceStatus type for use
+// StatusApplyConfiguration represents an declarative configuration of the Status type for use
 // with apply.
-type DaprInstanceStatusApplyConfiguration struct {
-	StatusApplyConfiguration `json:",inline"`
-	Chart                    *ChartMetaApplyConfiguration `json:"chart,omitempty"`
+type StatusApplyConfiguration struct {
+	Phase              *string                          `json:"phase,omitempty"`
+	Conditions         []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
+	ObservedGeneration *int64                           `json:"observedGeneration,omitempty"`
 }
 
-// DaprInstanceStatusApplyConfiguration constructs an declarative configuration of the DaprInstanceStatus type for use with
+// StatusApplyConfiguration constructs an declarative configuration of the Status type for use with
 // apply.
-func DaprInstanceStatus() *DaprInstanceStatusApplyConfiguration {
-	return &DaprInstanceStatusApplyConfiguration{}
+func Status() *StatusApplyConfiguration {
+	return &StatusApplyConfiguration{}
 }
 
 // WithPhase sets the Phase field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Phase field is set to the value of the last call.
-func (b *DaprInstanceStatusApplyConfiguration) WithPhase(value string) *DaprInstanceStatusApplyConfiguration {
+func (b *StatusApplyConfiguration) WithPhase(value string) *StatusApplyConfiguration {
 	b.Phase = &value
 	return b
 }
@@ -45,7 +46,7 @@ func (b *DaprInstanceStatusApplyConfiguration) WithPhase(value string) *DaprInst
 // WithConditions adds the given value to the Conditions field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Conditions field.
-func (b *DaprInstanceStatusApplyConfiguration) WithConditions(values ...*v1.ConditionApplyConfiguration) *DaprInstanceStatusApplyConfiguration {
+func (b *StatusApplyConfiguration) WithConditions(values ...*v1.ConditionApplyConfiguration) *StatusApplyConfiguration {
 	for i := range values {
 		if values[i] == nil {
 			panic("nil value passed to WithConditions")
@@ -58,15 +59,7 @@ func (b *DaprInstanceStatusApplyConfiguration) WithConditions(values ...*v1.Cond
 // WithObservedGeneration sets the ObservedGeneration field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ObservedGeneration field is set to the value of the last call.
-func (b *DaprInstanceStatusApplyConfiguration) WithObservedGeneration(value int64) *DaprInstanceStatusApplyConfiguration {
+func (b *StatusApplyConfiguration) WithObservedGeneration(value int64) *StatusApplyConfiguration {
 	b.ObservedGeneration = &value
-	return b
-}
-
-// WithChart sets the Chart field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Chart field is set to the value of the last call.
-func (b *DaprInstanceStatusApplyConfiguration) WithChart(value *ChartMetaApplyConfiguration) *DaprInstanceStatusApplyConfiguration {
-	b.Chart = value
 	return b
 }

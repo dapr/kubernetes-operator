@@ -32,10 +32,8 @@ type DaprInstanceSpec struct {
 
 // DaprInstanceStatus defines the observed state of DaprInstance.
 type DaprInstanceStatus struct {
-	Phase              string             `json:"phase"`
-	Conditions         []metav1.Condition `json:"conditions,omitempty"`
-	ObservedGeneration int64              `json:"observedGeneration,omitempty"`
-	Chart              *ChartMeta         `json:"chart,omitempty"`
+	Status `json:",inline"`
+	Chart  *ChartMeta `json:"chart,omitempty"`
 }
 
 // +genclient
@@ -56,6 +54,10 @@ type DaprInstance struct {
 
 	Spec   DaprInstanceSpec   `json:"spec,omitempty"`
 	Status DaprInstanceStatus `json:"status,omitempty"`
+}
+
+func (in *DaprInstance) GetStatus() *Status {
+	return &in.Status.Status
 }
 
 func (in *DaprInstance) GetConditions() conditions.Conditions {
