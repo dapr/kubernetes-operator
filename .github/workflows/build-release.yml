@@ -15,6 +15,6 @@ jobs:
       version: "${{ github.ref_name }}"
       olm: true
     secrets:
-      registry: "quay.io"
-      registry-username: ${{ secrets.QUAY_USERNAME }}
-      registry-password: ${{ secrets.QUAY_PASSWORD }}
+      registry: ${{ secrets.DOCKER_DAPRIO_REGISTRY }}
+      registry-username: ${{ secrets.DOCKER_REGISTRY_ID }}
+      registry-password: ${{ secrets.DOCKER_REGISTRY_PASS }}
