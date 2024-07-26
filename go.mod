@@ -17,7 +17,7 @@ require (
 	github.com/wI2L/jsondiff v0.6.0
 	golang.org/x/time v0.5.0
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.15.2
+	helm.sh/helm/v3 v3.15.3
 	k8s.io/api v0.30.2
 	k8s.io/apiextensions-apiserver v0.30.2
 	k8s.io/apimachinery v0.30.2
