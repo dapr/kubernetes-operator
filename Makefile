@@ -206,6 +206,10 @@ docker/push: ## Push docker image with the manager.
 docker/push/kind: docker/build ## Load docker image in kind.
 	kind load docker-image $(CONTAINER_IMAGE)
 
+.PHONY: docker/image/name
+docker/image/name:
+	@echo $(CONTAINER_IMAGE)
+
 ##@ Deployment
 
 .PHONY: install
