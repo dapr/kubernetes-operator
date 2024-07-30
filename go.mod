@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/itchyny/gojq v0.12.16
 	github.com/lburgazzoli/gomega-matchers v0.0.0-20240423093716-45891b1edc66
-	github.com/onsi/gomega v1.33.1
+	github.com/onsi/gomega v1.34.1
 	github.com/operator-framework/api v0.26.0
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
 	github.com/rs/xid v1.5.0
@@ -140,18 +140,18 @@ require (
 	go.starlark.net v0.0.0-20230814145427-12f4cb8177e4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
-	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
-	golang.org/x/net v0.24.0 // indirect
+	golang.org/x/crypto v0.25.0 // indirect
+	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
+	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/oauth2 v0.19.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/term v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
+	golang.org/x/term v0.22.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240221002015-b0ce06bbee7c // indirect
 	google.golang.org/grpc v1.62.0 // indirect
-	google.golang.org/protobuf v1.34.0 // indirect
+	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/evanphx/json-patch.v5 v5.6.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
