@@ -53,7 +53,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ocker-image-name.txt
-          path: tmp/docker-image-name.txt
+          path: /tmp/docker-image-name.txt
 
       - name: "Build Dapr Kubernetes Operator Container image"
         run: |
