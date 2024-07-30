@@ -48,7 +48,7 @@ jobs:
             
       - name: 'Dump debug info'
         run: |
-          make docker/image/name 2>&1 /tmp/docker-image-name.txt
+          make docker/image/name 2>&1 > /tmp/docker-image-name.txt
       - name: 'Upload debug info'
         uses: actions/upload-artifact@v4
         with:
