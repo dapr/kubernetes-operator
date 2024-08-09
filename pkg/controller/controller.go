@@ -2,8 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"net/http"
-	"net/http/pprof"
 	"os"
 	"time"
 
@@ -50,6 +48,7 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 		LeaderElectionID:              options.LeaderElectionID,
 		LeaderElectionReleaseOnCancel: options.ReleaseLeaderElectionOnCancel,
 		LeaderElectionNamespace:       options.LeaderElectionNamespace,
+		PprofBindAddress:              options.PprofAddr,
 
 		Metrics: metricsserver.Options{
 			BindAddress: options.MetricsAddr,
@@ -73,29 +72,6 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		return fmt.Errorf("unable to set up readiness check: %w", err)
-	}
-
-	if options.PprofAddr != "" {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/debug/pprof/", pprof.Index)
-		mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
-		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
-
-		server := &http.Server{
-			Addr:         options.PprofAddr,
-			ReadTimeout:  PprofReadTimeout,
-			WriteTimeout: PprofWriteTimeout,
-			Handler:      mux,
-		}
-
-		Log.Info("starting pprof")
-
-		go func() {
-			err := server.ListenAndServe()
-			Log.Error(err, "pprof")
-		}()
 	}
 
 	Log.Info("starting manager")
