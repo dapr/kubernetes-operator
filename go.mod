@@ -15,7 +15,7 @@ require (
 	github.com/rs/xid v1.5.0
 	github.com/spf13/cobra v1.8.1
 	github.com/wI2L/jsondiff v0.6.0
-	golang.org/x/time v0.5.0
+	golang.org/x/time v0.6.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.15.3
 	k8s.io/api v0.30.3
