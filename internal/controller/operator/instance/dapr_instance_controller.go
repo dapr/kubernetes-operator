@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 
+	helme "github.com/lburgazzoli/k8s-manifests-renderer-helm/engine"
+
 	"k8s.io/client-go/tools/record"
 
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -27,8 +29,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/chart/loader"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -61,6 +61,8 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 	rec.ClusterType = controller.ClusterTypeVanilla
 	rec.manager = manager
 	rec.recorder = manager.GetEventRecorderFor(controller.FieldManager)
+	rec.helmOptions = o
+	rec.helmEngine = helme.New()
 
 	isOpenshift, err := openshift.IsOpenShift(c.Discovery)
 	if err != nil {
@@ -76,16 +78,6 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 	rec.actions = append(rec.actions, NewApplyCRDsAction(rec.l))
 	rec.actions = append(rec.actions, NewApplyResourcesAction(rec.l))
 	rec.actions = append(rec.actions, NewConditionsAction(rec.l))
-
-	hc, err := loader.Load(o.ChartsDir)
-	if err != nil {
-		return nil, fmt.Errorf("unable to load chart from dir %s: %w", o.ChartsDir, err)
-	}
-
-	rec.c = hc
-	if rec.c.Values == nil {
-		rec.c.Values = make(map[string]interface{})
-	}
 
 	err = rec.init(ctx)
 	if err != nil {
@@ -131,7 +123,8 @@ type Reconciler struct {
 	ClusterType controller.ClusterType
 	actions     []Action
 	l           logr.Logger
-	c           *chart.Chart
+	helmEngine  *helme.Instance
+	helmOptions helm.Options
 	manager     ctrlRt.Manager
 	controller  ctrl.Controller
 	recorder    record.EventRecorder
