@@ -8,29 +8,9 @@ rules:
   - ""
   resources:
   - configmaps
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
   - events
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
   - secrets
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
   - serviceaccounts
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
   - services
   verbs:
   - '*'
@@ -54,11 +34,6 @@ rules:
   - apps
   resources:
   - deployments
-  verbs:
-  - '*'
-- apiGroups:
-  - apps
-  resources:
   - statefulsets
   verbs:
   - '*'
@@ -66,71 +41,16 @@ rules:
   - dapr.io
   resources:
   - components
-  verbs:
-  - '*'
-- apiGroups:
-  - dapr.io
-  resources:
   - components/finalizers
-  verbs:
-  - '*'
-- apiGroups:
-  - dapr.io
-  resources:
   - components/status
-  verbs:
-  - '*'
-- apiGroups:
-  - dapr.io
-  resources:
   - configurations
-  verbs:
-  - '*'
-- apiGroups:
-  - dapr.io
-  resources:
   - configurations/finalizers
-  verbs:
-  - '*'
-- apiGroups:
-  - dapr.io
-  resources:
   - configurations/status
-  verbs:
-  - '*'
-- apiGroups:
-  - dapr.io
-  resources:
   - resiliencies
-  verbs:
-  - '*'
-- apiGroups:
-  - dapr.io
-  resources:
   - resiliencies/finalizers
-  verbs:
-  - '*'
-- apiGroups:
-  - dapr.io
-  resources:
   - resiliencies/status
-  verbs:
-  - '*'
-- apiGroups:
-  - dapr.io
-  resources:
   - subscriptions
-  verbs:
-  - '*'
-- apiGroups:
-  - dapr.io
-  resources:
   - subscriptions/finalizers
-  verbs:
-  - '*'
-- apiGroups:
-  - dapr.io
-  resources:
   - subscriptions/status
   verbs:
   - '*'
@@ -138,31 +58,6 @@ rules:
   - operator.dapr.io
   resources:
   - daprcontrolplanes
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - operator.dapr.io
-  resources:
-  - daprcontrolplanes/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - operator.dapr.io
-  resources:
-  - daprcontrolplanes/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - operator.dapr.io
-  resources:
   - daprinstances
   verbs:
   - create
@@ -175,12 +70,14 @@ rules:
 - apiGroups:
   - operator.dapr.io
   resources:
+  - daprcontrolplanes/finalizers
   - daprinstances/finalizers
   verbs:
   - update
 - apiGroups:
   - operator.dapr.io
   resources:
+  - daprcontrolplanes/status
   - daprinstances/status
   verbs:
   - get
@@ -190,23 +87,8 @@ rules:
   - rbac.authorization.k8s.io
   resources:
   - clusterrolebindings
-  verbs:
-  - '*'
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
   - clusterroles
-  verbs:
-  - '*'
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
   - rolebindings
-  verbs:
-  - '*'
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
   - roles
   verbs:
   - '*'
