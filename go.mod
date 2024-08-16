@@ -1,9 +1,8 @@
 module github.com/dapr/kubernetes-operator
 
 go 1.22.5
-
 require (
-	github.com/dapr/go-sdk v1.10.1
+	github.com/dapr/go-sdk v1.11.0
 	github.com/go-logr/logr v1.4.2
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/go-cleanhttp v0.5.2
@@ -45,7 +44,7 @@ require (
 	github.com/containerd/containerd v1.7.12 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
-	github.com/dapr/dapr v1.13.3 // indirect
+	github.com/dapr/dapr v1.14.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/cli v25.0.1+incompatible // indirect
@@ -141,7 +140,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
 	go.starlark.net v0.0.0-20230814145427-12f4cb8177e4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.26.0 // indirect
+	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.25.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/net v0.27.0 // indirect
