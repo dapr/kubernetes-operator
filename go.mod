@@ -10,7 +10,7 @@ require (
 	github.com/lburgazzoli/gomega-matchers v0.0.0-20240813085813-c062a40739b0
 	github.com/lburgazzoli/k8s-manifests-renderer-helm v0.1.0
 	github.com/onsi/gomega v1.34.1
-	github.com/operator-framework/api v0.26.0
+	github.com/operator-framework/api v0.27.0
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
 	github.com/rs/xid v1.5.0
 	github.com/spf13/cobra v1.8.1
