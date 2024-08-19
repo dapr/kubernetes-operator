@@ -1,10 +1,11 @@
-{{- if eq .Values.enabled true }}
-apiVersion: v1
+{{- if (eq .Values.global.scheduler.enabled true) }}
 kind: Service
+apiVersion: v1
 metadata:
-  name: dapr-sidecar-injector
+  name: dapr-scheduler-server
   namespace: {{ .Release.Namespace }}
   labels:
+    app: dapr-scheduler-server
     {{- range $key, $value := .Values.global.k8sLabels }}
     {{ $key }}: {{ tpl $value $ }}
     {{- end }}
@@ -21,17 +22,24 @@ metadata:
   {{- end }}
 spec:
   selector:
-    app: dapr-sidecar-injector
-  type: {{ .Values.service.type }}
+    app: dapr-scheduler-server
+  # scheduler must be able to resolve pod address to join initial cluster peers
+  # before POD is ready
+  publishNotReadyAddresses: true
   ports:
-  - port: 443
-    targetPort: https
-    protocol: TCP
-    name: https
+  - name: api
+    port: 50006
+  - name: etcd-client
+    port: {{ .Values.ports.etcdGRPCClientPort }}
+  - name: etcd-httpclient
+    port: {{ .Values.ports.etcdHTTPClientPort }}
+  - name: etcd-peer
+    port: {{ .Values.ports.etcdGRPCPeerPort }}
   {{- if eq .Values.global.prometheus.enabled true }}
   - name: metrics
     port: {{ .Values.global.prometheus.port }}
     targetPort: {{ .Values.global.prometheus.port }}
     protocol: TCP
   {{- end}}
+  clusterIP: None # make the service headless
 {{- end }}

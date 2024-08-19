@@ -104,6 +104,7 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=*
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=*
 // +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=*
+// +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets,verbs=*
 // +kubebuilder:rbac:groups=dapr.io,resources=components,verbs=*
 // +kubebuilder:rbac:groups=dapr.io,resources=components/status,verbs=*
 // +kubebuilder:rbac:groups=dapr.io,resources=components/finalizers,verbs=*
