@@ -41,9 +41,8 @@ func (r *Reconciler) reconciliationRequest(res *daprApi.DaprControlPlane) Reconc
 			Name:      res.Name,
 			Namespace: res.Namespace,
 		},
-		ClusterType: r.ClusterType,
-		Reconciler:  r,
-		Resource:    res,
+		Reconciler: r,
+		Resource:   res,
 	}
 }
 

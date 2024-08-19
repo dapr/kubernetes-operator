@@ -6,8 +6,6 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/dapr/kubernetes-operator/pkg/helm/customizers"
-
 	"github.com/dapr/kubernetes-operator/pkg/controller"
 
 	"github.com/go-logr/logr"
@@ -26,30 +24,17 @@ import (
 	"github.com/dapr/kubernetes-operator/pkg/resources"
 )
 
-const autoPullPolicySidecarInjector = `
-if (.dapr_sidecar_injector.image | has("name")) and (.dapr_sidecar_injector | has("sidecarImagePullPolicy") | not) 
-then 
-  .dapr_sidecar_injector.sidecarImagePullPolicy = "Always"
-end
-`
-
 func NewApplyResourcesAction(l logr.Logger) Action {
 	action := ApplyResourcesAction{
-		engine:        helm.NewEngine(),
 		l:             l.WithName("action").WithName("apply").WithName("resources"),
 		subscriptions: make(map[string]struct{}),
 		gc:            gc.New(),
 	}
 
-	action.engine.Customizer(
-		customizers.JQ(autoPullPolicySidecarInjector),
-	)
-
 	return &action
 }
 
 type ApplyResourcesAction struct {
-	engine        *helm.Engine
 	gc            *gc.GC
 	l             logr.Logger
 	subscriptions map[string]struct{}
@@ -60,7 +45,12 @@ func (a *ApplyResourcesAction) Configure(_ context.Context, _ *client.Client, b 
 }
 
 func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationRequest) error {
-	items, err := a.engine.Render(rc.Chart, rc.Resource, rc.Overrides)
+	c, err := rc.Chart(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot load chart: %w", err)
+	}
+
+	items, err := c.Render(ctx, rc.Resource.Name, rc.Resource.Namespace, int(rc.Resource.Generation), rc.Helm.ChartValues)
 	if err != nil {
 		return fmt.Errorf("cannot render a chart: %w", err)
 	}
@@ -246,7 +236,12 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 }
 
 func (a *ApplyResourcesAction) Cleanup(ctx context.Context, rc *ReconciliationRequest) error {
-	items, err := a.engine.Render(rc.Chart, rc.Resource, rc.Overrides)
+	c, err := rc.Chart(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot load chart: %w", err)
+	}
+
+	items, err := c.Render(ctx, rc.Resource.Name, rc.Resource.Namespace, int(rc.Resource.Generation), rc.Helm.ChartValues)
 	if err != nil {
 		return fmt.Errorf("cannot render a chart: %w", err)
 	}

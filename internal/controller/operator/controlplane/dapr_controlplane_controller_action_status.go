@@ -10,27 +10,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/dapr/kubernetes-operator/pkg/controller/client"
-	"github.com/dapr/kubernetes-operator/pkg/controller/gc"
-	"github.com/dapr/kubernetes-operator/pkg/helm"
 	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 )
 
 func NewStatusAction(l logr.Logger) Action {
 	return &StatusAction{
-		engine:        helm.NewEngine(),
-		l:             l.WithName("action").WithName("status"),
-		subscriptions: make(map[string]struct{}),
-		gc:            gc.New(),
+		l: l.WithName("action").WithName("status"),
 	}
 }
 
 // StatusAction computes the state of a DaprControlPlane resource out of the owned DaprInstance resource.
 type StatusAction struct {
-	engine        *helm.Engine
-	gc            *gc.GC
-	l             logr.Logger
-	subscriptions map[string]struct{}
+	l logr.Logger
 }
 
 func (a *StatusAction) Configure(_ context.Context, _ *client.Client, b *builder.Builder) (*builder.Builder, error) {

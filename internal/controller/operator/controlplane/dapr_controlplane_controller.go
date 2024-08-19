@@ -22,8 +22,6 @@ import (
 
 	"k8s.io/client-go/tools/record"
 
-	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/chart/loader"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -36,8 +34,6 @@ import (
 	"github.com/dapr/kubernetes-operator/pkg/controller/client"
 	"github.com/dapr/kubernetes-operator/pkg/controller/reconciler"
 	"github.com/dapr/kubernetes-operator/pkg/helm"
-	"github.com/dapr/kubernetes-operator/pkg/openshift"
-
 	"github.com/go-logr/logr"
 
 	ctrlRt "sigs.k8s.io/controller-runtime"
@@ -55,32 +51,11 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 	rec.l = ctrlRt.Log.WithName("dapr-controlplane-controller")
 	rec.client = c
 	rec.Scheme = manager.GetScheme()
-	rec.ClusterType = controller.ClusterTypeVanilla
 	rec.manager = manager
 	rec.recorder = manager.GetEventRecorderFor(controller.FieldManager)
 
-	isOpenshift, err := openshift.IsOpenShift(c.Discovery)
-	if err != nil {
-		//nolint: wrapcheck
-		return nil, err
-	}
-
-	if isOpenshift {
-		rec.ClusterType = controller.ClusterTypeOpenShift
-	}
-
 	rec.actions = append(rec.actions, NewApplyAction(rec.l))
 	rec.actions = append(rec.actions, NewStatusAction(rec.l))
-
-	hc, err := loader.Load(o.ChartsDir)
-	if err != nil {
-		return nil, fmt.Errorf("unable to load chart from dir %s: %w", o.ChartsDir, err)
-	}
-
-	rec.c = hc
-	if rec.c.Values == nil {
-		rec.c.Values = make(map[string]interface{})
-	}
 
 	err = rec.init(ctx)
 	if err != nil {
@@ -97,15 +72,13 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 // +kubebuilder:rbac:groups=operator.dapr.io,resources=daprinstances/status,verbs=get
 
 type Reconciler struct {
-	client      *client.Client
-	Scheme      *runtime.Scheme
-	ClusterType controller.ClusterType
-	actions     []Action
-	l           logr.Logger
-	c           *chart.Chart
-	manager     ctrlRt.Manager
-	controller  ctrl.Controller
-	recorder    record.EventRecorder
+	client     *client.Client
+	Scheme     *runtime.Scheme
+	actions    []Action
+	l          logr.Logger
+	manager    ctrlRt.Manager
+	controller ctrl.Controller
+	recorder   record.EventRecorder
 }
 
 func (r *Reconciler) Client() *client.Client {

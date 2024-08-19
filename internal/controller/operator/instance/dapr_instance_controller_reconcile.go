@@ -18,6 +18,7 @@ package instance
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
@@ -34,8 +35,8 @@ import (
 	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
 )
 
-func (r *Reconciler) reconciliationRequest(res *daprApi.DaprInstance) ReconciliationRequest {
-	return ReconciliationRequest{
+func (r *Reconciler) reconciliationRequest(res *daprApi.DaprInstance) (ReconciliationRequest, error) {
+	rr := ReconciliationRequest{
 		Client: r.Client(),
 		NamespacedName: types.NamespacedName{
 			Name:      res.Name,
@@ -44,18 +45,39 @@ func (r *Reconciler) reconciliationRequest(res *daprApi.DaprInstance) Reconcilia
 		ClusterType: r.ClusterType,
 		Reconciler:  r,
 		Resource:    res,
-		Chart:       r.c,
-		Overrides: map[string]interface{}{
-			"dapr_operator":  map[string]interface{}{"runAsNonRoot": "true"},
-			"dapr_placement": map[string]interface{}{"runAsNonRoot": "true"},
-			"dapr_sentry":    map[string]interface{}{"runAsNonRoot": "true"},
-			"dapr_dashboard": map[string]interface{}{"runAsNonRoot": "true"},
+		Helm: Helm{
+			engine:      r.helmEngine,
+			chartDir:    r.helmOptions.ChartsDir,
+			ChartValues: make(map[string]interface{}),
+			chartOverrides: map[string]interface{}{
+				"dapr_operator":        map[string]interface{}{"runAsNonRoot": "true"},
+				"dapr_placement":       map[string]interface{}{"runAsNonRoot": "true"},
+				"dapr_sentry":          map[string]interface{}{"runAsNonRoot": "true"},
+				"dapr_dashboard":       map[string]interface{}{"runAsNonRoot": "true"},
+				"apr_sidecar_injector": map[string]interface{}{"runAsNonRoot": "true"},
+			},
 		},
 	}
+
+	if res.Spec.Values != nil {
+		if err := json.Unmarshal(res.Spec.Values.RawMessage, &rr.Helm.ChartValues); err != nil {
+			return ReconciliationRequest{}, fmt.Errorf("unable to decode chart values: %w", err)
+		}
+	}
+
+	return rr, nil
 }
 
 func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprInstance) (ctrl.Result, error) {
-	rr := r.reconciliationRequest(res)
+	rr, err := r.reconciliationRequest(res)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	_, err = rr.Chart(ctx)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	l := log.FromContext(ctx)
 	l.Info("Reconciling", "resource", rr.NamespacedName.String())
@@ -101,7 +123,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprInstance) (
 	// Update status
 	//
 
-	err := r.Client().Status().Update(ctx, rr.Resource)
+	err = r.Client().Status().Update(ctx, rr.Resource)
 
 	if err != nil && k8serrors.IsConflict(err) {
 		l.Info(err.Error())
@@ -114,7 +136,15 @@ func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprInstance) (
 }
 
 func (r *Reconciler) Cleanup(ctx context.Context, res *daprApi.DaprInstance) error {
-	rr := r.reconciliationRequest(res)
+	rr, err := r.reconciliationRequest(res)
+	if err != nil {
+		return err
+	}
+
+	_, err = rr.Chart(ctx)
+	if err != nil {
+		return err
+	}
 
 	l := log.FromContext(ctx)
 	l.Info("Cleanup", "resource", rr.NamespacedName.String())

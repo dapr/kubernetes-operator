@@ -5,13 +5,11 @@ import (
 	"fmt"
 
 	"github.com/dapr/kubernetes-operator/pkg/conditions"
-	"github.com/dapr/kubernetes-operator/pkg/controller/gc"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 
 	"github.com/dapr/kubernetes-operator/pkg/controller/client"
-	"github.com/dapr/kubernetes-operator/pkg/helm"
 	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -19,18 +17,12 @@ import (
 
 func NewConditionsAction(l logr.Logger) Action {
 	return &ConditionsAction{
-		engine:        helm.NewEngine(),
-		l:             l.WithName("action").WithName("conditions"),
-		subscriptions: make(map[string]struct{}),
-		gc:            gc.New(),
+		l: l.WithName("action").WithName("conditions"),
 	}
 }
 
 type ConditionsAction struct {
-	engine        *helm.Engine
-	gc            *gc.GC
-	l             logr.Logger
-	subscriptions map[string]struct{}
+	l logr.Logger
 }
 
 func (a *ConditionsAction) Configure(_ context.Context, _ *client.Client, b *builder.Builder) (*builder.Builder, error) {
