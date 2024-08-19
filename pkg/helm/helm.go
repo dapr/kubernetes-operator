@@ -9,6 +9,7 @@ const (
 	ReleaseGeneration = "helm.operator.dapr.io/release.generation"
 	ReleaseName       = "helm.operator.dapr.io/release.name"
 	ReleaseNamespace  = "helm.operator.dapr.io/release.namespace"
+	ReleaseVersion    = "helm.operator.dapr.io/release.version"
 
 	ChartsDir = "helm-charts/dapr"
 )

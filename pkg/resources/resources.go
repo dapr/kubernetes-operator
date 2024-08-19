@@ -64,6 +64,16 @@ func Labels(target *unstructured.Unstructured, labels map[string]string) {
 	target.SetLabels(m)
 }
 
+func Label(target *unstructured.Unstructured, key string) string {
+	m := target.GetLabels()
+
+	if m == nil {
+		return ""
+	}
+
+	return m[key]
+}
+
 func Ref(obj client.Object) string {
 	name := obj.GetName()
 	if obj.GetNamespace() == "" {

@@ -30,10 +30,12 @@ func (a *ConditionsAction) Configure(_ context.Context, _ *client.Client, b *bui
 }
 
 func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) error {
-	crs, err := CurrentReleaseSelector(rc)
+	crs, err := currentReleaseSelector(ctx, rc)
 	if err != nil {
 		return fmt.Errorf("cannot compute current release selector: %w", err)
 	}
+
+	// Deployments
 
 	deployments, err := rc.Client.AppsV1().Deployments(rc.Resource.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: crs.String(),
@@ -43,32 +45,58 @@ func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) e
 		return fmt.Errorf("cannot list deployments: %w", err)
 	}
 
-	ready := 0
+	readyDeployments := 0
 
 	for i := range deployments.Items {
 		if conditions.ConditionStatus(deployments.Items[i], appsv1.DeploymentAvailable) == corev1.ConditionTrue {
-			ready++
+			readyDeployments++
+		}
+	}
+
+	// StatefulSets
+
+	statefulSets, err := rc.Client.AppsV1().StatefulSets(rc.Resource.Namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: crs.String(),
+	})
+
+	if err != nil {
+		return fmt.Errorf("cannot list stateful sets: %w", err)
+	}
+
+	readyReplicaSets := 0
+
+	for i := range statefulSets.Items {
+		if statefulSets.Items[i].Status.Replicas == 0 {
+			continue
+		}
+
+		if statefulSets.Items[i].Status.Replicas == statefulSets.Items[i].Status.ReadyReplicas {
+			readyReplicaSets++
 		}
 	}
 
 	var readyCondition metav1.Condition
 
-	if len(deployments.Items) > 0 {
-		if ready == len(deployments.Items) {
+	if len(deployments.Items)+len(statefulSets.Items) > 0 {
+		if readyDeployments+readyReplicaSets == len(deployments.Items)+len(statefulSets.Items) {
 			readyCondition = metav1.Condition{
 				Type:               conditions.TypeReady,
 				Status:             metav1.ConditionTrue,
 				Reason:             "Ready",
-				Message:            fmt.Sprintf("%d/%d deployments ready", ready, len(deployments.Items)),
 				ObservedGeneration: rc.Resource.Generation,
+				Message: fmt.Sprintf("%d/%d deployments ready, statefulSets ready %d/%d",
+					readyDeployments, len(deployments.Items),
+					readyReplicaSets, len(statefulSets.Items)),
 			}
 		} else {
 			readyCondition = metav1.Condition{
 				Type:               conditions.TypeReady,
 				Status:             metav1.ConditionFalse,
 				Reason:             "InProgress",
-				Message:            fmt.Sprintf("%d/%d deployments ready", ready, len(deployments.Items)),
 				ObservedGeneration: rc.Resource.Generation,
+				Message: fmt.Sprintf("%d/%d deployments ready, statefulSets ready %d/%d",
+					readyDeployments, len(deployments.Items),
+					readyReplicaSets, len(statefulSets.Items)),
 			}
 		}
 	} else {
@@ -76,7 +104,7 @@ func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) e
 			Type:               conditions.TypeReady,
 			Status:             metav1.ConditionFalse,
 			Reason:             "InProgress",
-			Message:            "no deployments",
+			Message:            "no deployments/replicasets",
 			ObservedGeneration: rc.Resource.Generation,
 		}
 	}

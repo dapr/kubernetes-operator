@@ -54,6 +54,44 @@ func TestDaprInstanceDeployWithDefaults(t *testing.T) {
 	)
 }
 
+func TestDaprInstanceGC(t *testing.T) {
+	test := With(t)
+
+	{
+		instance := dapr.DeployInstance(
+			test,
+			daprAc.DaprInstanceSpec().
+				WithValues(nil),
+		)
+
+		test.Eventually(Deployment(test, "dapr-operator", instance.Namespace), TestTimeoutLong).Should(
+			WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+		test.Eventually(Deployment(test, "dapr-sentry", instance.Namespace), TestTimeoutLong).Should(
+			WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+		test.Eventually(Deployment(test, "dapr-sidecar-injector", instance.Namespace), TestTimeoutLong).Should(
+			WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+	}
+
+	{
+		instance := dapr.DeployInstance(
+			test,
+			daprAc.DaprInstanceSpec().
+				WithValues(dapr.Values(test, map[string]any{
+					"dapr_sidecar_injector": map[string]any{
+						"enabled": false,
+					},
+				})),
+		)
+
+		test.Eventually(Deployment(test, "dapr-operator", instance.Namespace), TestTimeoutLong).Should(
+			WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+		test.Eventually(Deployment(test, "dapr-sentry", instance.Namespace), TestTimeoutLong).Should(
+			WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+		test.Eventually(Deployment(test, "dapr-sidecar-injector", instance.Namespace), TestTimeoutLong).Should(
+			BeNil())
+	}
+}
+
 func TestDaprInstanceDeployWithCustomChart(t *testing.T) {
 	test := With(t)
 

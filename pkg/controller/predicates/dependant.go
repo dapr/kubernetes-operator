@@ -12,6 +12,29 @@ import (
 
 var _ predicate.Predicate = DependentPredicate{}
 
+type DependentPredicateOption func(*DependentPredicate) *DependentPredicate
+
+func WithWatchDeleted(val bool) DependentPredicateOption {
+	return func(in *DependentPredicate) *DependentPredicate {
+		in.WatchDelete = val
+		return in
+	}
+}
+
+func WithWatchUpdate(val bool) DependentPredicateOption {
+	return func(in *DependentPredicate) *DependentPredicate {
+		in.WatchUpdate = val
+		return in
+	}
+}
+
+func WithWatchStatus(val bool) DependentPredicateOption {
+	return func(in *DependentPredicate) *DependentPredicate {
+		in.WatchStatus = val
+		return in
+	}
+}
+
 type DependentPredicate struct {
 	WatchDelete bool
 	WatchUpdate bool

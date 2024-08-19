@@ -17,7 +17,12 @@ import (
 	"github.com/dapr/kubernetes-operator/pkg/controller/predicates"
 )
 
-func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {
+func gcSelector(ctx context.Context, rc *ReconciliationRequest) (labels.Selector, error) {
+	c, err := rc.Chart(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("cannot load chart: %w", err)
+	}
+
 	namespace, err := labels.NewRequirement(
 		helm.ReleaseNamespace,
 		selection.Equals,
@@ -38,17 +43,27 @@ func gcSelector(rc *ReconciliationRequest) (labels.Selector, error) {
 
 	generation, err := labels.NewRequirement(
 		helm.ReleaseGeneration,
-		selection.LessThan,
-		[]string{strconv.FormatInt(rc.Resource.Generation, 10)})
+		selection.Exists,
+		[]string{})
 
 	if err != nil {
 		return nil, fmt.Errorf("cannot determine generation requirement: %w", err)
 	}
 
+	version, err := labels.NewRequirement(
+		helm.ReleaseVersion,
+		selection.Equals,
+		[]string{c.Version()})
+
+	if err != nil {
+		return nil, fmt.Errorf("cannot determine release version requirement: %w", err)
+	}
+
 	selector := labels.NewSelector().
 		Add(*namespace).
 		Add(*name).
-		Add(*generation)
+		Add(*generation).
+		Add(*version)
 
 	return selector, nil
 }
@@ -77,7 +92,13 @@ func labelsToRequest(_ context.Context, object ctrlCli.Object) []reconcile.Reque
 	}}
 }
 
-func dependantWithLabels(watchUpdate bool, watchDelete bool, watchStatus bool) predicate.Predicate {
+func dependantWithLabels(opts ...predicates.DependentPredicateOption) predicate.Predicate {
+	dp := &predicates.DependentPredicate{}
+
+	for i := range opts {
+		dp = opts[i](dp)
+	}
+
 	return predicate.And(
 		&predicates.HasLabel{
 			Name: helm.ReleaseName,
@@ -85,15 +106,16 @@ func dependantWithLabels(watchUpdate bool, watchDelete bool, watchStatus bool) p
 		&predicates.HasLabel{
 			Name: helm.ReleaseNamespace,
 		},
-		&predicates.DependentPredicate{
-			WatchUpdate: watchUpdate,
-			WatchDelete: watchDelete,
-			WatchStatus: watchStatus,
-		},
+		dp,
 	)
 }
 
-func CurrentReleaseSelector(rc *ReconciliationRequest) (labels.Selector, error) {
+func currentReleaseSelector(ctx context.Context, rc *ReconciliationRequest) (labels.Selector, error) {
+	c, err := rc.Chart(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("cannot load chart: %w", err)
+	}
+
 	namespace, err := labels.NewRequirement(
 		helm.ReleaseNamespace,
 		selection.Equals,
@@ -121,10 +143,20 @@ func CurrentReleaseSelector(rc *ReconciliationRequest) (labels.Selector, error) 
 		return nil, fmt.Errorf("cannot determine generation requirement: %w", err)
 	}
 
+	version, err := labels.NewRequirement(
+		helm.ReleaseVersion,
+		selection.Equals,
+		[]string{c.Version()})
+
+	if err != nil {
+		return nil, fmt.Errorf("cannot determine release version requirement: %w", err)
+	}
+
 	selector := labels.NewSelector().
 		Add(*namespace).
 		Add(*name).
-		Add(*generation)
+		Add(*generation).
+		Add(*version)
 
 	return selector, nil
 }
