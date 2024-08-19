@@ -24,7 +24,7 @@ LOCALBIN := $(PROJECT_PATH)/bin
 
 HELM_CHART_REPO ?= https://dapr.github.io/helm-charts
 HELM_CHART ?= dapr
-HELM_CHART_VERSION ?= 1.13.3
+HELM_CHART_VERSION ?= 1.14.1
 HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr-$(HELM_CHART_VERSION).tgz
 
 OPENSHIFT_VERSIONS ?= v4.12

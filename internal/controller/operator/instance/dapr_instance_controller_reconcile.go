@@ -50,11 +50,11 @@ func (r *Reconciler) reconciliationRequest(res *daprApi.DaprInstance) (Reconcili
 			chartDir:    r.helmOptions.ChartsDir,
 			ChartValues: make(map[string]interface{}),
 			chartOverrides: map[string]interface{}{
-				"dapr_operator":        map[string]interface{}{"runAsNonRoot": "true"},
-				"dapr_placement":       map[string]interface{}{"runAsNonRoot": "true"},
-				"dapr_sentry":          map[string]interface{}{"runAsNonRoot": "true"},
-				"dapr_dashboard":       map[string]interface{}{"runAsNonRoot": "true"},
-				"apr_sidecar_injector": map[string]interface{}{"runAsNonRoot": "true"},
+				"dapr_operator":         map[string]interface{}{"runAsNonRoot": "true"},
+				"dapr_placement":        map[string]interface{}{"runAsNonRoot": "true"},
+				"dapr_sentry":           map[string]interface{}{"runAsNonRoot": "true"},
+				"dapr_dashboard":        map[string]interface{}{"runAsNonRoot": "true"},
+				"dapr_sidecar_injector": map[string]interface{}{"runAsNonRoot": true},
 			},
 		},
 	}

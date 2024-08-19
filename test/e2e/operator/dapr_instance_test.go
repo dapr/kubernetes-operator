@@ -61,7 +61,7 @@ func TestDaprInstanceDeployWithCustomChart(t *testing.T) {
 		test,
 		daprAc.DaprInstanceSpec().
 			WithChart(daprAc.ChartSpec().
-				WithVersion("1.13.2")).
+				WithVersion("1.14.0")).
 			WithValues(nil),
 	)
 
@@ -82,7 +82,7 @@ func TestDaprInstanceDeployWithCustomChart(t *testing.T) {
 		WithTransform(json.Marshal, And(
 			jq.Match(`.status.chart.name == "dapr"`),
 			jq.Match(`.status.chart.repo == "https://dapr.github.io/helm-charts"`),
-			jq.Match(`.status.chart.version == "1.13.2"`),
+			jq.Match(`.status.chart.version == "1.14.0"`),
 		)),
 	)
 }

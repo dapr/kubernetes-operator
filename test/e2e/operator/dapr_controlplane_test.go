@@ -18,6 +18,36 @@ import (
 	daprTC "github.com/dapr/kubernetes-operator/test/e2e/common"
 )
 
+func TestDaprControlPlaneDeploy(t *testing.T) {
+	test := With(t)
+
+	instance := dapr.DeployControlPlane(
+		test,
+		daprAc.DaprControlPlaneSpec().
+			WithValues(dapr.Values(test, map[string]interface{}{
+				// enable pod watchdog as sometimes the sidecar for some
+				// (yet) unknown reason is not injected when the pod is
+				// created, hence the dapr app won't properly start up
+				"dapr_operator": map[string]interface{}{
+					"watchInterval": "1s",
+				},
+			})),
+	)
+
+	test.Eventually(CustomResourceDefinition(test, "components.dapr.io"), TestTimeoutLong).Should(Not(BeNil()))
+	test.Eventually(CustomResourceDefinition(test, "configurations.dapr.io"), TestTimeoutLong).Should(Not(BeNil()))
+	test.Eventually(CustomResourceDefinition(test, "httpendpoints.dapr.io"), TestTimeoutLong).Should(Not(BeNil()))
+	test.Eventually(CustomResourceDefinition(test, "resiliencies.dapr.io"), TestTimeoutLong).Should(Not(BeNil()))
+	test.Eventually(CustomResourceDefinition(test, "subscriptions.dapr.io"), TestTimeoutLong).Should(Not(BeNil()))
+
+	test.Eventually(Deployment(test, "dapr-operator", instance.Namespace), TestTimeoutLong).Should(
+		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+	test.Eventually(Deployment(test, "dapr-sentry", instance.Namespace), TestTimeoutLong).Should(
+		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+	test.Eventually(Deployment(test, "dapr-sidecar-injector", instance.Namespace), TestTimeoutLong).Should(
+		WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+}
+
 func TestDaprControlPlaneDeployWithApp(t *testing.T) {
 	test := With(t)
 
