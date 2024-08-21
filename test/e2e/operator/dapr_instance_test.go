@@ -49,7 +49,7 @@ func TestDaprInstanceDeployWithDefaults(t *testing.T) {
 		WithTransform(json.Marshal, And(
 			jq.Match(`.status.chart.name == "dapr"`),
 			jq.Match(`.status.chart.repo == "embedded"`),
-			jq.Match(`.status.chart.version == "`+os.Getenv("DAPR_HELM_CHART_VERSION")+`"`),
+			jq.Match(`.status.chart.version == "%s"`, os.Getenv("DAPR_HELM_CHART_VERSION")),
 		)),
 	)
 }
@@ -119,7 +119,7 @@ func TestDaprInstanceDeployWithCustomSidecarImage(t *testing.T) {
 		WithTransform(json.Marshal, And(
 			jq.Match(`.status.chart.name == "dapr"`),
 			jq.Match(`.status.chart.repo == "embedded"`),
-			jq.Match(`.status.chart.version == "`+os.Getenv("DAPR_HELM_CHART_VERSION")+`"`),
+			jq.Match(`.status.chart.version == "%s"`, os.Getenv("DAPR_HELM_CHART_VERSION")),
 		)),
 	)
 
@@ -164,7 +164,7 @@ func TestDaprInstanceDeployWithApp(t *testing.T) {
 		WithTransform(json.Marshal, And(
 			jq.Match(`.status.chart.name == "dapr"`),
 			jq.Match(`.status.chart.repo == "embedded"`),
-			jq.Match(`.status.chart.version == "`+os.Getenv("DAPR_HELM_CHART_VERSION")+`"`),
+			jq.Match(`.status.chart.version == "%s"`, os.Getenv("DAPR_HELM_CHART_VERSION")),
 		)),
 	)
 

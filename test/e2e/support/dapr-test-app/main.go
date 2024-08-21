@@ -43,11 +43,7 @@ func writeHandler(w http.ResponseWriter, r *http.Request) {
 	value := r.URL.Query().Get("message")
 	values, _ := read(r.Context(), stateStoreName, "values")
 
-	if values.Values == nil || len(values.Values) == 0 {
-		values.Values = []string{value}
-	} else {
-		values.Values = append(values.Values, value)
-	}
+	values.Values = append(values.Values, value)
 
 	data, err := json.Marshal(values)
 	if err != nil {

@@ -54,6 +54,7 @@ linters:
     #deprecated
     - gomnd
     - execinquery
+    - exportloopref
     # keep
     - varnamelen
     - godox # there are a bunch of TODOs that must be solved
