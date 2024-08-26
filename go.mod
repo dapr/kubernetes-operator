@@ -12,7 +12,7 @@ require (
 	github.com/onsi/gomega v1.34.1
 	github.com/operator-framework/api v0.27.0
 	github.com/operator-framework/operator-lifecycle-manager v0.22.0
-	github.com/rs/xid v1.5.0
+	github.com/rs/xid v1.6.0
 	github.com/spf13/cobra v1.8.1
 	github.com/wI2L/jsondiff v0.6.0
 	golang.org/x/time v0.6.0
