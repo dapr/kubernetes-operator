@@ -1,7 +1,7 @@
 apiVersion: operator.dapr.io/v1alpha1
-kind: DaprControlPlane
+kind: DaprInstance
 metadata:
-  name: "dapr-control-plane"
+  name: "dapr-instance"
 spec:
-  # This object provides access to values passed into the Dpr Helm chart
+  # This object provides access to values passed into the Dapr Helm chart
   values: {}
