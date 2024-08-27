@@ -6,8 +6,9 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/dapr/kubernetes-operator/pkg/controller"
+	"github.com/dapr/kubernetes-operator/pkg/controller/predicates"
 
+	"github.com/dapr/kubernetes-operator/pkg/controller"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -18,7 +19,6 @@ import (
 
 	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
 	"github.com/dapr/kubernetes-operator/pkg/controller/client"
-	"github.com/dapr/kubernetes-operator/pkg/controller/gc"
 	"github.com/dapr/kubernetes-operator/pkg/helm"
 	"github.com/dapr/kubernetes-operator/pkg/pointer"
 	"github.com/dapr/kubernetes-operator/pkg/resources"
@@ -28,14 +28,12 @@ func NewApplyResourcesAction(l logr.Logger) Action {
 	action := ApplyResourcesAction{
 		l:             l.WithName("action").WithName("apply").WithName("resources"),
 		subscriptions: make(map[string]struct{}),
-		gc:            gc.New(),
 	}
 
 	return &action
 }
 
 type ApplyResourcesAction struct {
-	gc            *gc.GC
 	l             logr.Logger
 	subscriptions map[string]struct{}
 }
@@ -63,16 +61,23 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 		return istr < jstr
 	})
 
-	reinstall := rc.Resource.Generation != rc.Resource.Status.ObservedGeneration
+	installedVersion := ""
+	if rc.Resource.Status.Chart != nil {
+		installedVersion = rc.Resource.Status.Chart.Version
+	}
+
+	reinstall := rc.Resource.Generation != rc.Resource.Status.ObservedGeneration || c.Version() != installedVersion
 
 	if reinstall {
 		rc.Reconciler.Event(
 			rc.Resource,
 			corev1.EventTypeNormal,
 			"RenderFullHelmTemplate",
-			fmt.Sprintf("Render full Helm template as Dapr spec changed (observedGeneration: %d, generation: %d)",
+			fmt.Sprintf("Render full Helm template (observedGeneration: %d, generation: %d, installedChartVersion: %s, chartVersion: %s)",
 				rc.Resource.Status.ObservedGeneration,
-				rc.Resource.Generation),
+				rc.Resource.Generation,
+				installedVersion,
+				c.Version()),
 		)
 	}
 
@@ -94,6 +99,7 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 			helm.ReleaseGeneration: strconv.FormatInt(rc.Resource.Generation, 10),
 			helm.ReleaseName:       rc.Resource.Name,
 			helm.ReleaseNamespace:  rc.Resource.Namespace,
+			helm.ReleaseVersion:    c.Version(),
 		})
 
 		switch dc.(type) {
@@ -115,9 +121,10 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 					&obj,
 					rc.Reconciler.EnqueueRequestForOwner(&daprApi.DaprInstance{}, handler.OnlyControllerOwner()),
 					dependantWithLabels(
-						a.watchForUpdates(gvk),
-						true,
-						a.watchStatus(gvk)),
+						predicates.WithWatchUpdate(a.watchForUpdates(gvk)),
+						predicates.WithWatchDeleted(true),
+						predicates.WithWatchStatus(a.watchStatus(gvk)),
+					),
 				)
 
 				if err != nil {
@@ -146,9 +153,10 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 					&obj,
 					rc.Reconciler.EnqueueRequestsFromMapFunc(labelsToRequest),
 					dependantWithLabels(
-						a.watchForUpdates(gvk),
-						true,
-						a.watchStatus(gvk)),
+						predicates.WithWatchUpdate(a.watchForUpdates(gvk)),
+						predicates.WithWatchDeleted(true),
+						predicates.WithWatchStatus(a.watchStatus(gvk)),
+					),
 				)
 
 				if err != nil {
@@ -205,31 +213,6 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 			"apply", "true",
 			"gen", rc.Resource.Generation,
 			"ref", resources.Ref(&obj))
-	}
-
-	//
-	// in case of a re-installation all the resources get re-rendered which means some of them
-	// may become obsolete (i.e. if some resources are moved from cluster to namespace scope)
-	// hence a sort of "garbage collector task" must be executed.
-	//
-	// The logic of the task it to delete all the resources that have a generation older than
-	// current CR one, which is propagated by the controller to all the rendered resources in
-	// the for of a label:
-	//
-	// - helm.operator.dapr.io/release.generation
-	//
-	if reinstall {
-		s, err := gcSelector(rc)
-		if err != nil {
-			return fmt.Errorf("cannot compute gc selector: %w", err)
-		}
-
-		deleted, err := a.gc.Run(ctx, rc.Resource.Namespace, rc.Client, s)
-		if err != nil {
-			return fmt.Errorf("cannot run gc: %w", err)
-		}
-
-		a.l.Info("gc", "deleted", deleted)
 	}
 
 	return nil

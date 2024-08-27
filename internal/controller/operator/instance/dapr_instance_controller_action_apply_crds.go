@@ -59,6 +59,7 @@ func (a *ApplyCRDsAction) Run(ctx context.Context, rc *ReconciliationRequest) er
 			helm.ReleaseGeneration: strconv.FormatInt(rc.Resource.Generation, 10),
 			helm.ReleaseName:       rc.Resource.Name,
 			helm.ReleaseNamespace:  rc.Resource.Namespace,
+			helm.ReleaseVersion:    c.Version(),
 		})
 
 		apply := rc.Resource.Generation != rc.Resource.Status.ObservedGeneration

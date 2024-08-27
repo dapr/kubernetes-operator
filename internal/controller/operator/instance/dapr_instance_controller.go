@@ -78,6 +78,7 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 	rec.actions = append(rec.actions, NewApplyCRDsAction(rec.l))
 	rec.actions = append(rec.actions, NewApplyResourcesAction(rec.l))
 	rec.actions = append(rec.actions, NewConditionsAction(rec.l))
+	rec.actions = append(rec.actions, NewGCAction(rec.l))
 
 	err = rec.init(ctx)
 	if err != nil {

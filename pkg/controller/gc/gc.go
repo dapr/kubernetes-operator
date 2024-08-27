@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/exp/maps"
 
 	"github.com/go-logr/logr"
 	"golang.org/x/time/rate"
@@ -27,7 +30,7 @@ func New() *GC {
 	return &GC{
 		l:               ctrl.Log.WithName("gc"),
 		limiter:         rate.NewLimiter(rate.Every(time.Minute), 1),
-		collectableGVKs: make(map[schema.GroupVersionKind]struct{}),
+		collectableGVKs: make([]schema.GroupVersionKind, 0),
 	}
 }
 
@@ -35,25 +38,36 @@ type GC struct {
 	l               logr.Logger
 	lock            sync.Mutex
 	limiter         *rate.Limiter
-	collectableGVKs map[schema.GroupVersionKind]struct{}
+	collectableGVKs []schema.GroupVersionKind
 }
 
-func (gc *GC) Run(ctx context.Context, ns string, c *client.Client, selector labels.Selector) (int, error) {
+func (gc *GC) Run(
+	ctx context.Context,
+	c *client.Client,
+	ns string,
+	selector labels.Selector,
+	predicate func(context.Context, unstructured.Unstructured) (bool, error),
+) (int, error) {
 	gc.lock.Lock()
 	defer gc.lock.Unlock()
 
-	err := gc.computeDeletableTypes(ctx, ns, c)
+	err := gc.computeDeletableTypes(ctx, c, ns)
 	if err != nil {
 		return 0, fmt.Errorf("cannot discover GVK types: %w", err)
 	}
 
-	return gc.deleteEachOf(ctx, c, selector)
+	return gc.deleteEachOf(ctx, c, selector, predicate)
 }
 
-func (gc *GC) deleteEachOf(ctx context.Context, c *client.Client, selector labels.Selector) (int, error) {
+func (gc *GC) deleteEachOf(
+	ctx context.Context,
+	c *client.Client,
+	selector labels.Selector,
+	predicate func(context.Context, unstructured.Unstructured) (bool, error),
+) (int, error) {
 	deleted := 0
 
-	for GVK := range gc.collectableGVKs {
+	for _, GVK := range gc.collectableGVKs {
 		items := unstructured.UnstructuredList{
 			Object: map[string]interface{}{
 				"apiVersion": GVK.GroupVersion().String(),
@@ -85,9 +99,18 @@ func (gc *GC) deleteEachOf(ctx context.Context, c *client.Client, selector label
 				continue
 			}
 
+			canBeDeleted, err := predicate(ctx, resource)
+			if err != nil {
+				return 0, err
+			}
+
+			if !canBeDeleted {
+				continue
+			}
+
 			gc.l.Info("deleting", "ref", resources.Ref(&resource))
 
-			err := c.Delete(ctx, &resource, ctrlCli.PropagationPolicy(metav1.DeletePropagationForeground))
+			err = c.Delete(ctx, &resource, ctrlCli.PropagationPolicy(metav1.DeletePropagationForeground))
 			if err != nil {
 				// The resource may have already been deleted
 				if !k8serrors.IsNotFound(err) {
@@ -120,7 +143,7 @@ func (gc *GC) canBeDeleted(_ context.Context, gvk schema.GroupVersionKind) bool 
 	return true
 }
 
-func (gc *GC) computeDeletableTypes(ctx context.Context, ns string, c *client.Client) error {
+func (gc *GC) computeDeletableTypes(ctx context.Context, c *client.Client, ns string) error {
 	// Rate limit to avoid Discovery and SelfSubjectRulesReview requests at every reconciliation.
 	if !gc.limiter.Allow() {
 		// Return the cached set of garbage collectable GVKs.
@@ -193,7 +216,10 @@ func (gc *GC) computeDeletableTypes(ctx context.Context, ns string, c *client.Cl
 		}
 	}
 
-	gc.collectableGVKs = GVKs
+	gc.collectableGVKs = maps.Keys(GVKs)
+	slices.SortFunc(gc.collectableGVKs, func(a, b schema.GroupVersionKind) int {
+		return strings.Compare(a.String(), b.String())
+	})
 
 	return nil
 }
