@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - main
+    - validate
   workflow_dispatch:
 
 concurrency:
