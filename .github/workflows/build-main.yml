@@ -30,6 +30,5 @@ jobs:
       version: "${{ github.ref_name }}-${{ github.sha }}"
       olm: false
     secrets:
-      registry: ${{ secrets.DOCKER_DAPRIO_REGISTRY }}
       registry-username: ${{ secrets.DOCKER_REGISTRY_ID }}
       registry-password: ${{ secrets.DOCKER_REGISTRY_PASS }}
