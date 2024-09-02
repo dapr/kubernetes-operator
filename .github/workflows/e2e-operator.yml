@@ -35,10 +35,10 @@ jobs:
     strategy:
       matrix:
         kubernetes-version:
-          - "1.27.13"
-          - "1.28.9"
-          - "1.29.4"
-          - "1.30.2"
+          - "1.27.16"
+          - "1.28.13"
+          - "1.29.8"
+          - "1.30.4"
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -47,14 +47,15 @@ jobs:
         with:
           go-version-file: 'go.mod'
           check-latest: true
-      - name: 'SetUp KinD'
-        uses: container-tools/kind-action@v2.0.4
+      - name: 'SetUp Kubectl'
+        uses: azure/setup-kubectl@v4
         with:
-          version: "v0.23.0"
-          kubectl_version: v${{ matrix.kubernetes-version }}
-          registry: false
-          node_image: kindest/node:v${{ matrix.kubernetes-version }}
-          config: test/e2e/kind.yaml
+          version: v${{ matrix.kubernetes-version }}
+      - name: 'SetUp KinD'
+        env:
+          KIND_IMAGE_VERSION: v${{ matrix.kubernetes-version }}
+        run: |
+          make test/e2e/kind
       - name: 'SetUp Kind Ingress'
         run: |
           make deploy/e2e/ingress
