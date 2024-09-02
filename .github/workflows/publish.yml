@@ -42,16 +42,6 @@ jobs:
           echo "CONTAINER_IMAGE_VERSION=${C_VERSION}" >> $GITHUB_ENV
           echo "BUNDLE_VERSION=${C_VERSION}" >> $GITHUB_ENV
           echo "CATALOG_VERSION=latest" >> $GITHUB_ENV
-            
-      - name: 'Dump debug info'
-        run: |
-          make docker/image/name 2>&1 > /tmp/docker-image-name.txt
-      - name: 'Upload debug info'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ocker-image-name.txt
-          path: /tmp/docker-image-name.txt
-
       - name: "Build Dapr Kubernetes Operator Container image"
         run: |
           make docker/build

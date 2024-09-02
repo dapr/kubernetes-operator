@@ -34,6 +34,7 @@ CODEGEN_VERSION ?= v0.30.3
 KUSTOMIZE_VERSION ?= v5.4.2
 CONTROLLER_TOOLS_VERSION ?= v0.16.0
 KIND_VERSION ?= v0.23.0
+KIND_IMAGE_VERSION ?= v1.30.4
 LINTER_VERSION ?= v1.60.2
 OPERATOR_SDK_VERSION ?= v1.36.1
 OPM_VERSION ?= v1.45.0
@@ -139,6 +140,14 @@ test/e2e/olm: ## Run e2e catalog tests.
 test/e2e/app: ko ## Deploy test app.
 	KO_DOCKER_REPO=kind.local $(LOCALBIN)/ko build -B ./test/e2e/support/dapr-test-app
 
+
+.PHONY: test/e2e/kind
+test/e2e/kind: kind ## Deploy test app.
+	$(LOCALBIN)/kind create cluster \
+		--image=kindest/node:$(KIND_IMAGE_VERSION) \
+		--config=$(PROJECT_PATH)/test/e2e/kind.yaml \
+		--wait=60s
+
 ##@ Build
 
 .PHONY: build
@@ -203,8 +212,8 @@ docker/push: ## Push docker image with the manager.
 	$(CONTAINER_TOOL) push $(CONTAINER_IMAGE)
 
 .PHONY: docker/push/kind
-docker/push/kind: docker/build ## Load docker image in kind.
-	kind load docker-image $(CONTAINER_IMAGE)
+docker/push/kind: kind docker/build ## Load docker image in kind.
+	$(LOCALBIN)/kind load docker-image $(CONTAINER_IMAGE)
 
 .PHONY: docker/image/name
 docker/image/name:
@@ -232,7 +241,7 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 .PHONY: deploy/kind
 deploy/kind: manifests kustomize kind ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
-	kind load docker-image $(CONTAINER_IMAGE)
+	$(LOCALBIN)/ load docker-image $(CONTAINER_IMAGE)
 	$(KUSTOMIZE) build config/deploy/standalone | kubectl apply -f -
 
 .PHONY: deploy/e2e/controller
