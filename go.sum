@@ -254,8 +254,8 @@ github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 h1:P6pPBnrTSX3DEVR4fDembhR
 github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0/go.mod h1:vmVJ0l/dxyfGW6FmdpVm2joNMFikkuWg0EoCKLGUMNw=
 github.com/lburgazzoli/gomega-matchers v0.0.0-20240813085813-c062a40739b0 h1:vfCs9algDi0SJ6RHOrfTTS48bSJfbWkEZcrM5A0K9oI=
 github.com/lburgazzoli/gomega-matchers v0.0.0-20240813085813-c062a40739b0/go.mod h1:E+2q75we58Z7Inxb45Tdd8vrDvp6Og/7PTmkG3x0+FA=
-github.com/lburgazzoli/k8s-manifests-renderer-helm v0.1.0 h1:CWRWYX264NOsizI0IcuGUnaX5YvkJvc6CSocNZJfVkg=
-github.com/lburgazzoli/k8s-manifests-renderer-helm v0.1.0/go.mod h1:sEL8HJ4VCB2qhTIZgN164UE7vd2H/FKSH2IPvdIEV2c=
+github.com/lburgazzoli/k8s-manifests-renderer-helm v0.1.1 h1:vFpZ2tLT56bVNCtlzfI9z/FXAiVS1SRRUyPkogFhwlI=
+github.com/lburgazzoli/k8s-manifests-renderer-helm v0.1.1/go.mod h1:eqarsYWia91+fzg1Nzhol5rUO3WOEy6Z1acXr+1lCMs=
 github.com/lib/pq v1.2.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
 github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
