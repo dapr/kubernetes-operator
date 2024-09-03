@@ -1,6 +1,6 @@
 
 PROJECT_NAME ?= kubernetes-operator
-PROJECT_VERSION ?= 0.0.8
+PROJECT_VERSION ?= 0.0.9
 
 CONTAINER_REGISTRY ?= docker.io
 CONTAINER_REGISTRY_ORG ?= daprio
