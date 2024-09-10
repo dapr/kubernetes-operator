@@ -10,8 +10,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/dapr/kubernetes-operator/pkg/pointer"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -86,17 +84,6 @@ func Ref(obj client.Object) string {
 		obj.GetObjectKind().GroupVersionKind().GroupVersion().String(),
 		name,
 	)
-}
-
-func UnstructuredFor(group string, version string, kind string) *unstructured.Unstructured {
-	u := unstructured.Unstructured{}
-	u.SetGroupVersionKind(schema.GroupVersionKind{
-		Kind:    kind,
-		Group:   group,
-		Version: version,
-	})
-
-	return &u
 }
 
 func ToUnstructured(s *runtime.Scheme, obj runtime.Object) (*unstructured.Unstructured, error) {
