@@ -50,26 +50,16 @@ func ConditionStatus[T GenericConditionType](object any, conditionType T) corev1
 			return corev1.ConditionStatus(c.Status)
 		}
 	case *appsv1.Deployment:
-		if o != nil {
-			for i := range o.Status.Conditions {
-				if string(o.Status.Conditions[i].Type) == string(conditionType) {
-					return o.Status.Conditions[i].Status
-				}
-			}
+		if c, ok := FindDeploymentStatusCondition(o, string(conditionType)); ok {
+			return c.Status
 		}
 	case appsv1.Deployment:
-		for i := range o.Status.Conditions {
-			if string(o.Status.Conditions[i].Type) == string(conditionType) {
-				return o.Status.Conditions[i].Status
-			}
+		if c, ok := FindDeploymentStatusCondition(&o, string(conditionType)); ok {
+			return c.Status
 		}
 	case *corev1.Pod:
-		if o != nil {
-			for i := range o.Status.Conditions {
-				if string(o.Status.Conditions[i].Type) == string(conditionType) {
-					return o.Status.Conditions[i].Status
-				}
-			}
+		if c, ok := FindPodStatusCondition(o, string(conditionType)); ok {
+			return c.Status
 		}
 	}
 
@@ -83,28 +73,46 @@ func ConditionReason[T GenericConditionType](object any, conditionType T) string
 			return c.Reason
 		}
 	case *appsv1.Deployment:
-		if o != nil {
-			for i := range o.Status.Conditions {
-				if string(o.Status.Conditions[i].Type) == string(conditionType) {
-					return o.Status.Conditions[i].Reason
-				}
-			}
+		if c, ok := FindDeploymentStatusCondition(o, string(conditionType)); ok {
+			return c.Reason
 		}
 	case appsv1.Deployment:
-		for i := range o.Status.Conditions {
-			if string(o.Status.Conditions[i].Type) == string(conditionType) {
-				return o.Status.Conditions[i].Reason
-			}
+		if c, ok := FindDeploymentStatusCondition(&o, string(conditionType)); ok {
+			return c.Reason
 		}
 	case *corev1.Pod:
-		if o != nil {
-			for i := range o.Status.Conditions {
-				if string(o.Status.Conditions[i].Type) == string(conditionType) {
-					return o.Status.Conditions[i].Reason
-				}
-			}
+		if c, ok := FindPodStatusCondition(o, string(conditionType)); ok {
+			return c.Reason
 		}
 	}
 
 	return ""
+}
+
+func FindDeploymentStatusCondition(in *appsv1.Deployment, conditionType string) (appsv1.DeploymentCondition, bool) {
+	if in == nil {
+		return appsv1.DeploymentCondition{}, false
+	}
+
+	for i := range in.Status.Conditions {
+		if string(in.Status.Conditions[i].Type) == conditionType {
+			return in.Status.Conditions[i], true
+		}
+	}
+
+	return appsv1.DeploymentCondition{}, false
+}
+
+func FindPodStatusCondition(in *corev1.Pod, conditionType string) (corev1.PodCondition, bool) {
+	if in == nil {
+		return corev1.PodCondition{}, false
+	}
+
+	for i := range in.Status.Conditions {
+		if string(in.Status.Conditions[i].Type) == conditionType {
+			return in.Status.Conditions[i], true
+		}
+	}
+
+	return corev1.PodCondition{}, false
 }

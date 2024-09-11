@@ -76,7 +76,7 @@ type BaseReconciler[T controller.ResourceObject] struct {
 	Client          ctrlClient.Client
 }
 
-//nolint:forcetypeassert,wrapcheck,nestif
+//nolint:forcetypeassert,wrapcheck,nestif,cyclop
 func (s *BaseReconciler[T]) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	res := reflect.New(reflect.TypeOf(*new(T)).Elem()).Interface().(T)
 	if err := s.Client.Get(ctx, req.NamespacedName, res); err != nil {

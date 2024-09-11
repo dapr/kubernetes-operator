@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/labels"
+
 	"github.com/dapr/kubernetes-operator/pkg/conditions"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -35,69 +37,35 @@ func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) e
 		return fmt.Errorf("cannot compute current release selector: %w", err)
 	}
 
-	// Deployments
-
-	deployments, err := rc.Client.AppsV1().Deployments(rc.Resource.Namespace).List(ctx, metav1.ListOptions{
-		LabelSelector: crs.String(),
-	})
-
+	deployments, readyDeployments, err := a.deployments(ctx, rc, crs)
 	if err != nil {
-		return fmt.Errorf("cannot list deployments: %w", err)
+		return fmt.Errorf("cannot count deployments: %w", err)
 	}
 
-	readyDeployments := 0
-
-	for i := range deployments.Items {
-		if conditions.ConditionStatus(deployments.Items[i], appsv1.DeploymentAvailable) == corev1.ConditionTrue {
-			readyDeployments++
-		}
-	}
-
-	// StatefulSets
-
-	statefulSets, err := rc.Client.AppsV1().StatefulSets(rc.Resource.Namespace).List(ctx, metav1.ListOptions{
-		LabelSelector: crs.String(),
-	})
-
+	statefulSets, readyReplicaSets, err := a.statefulSets(ctx, rc, crs)
 	if err != nil {
-		return fmt.Errorf("cannot list stateful sets: %w", err)
-	}
-
-	readyReplicaSets := 0
-
-	for i := range statefulSets.Items {
-		if statefulSets.Items[i].Status.Replicas == 0 {
-			continue
-		}
-
-		if statefulSets.Items[i].Status.Replicas == statefulSets.Items[i].Status.ReadyReplicas {
-			readyReplicaSets++
-		}
+		return fmt.Errorf("cannot count stateful sets: %w", err)
 	}
 
 	var readyCondition metav1.Condition
 
-	if len(deployments.Items)+len(statefulSets.Items) > 0 {
-		if readyDeployments+readyReplicaSets == len(deployments.Items)+len(statefulSets.Items) {
-			readyCondition = metav1.Condition{
-				Type:               conditions.TypeReady,
-				Status:             metav1.ConditionTrue,
-				Reason:             "Ready",
-				ObservedGeneration: rc.Resource.Generation,
-				Message: fmt.Sprintf("%d/%d deployments ready, statefulSets ready %d/%d",
-					readyDeployments, len(deployments.Items),
-					readyReplicaSets, len(statefulSets.Items)),
-			}
-		} else {
-			readyCondition = metav1.Condition{
-				Type:               conditions.TypeReady,
-				Status:             metav1.ConditionFalse,
-				Reason:             "InProgress",
-				ObservedGeneration: rc.Resource.Generation,
-				Message: fmt.Sprintf("%d/%d deployments ready, statefulSets ready %d/%d",
-					readyDeployments, len(deployments.Items),
-					readyReplicaSets, len(statefulSets.Items)),
-			}
+	if deployments+statefulSets > 0 {
+		reason := "Ready"
+		status := metav1.ConditionTrue
+
+		if readyDeployments+readyReplicaSets != deployments+statefulSets {
+			reason = "InProgress"
+			status = metav1.ConditionFalse
+		}
+
+		readyCondition = metav1.Condition{
+			Type:               conditions.TypeReady,
+			Status:             status,
+			Reason:             reason,
+			ObservedGeneration: rc.Resource.Generation,
+			Message: fmt.Sprintf("%d/%d deployments ready, statefulSets ready %d/%d",
+				readyDeployments, deployments,
+				readyReplicaSets, statefulSets),
 		}
 	} else {
 		readyCondition = metav1.Condition{
@@ -116,4 +84,48 @@ func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) e
 
 func (a *ConditionsAction) Cleanup(_ context.Context, _ *ReconciliationRequest) error {
 	return nil
+}
+
+func (a *ConditionsAction) deployments(ctx context.Context, rc *ReconciliationRequest, selector labels.Selector) (int, int, error) {
+	objects, err := rc.Client.AppsV1().Deployments(rc.Resource.Namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: selector.String(),
+	})
+
+	if err != nil {
+		return 0, 0, fmt.Errorf("cannot list deployments: %w", err)
+	}
+
+	ready := 0
+
+	for i := range objects.Items {
+		if conditions.ConditionStatus(objects.Items[i], appsv1.DeploymentAvailable) == corev1.ConditionTrue {
+			ready++
+		}
+	}
+
+	return len(objects.Items), ready, nil
+}
+
+func (a *ConditionsAction) statefulSets(ctx context.Context, rc *ReconciliationRequest, selector labels.Selector) (int, int, error) {
+	objects, err := rc.Client.AppsV1().StatefulSets(rc.Resource.Namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: selector.String(),
+	})
+
+	if err != nil {
+		return 0, 0, fmt.Errorf("cannot list stateful sets: %w", err)
+	}
+
+	ready := 0
+
+	for i := range objects.Items {
+		if objects.Items[i].Status.Replicas == 0 {
+			continue
+		}
+
+		if objects.Items[i].Status.Replicas == objects.Items[i].Status.ReadyReplicas {
+			ready++
+		}
+	}
+
+	return len(objects.Items), ready, nil
 }
