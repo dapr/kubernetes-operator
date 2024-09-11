@@ -67,5 +67,3 @@ linters:
     - gochecknoglobals
     - gochecknoinits
     - depguard
-    # validate
-    - gocognit

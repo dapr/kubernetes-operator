@@ -157,7 +157,7 @@ func (gc *GC) canBeDeleted(_ context.Context, gvk schema.GroupVersionKind) bool 
 	return true
 }
 
-//nolint:cyclop
+//nolint:cyclop,gocognit
 func (gc *GC) computeDeletableTypes(ctx context.Context, c *client.Client, ns string) error {
 	// Rate limit to avoid Discovery and SelfSubjectRulesReview requests at every reconciliation.
 	if !gc.limiter.Allow() {
