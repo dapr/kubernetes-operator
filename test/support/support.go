@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+//nolint:cyclop
 func runCleanup(t Test, in runtime.Object) error {
 	un, err := resources.ToUnstructured(t.Client().Scheme(), in)
 	if err != nil {

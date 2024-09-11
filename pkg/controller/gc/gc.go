@@ -93,46 +93,60 @@ func (gc *GC) deleteEachOf(
 		}
 
 		for i := range items.Items {
-			resource := items.Items[i]
-
-			if !gc.canBeDeleted(ctx, resource.GroupVersionKind()) {
-				continue
-			}
-
-			canBeDeleted, err := predicate(ctx, resource)
+			ok, err := gc.delete(ctx, c, items.Items[i], predicate)
 			if err != nil {
 				return 0, err
 			}
 
-			if !canBeDeleted {
-				continue
+			if ok {
+				deleted++
 			}
-
-			gc.l.Info("deleting", "ref", resources.Ref(&resource))
-
-			err = c.Delete(ctx, &resource, ctrlCli.PropagationPolicy(metav1.DeletePropagationForeground))
-			if err != nil {
-				// The resource may have already been deleted
-				if !k8serrors.IsNotFound(err) {
-					continue
-				}
-
-				return 0, fmt.Errorf(
-					"cannot delete resources gvk:%s, namespace: %s, name: %s, err: %w",
-					resource.GroupVersionKind().String(),
-					resource.GetNamespace(),
-					resource.GetName(),
-					err,
-				)
-			}
-
-			gc.l.Info("deleted", "ref", resources.Ref(&resource))
-
-			deleted++
 		}
 	}
 
 	return deleted, nil
+}
+
+func (gc *GC) delete(
+	ctx context.Context,
+	c *client.Client,
+	resource unstructured.Unstructured,
+	predicate func(context.Context, unstructured.Unstructured) (bool, error),
+) (bool, error) {
+	if !gc.canBeDeleted(ctx, resource.GroupVersionKind()) {
+		return false, nil
+	}
+
+	canBeDeleted, err := predicate(ctx, resource)
+	if err != nil {
+		return false, err
+	}
+
+	if !canBeDeleted {
+		return false, err
+	}
+
+	gc.l.Info("deleting", "ref", resources.Ref(&resource))
+
+	err = c.Delete(ctx, &resource, ctrlCli.PropagationPolicy(metav1.DeletePropagationForeground))
+	if err != nil {
+		// The resource may have already been deleted
+		if k8serrors.IsNotFound(err) {
+			return true, nil
+		}
+
+		return false, fmt.Errorf(
+			"cannot delete resources gvk:%s, namespace: %s, name: %s, err: %w",
+			resource.GroupVersionKind().String(),
+			resource.GetNamespace(),
+			resource.GetName(),
+			err,
+		)
+	}
+
+	gc.l.Info("deleted", "ref", resources.Ref(&resource))
+
+	return true, nil
 }
 
 func (gc *GC) canBeDeleted(_ context.Context, gvk schema.GroupVersionKind) bool {
@@ -143,6 +157,7 @@ func (gc *GC) canBeDeleted(_ context.Context, gvk schema.GroupVersionKind) bool 
 	return true
 }
 
+//nolint:cyclop
 func (gc *GC) computeDeletableTypes(ctx context.Context, c *client.Client, ns string) error {
 	// Rate limit to avoid Discovery and SelfSubjectRulesReview requests at every reconciliation.
 	if !gc.limiter.Allow() {

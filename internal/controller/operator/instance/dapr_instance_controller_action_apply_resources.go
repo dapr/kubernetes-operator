@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strconv"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	"github.com/dapr/kubernetes-operator/pkg/controller/predicates"
 
 	"github.com/dapr/kubernetes-operator/pkg/controller"
@@ -66,9 +68,9 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 		installedVersion = rc.Resource.Status.Chart.Version
 	}
 
-	reinstall := rc.Resource.Generation != rc.Resource.Status.ObservedGeneration || c.Version() != installedVersion
+	force := rc.Resource.Generation != rc.Resource.Status.ObservedGeneration || c.Version() != installedVersion
 
-	if reinstall {
+	if force {
 		rc.Reconciler.Event(
 			rc.Resource,
 			corev1.EventTypeNormal,
@@ -81,20 +83,7 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 		)
 	}
 
-	for i := range items {
-		obj := items[i]
-		gvk := obj.GroupVersionKind()
-		installOnly := a.installOnly(gvk)
-
-		if reinstall {
-			installOnly = false
-		}
-
-		dc, err := rc.Client.Dynamic(rc.Resource.Namespace, &obj)
-		if err != nil {
-			return fmt.Errorf("cannot create dynamic client: %w", err)
-		}
-
+	for _, obj := range items {
 		resources.Labels(&obj, map[string]string{
 			helm.ReleaseGeneration: strconv.FormatInt(rc.Resource.Generation, 10),
 			helm.ReleaseName:       rc.Resource.Name,
@@ -102,117 +91,16 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 			helm.ReleaseVersion:    c.Version(),
 		})
 
-		switch dc.(type) {
-		//
-		// NamespacedResource: in this case, filtering with ownership can be implemented
-		// as all the namespaced resources created by this controller have the Dapr CR as
-		// an owner
-		//
-		case *client.NamespacedResource:
-			obj.SetOwnerReferences(resources.OwnerReferences(rc.Resource))
-			obj.SetNamespace(rc.Resource.Namespace)
+		gvk := obj.GroupVersionKind()
 
-			r := gvk.GroupVersion().String() + ":" + gvk.Kind
-
-			if _, ok := a.subscriptions[r]; !ok {
-				a.l.Info("watch", "ref", r)
-
-				err = rc.Reconciler.Watch(
-					&obj,
-					rc.Reconciler.EnqueueRequestForOwner(&daprApi.DaprInstance{}, handler.OnlyControllerOwner()),
-					dependantWithLabels(
-						predicates.WithWatchUpdate(a.watchForUpdates(gvk)),
-						predicates.WithWatchDeleted(true),
-						predicates.WithWatchStatus(a.watchStatus(gvk)),
-					),
-				)
-
-				if err != nil {
-					return err
-				}
-
-				a.subscriptions[r] = struct{}{}
-			}
-
-		//
-		// ClusteredResource: in this case, ownership based filtering is not supported
-		// as you cannot have a non namespaced owner. For such reason, the resource for
-		// which a reconcile should be triggered can be identified by using the labels
-		// added by the controller to all the generated resources
-		//
-		//    helm.operator.dapr.io/resource.namespace = ${namespace}
-		//    helm.operator.dapr.io/resource.name = ${name}
-		//
-		case *client.ClusteredResource:
-			r := gvk.GroupVersion().String() + ":" + gvk.Kind
-
-			if _, ok := a.subscriptions[r]; !ok {
-				a.l.Info("watch", "ref", r)
-
-				err = rc.Reconciler.Watch(
-					&obj,
-					rc.Reconciler.EnqueueRequestsFromMapFunc(labelsToRequest),
-					dependantWithLabels(
-						predicates.WithWatchUpdate(a.watchForUpdates(gvk)),
-						predicates.WithWatchDeleted(true),
-						predicates.WithWatchStatus(a.watchStatus(gvk)),
-					),
-				)
-
-				if err != nil {
-					return err
-				}
-
-				a.subscriptions[r] = struct{}{}
-			}
+		if !force {
+			force = !a.installOnly(gvk)
 		}
 
-		if installOnly {
-			old, err := dc.Get(ctx, obj.GetName(), metav1.GetOptions{})
-			if err != nil {
-				if !k8serrors.IsNotFound(err) {
-					return fmt.Errorf("cannot get object %s: %w", resources.Ref(&obj), err)
-				}
-			}
-
-			if old != nil {
-				//
-				// Every time the template is rendered, the helm function genSignedCert kicks in and
-				// re-generated certs which causes a number os side effects and makes the set-up quite
-				// unstable. As consequence some resources are not meant to be watched and re-created
-				// unless the Dapr CR generation changes (which means the Spec has changed) or the
-				// resource impacted by the genSignedCert hook is deleted.
-				//
-				// Ideally on OpenShift it would be good to leverage the service serving certificates
-				// capability.
-				//
-				// Related info:
-				// - https://docs.openshift.com/container-platform/4.13/security/certificates/service-serving-certificate.html
-				// - https://github.com/dapr/dapr/issues/3968
-				// - https://github.com/dapr/dapr/issues/6500
-				//
-				a.l.Info("run",
-					"apply", "false",
-					"ref", resources.Ref(&obj),
-					"reason", "resource marked as install-only")
-
-				continue
-			}
-		}
-
-		_, err = dc.Apply(ctx, obj.GetName(), &obj, metav1.ApplyOptions{
-			FieldManager: controller.FieldManager,
-			Force:        true,
-		})
-
+		err = a.apply(ctx, rc, &obj, force)
 		if err != nil {
-			return fmt.Errorf("cannot patch object %s: %w", resources.Ref(&obj), err)
+			return err
 		}
-
-		a.l.Info("run",
-			"apply", "true",
-			"gen", rc.Resource.Generation,
-			"ref", resources.Ref(&obj))
 	}
 
 	return nil
@@ -292,4 +180,153 @@ func (a *ApplyResourcesAction) installOnly(gvk schema.GroupVersionKind) bool {
 	}
 
 	return false
+}
+
+//nolint:cyclop
+func (a *ApplyResourcesAction) apply(ctx context.Context, rc *ReconciliationRequest, obj *unstructured.Unstructured, force bool) error {
+	dc, err := rc.Client.Dynamic(rc.Resource.Namespace, obj)
+	if err != nil {
+		return fmt.Errorf("cannot create dynamic client: %w", err)
+	}
+
+	switch dc.(type) {
+	//
+	// NamespacedResource: in this case, filtering with ownership can be implemented
+	// as all the namespaced resources created by this controller have the Dapr CR as
+	// an owner
+	//
+	case *client.NamespacedResource:
+		if err := a.watchNamespaceScopeResource(rc, obj); err != nil {
+			return err
+		}
+
+	//
+	// ClusteredResource: in this case, ownership based filtering is not supported
+	// as you cannot have a non namespaced owner. For such reason, the resource for
+	// which a reconcile should be triggered can be identified by using the labels
+	// added by the controller to all the generated resources
+	//
+	//    helm.operator.dapr.io/resource.namespace = ${namespace}
+	//    helm.operator.dapr.io/resource.name = ${name}
+	//
+	case *client.ClusteredResource:
+		if err := a.watchClusterScopeResource(rc, obj); err != nil {
+			return err
+		}
+	}
+
+	if !force {
+		old, err := dc.Get(ctx, obj.GetName(), metav1.GetOptions{})
+		if err != nil && !k8serrors.IsNotFound(err) {
+			return fmt.Errorf("cannot get object %s: %w", resources.Ref(obj), err)
+		}
+
+		if old != nil {
+			//
+			// Every time the template is rendered, the helm function genSignedCert kicks in and
+			// re-generated certs which causes a number os side effects and makes the set-up quite
+			// unstable. As consequence some resources are not meant to be watched and re-created
+			// unless the Dapr CR generation changes (which means the Spec has changed) or the
+			// resource impacted by the genSignedCert hook is deleted.
+			//
+			// Ideally on OpenShift it would be good to leverage the service serving certificates
+			// capability.
+			//
+			// Related info:
+			// - https://docs.openshift.com/container-platform/4.13/security/certificates/service-serving-certificate.html
+			// - https://github.com/dapr/dapr/issues/3968
+			// - https://github.com/dapr/dapr/issues/6500
+			//
+			a.l.Info("run",
+				"apply", "false",
+				"gen", rc.Resource.Generation,
+				"ref", resources.Ref(obj),
+				"reason", "resource marked as install-only")
+
+			return nil
+		}
+	}
+
+	_, err = dc.Apply(ctx, obj.GetName(), obj, metav1.ApplyOptions{
+		FieldManager: controller.FieldManager,
+		Force:        true,
+	})
+
+	if err != nil {
+		return fmt.Errorf("cannot patch object %s: %w", resources.Ref(obj), err)
+	}
+
+	a.l.Info("run",
+		"apply", "true",
+		"gen", rc.Resource.Generation,
+		"ref", resources.Ref(obj))
+
+	return nil
+}
+
+func (a *ApplyResourcesAction) watchNamespaceScopeResource(rc *ReconciliationRequest, obj *unstructured.Unstructured) error {
+	gvk := obj.GroupVersionKind()
+
+	obj.SetOwnerReferences(resources.OwnerReferences(rc.Resource))
+	obj.SetNamespace(rc.Resource.Namespace)
+
+	r := gvk.GroupVersion().String() + ":" + gvk.Kind
+
+	if _, ok := a.subscriptions[r]; ok {
+		return nil
+	}
+
+	if _, ok := a.subscriptions[r]; !ok {
+		a.l.Info("watch", "scope", "namespace", "ref", r)
+
+		err := rc.Reconciler.Watch(
+			obj,
+			rc.Reconciler.EnqueueRequestForOwner(&daprApi.DaprInstance{}, handler.OnlyControllerOwner()),
+			dependantWithLabels(
+				predicates.WithWatchUpdate(a.watchForUpdates(gvk)),
+				predicates.WithWatchDeleted(true),
+				predicates.WithWatchStatus(a.watchStatus(gvk)),
+			),
+		)
+
+		if err != nil {
+			return err
+		}
+
+		a.subscriptions[r] = struct{}{}
+	}
+
+	return nil
+}
+
+func (a *ApplyResourcesAction) watchClusterScopeResource(rc *ReconciliationRequest, obj *unstructured.Unstructured) error {
+	gvk := obj.GroupVersionKind()
+
+	r := gvk.GroupVersion().String() + ":" + gvk.Kind
+
+	if _, ok := a.subscriptions[r]; ok {
+		return nil
+	}
+
+	if _, ok := a.subscriptions[r]; !ok {
+		a.l.Info("watch", "scope", "cluster", "ref", r)
+
+		err := rc.Reconciler.Watch(
+			obj,
+			rc.Reconciler.EnqueueRequestsFromMapFunc(labelsToRequest),
+			dependantWithLabels(
+				predicates.WithWatchUpdate(a.watchForUpdates(gvk)),
+				predicates.WithWatchDeleted(true),
+				predicates.WithWatchStatus(a.watchStatus(gvk)),
+			),
+		)
+
+		if err != nil {
+			return err
+		}
+
+		a.subscriptions[r] = struct{}{}
+	}
+
+	return nil
 }
