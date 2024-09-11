@@ -42,12 +42,15 @@ linters-settings:
     block-size: 2
   testpackage:
     skip-regexp: test/e2e/...
+  funlen:
+    ignore-comments: true
 issues:
   exclude-rules:
     # Exclude some linters from running on tests files.
     - path: test
       linters:
         - wrapcheck
+        - funlen
 linters:
   enable-all: true
   disable:
@@ -63,7 +66,6 @@ linters:
     - exhaustruct
     - paralleltest
     - ireturn
-    - funlen
     - gochecknoglobals
     - gochecknoinits
     - depguard

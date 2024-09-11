@@ -28,6 +28,30 @@ func init() {
 	utilruntime.Must(apiextensions.AddToScheme(controller.Scheme))
 }
 
+// computeListWatch computes the cache's ListWatch by object.
+func computeListWatch() (map[rtclient.Object]rtcache.ByObject, error) {
+	selector, err := helm.ReleaseSelector()
+	if err != nil {
+		return nil, fmt.Errorf("unable to compute cache's watch selector: %w", err)
+	}
+
+	selectors := map[rtclient.Object]rtcache.ByObject{
+		// k8s
+		&rbacv1.ClusterRole{}:                    {Label: selector},
+		&rbacv1.ClusterRoleBinding{}:             {Label: selector},
+		&rbacv1.Role{}:                           {Label: selector},
+		&rbacv1.RoleBinding{}:                    {Label: selector},
+		&admregv1.MutatingWebhookConfiguration{}: {Label: selector},
+		&corev1.Secret{}:                         {Label: selector},
+		&corev1.Service{}:                        {Label: selector},
+		&corev1.ServiceAccount{}:                 {Label: selector},
+		&appsv1.StatefulSet{}:                    {Label: selector},
+		&appsv1.Deployment{}:                     {Label: selector},
+	}
+
+	return selectors, nil
+}
+
 func NewRunCmd() *cobra.Command {
 	co := controller.Options{
 		MetricsAddr:                   ":8080",
@@ -47,24 +71,12 @@ func NewRunCmd() *cobra.Command {
 		Use:   "run",
 		Short: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			selector, err := helm.ReleaseSelector()
+			selector, err := computeListWatch()
 			if err != nil {
-				return fmt.Errorf("unable to compute cache's watch selector: %w", err)
+				return fmt.Errorf("unable to compute cache's ListWatchr: %w", err)
 			}
 
-			co.WatchSelectors = map[rtclient.Object]rtcache.ByObject{
-				// k8s
-				&rbacv1.ClusterRole{}:                    {Label: selector},
-				&rbacv1.ClusterRoleBinding{}:             {Label: selector},
-				&rbacv1.Role{}:                           {Label: selector},
-				&rbacv1.RoleBinding{}:                    {Label: selector},
-				&admregv1.MutatingWebhookConfiguration{}: {Label: selector},
-				&corev1.Secret{}:                         {Label: selector},
-				&corev1.Service{}:                        {Label: selector},
-				&corev1.ServiceAccount{}:                 {Label: selector},
-				&appsv1.StatefulSet{}:                    {Label: selector},
-				&appsv1.Deployment{}:                     {Label: selector},
-			}
+			co.WatchSelectors = selector
 
 			return controller.Start(co, func(manager manager.Manager, opts controller.Options) error {
 				if _, err := controlplane.NewReconciler(cmd.Context(), manager, helmOpts); err != nil {
