@@ -32,6 +32,7 @@ const (
 	PprofWriteTimeout = 10 * time.Second
 )
 
+//nolint:gochecknoinits
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
 }

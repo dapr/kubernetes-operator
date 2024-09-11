@@ -23,6 +23,7 @@ import (
 	"github.com/dapr/kubernetes-operator/pkg/controller"
 )
 
+//nolint:gochecknoinits
 func init() {
 	utilruntime.Must(daprApi.AddToScheme(controller.Scheme))
 	utilruntime.Must(apiextensions.AddToScheme(controller.Scheme))

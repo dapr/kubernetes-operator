@@ -51,6 +51,10 @@ issues:
       linters:
         - wrapcheck
         - funlen
+        - gochecknoinits
+    - path: api
+      linters:
+        - gochecknoinits
 linters:
   enable-all: true
   disable:
@@ -67,5 +71,4 @@ linters:
     - paralleltest
     - ireturn
     - gochecknoglobals
-    - gochecknoinits
     - depguard
