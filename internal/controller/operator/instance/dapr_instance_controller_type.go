@@ -10,10 +10,8 @@ import (
 
 	helme "github.com/lburgazzoli/k8s-manifests-renderer-helm/engine"
 
-	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
-	"github.com/dapr/kubernetes-operator/pkg/controller"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1beta1"
 	"github.com/dapr/kubernetes-operator/pkg/controller/client"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 )
 
@@ -24,12 +22,10 @@ const (
 
 type ReconciliationRequest struct {
 	*client.Client
-	types.NamespacedName
 
-	Reconciler  *Reconciler
-	ClusterType controller.ClusterType
-	Resource    *daprApi.DaprInstance
-	Helm        Helm
+	Reconciler *Reconciler
+	Resource   *daprApi.DaprInstance
+	Helm       Helm
 }
 
 type Helm struct {
@@ -81,7 +77,7 @@ func (rr *ReconciliationRequest) computeChartOptions(ctx context.Context) ([]hel
 	chartOpts = append(chartOpts, helme.WithValuesCustomizers(values.JQ(autoPullPolicySidecarInjector)))
 
 	if rr.Resource.Spec.Chart != nil && rr.Resource.Spec.Chart.Secret != "" {
-		s, err := rr.Client.CoreV1().Secrets(rr.Resource.Namespace).Get(
+		s, err := rr.Client.CoreV1().Secrets(rr.Resource.Spec.Deployment.Namespace).Get(
 			ctx,
 			rr.Resource.Spec.Chart.Secret,
 			metav1.GetOptions{},

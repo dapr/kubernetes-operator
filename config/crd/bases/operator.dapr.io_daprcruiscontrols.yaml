@@ -16,7 +16,7 @@ spec:
     shortNames:
     - dcc
     singular: daprcruisecontrol
-  scope: Namespaced
+  scope: Cluster
   versions:
   - additionalPrinterColumns:
     - description: Ready
@@ -39,7 +39,7 @@ spec:
       jsonPath: .status.chart.version
       name: Chart Version
       type: string
-    name: v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: DaprCruiseControl is the Schema for the daprcruisecontrols API.
@@ -141,6 +141,9 @@ spec:
             - phase
             type: object
         type: object
+        x-kubernetes-validations:
+        - message: DaprCruiseControl name must be dapr-cruise-control
+          rule: self.metadata.name == 'dapr-cruise-control'
     served: true
     storage: true
     subresources:

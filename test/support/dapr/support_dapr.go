@@ -12,7 +12,7 @@ import (
 	netv1 "k8s.io/api/networking/v1"
 	netv1ac "k8s.io/client-go/applyconfigurations/networking/v1"
 
-	daprAc "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
+	daprAc "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1beta1"
 	"github.com/dapr/kubernetes-operator/pkg/resources"
 	"github.com/dapr/kubernetes-operator/test/support"
 	"github.com/onsi/gomega"

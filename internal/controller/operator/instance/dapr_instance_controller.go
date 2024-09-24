@@ -33,13 +33,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1beta1"
 
 	"github.com/dapr/kubernetes-operator/pkg/controller"
 	"github.com/dapr/kubernetes-operator/pkg/controller/client"
 	"github.com/dapr/kubernetes-operator/pkg/controller/reconciler"
 	"github.com/dapr/kubernetes-operator/pkg/helm"
-	"github.com/dapr/kubernetes-operator/pkg/openshift"
 	"github.com/go-logr/logr"
 
 	ctrlRt "sigs.k8s.io/controller-runtime"
@@ -55,24 +54,13 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 	}
 
 	rec := Reconciler{}
-	rec.l = ctrlRt.Log.WithName("dapr-instance-controller")
+	rec.l = manager.GetLogger().WithName("instance")
 	rec.client = c
 	rec.Scheme = manager.GetScheme()
-	rec.ClusterType = controller.ClusterTypeVanilla
 	rec.manager = manager
 	rec.recorder = manager.GetEventRecorderFor(controller.FieldManager)
 	rec.helmOptions = o
 	rec.helmEngine = helme.New()
-
-	isOpenshift, err := openshift.IsOpenShift(c.Discovery)
-	if err != nil {
-		//nolint:wrapcheck
-		return nil, err
-	}
-
-	if isOpenshift {
-		rec.ClusterType = controller.ClusterTypeOpenShift
-	}
 
 	rec.actions = append(rec.actions, NewChartAction(rec.l))
 	rec.actions = append(rec.actions, NewApplyCRDsAction(rec.l))
@@ -122,7 +110,6 @@ func NewReconciler(ctx context.Context, manager ctrlRt.Manager, o helm.Options) 
 type Reconciler struct {
 	client      *client.Client
 	Scheme      *runtime.Scheme
-	ClusterType controller.ClusterType
 	actions     []Action
 	l           logr.Logger
 	helmEngine  *helme.Instance
@@ -161,7 +148,6 @@ func (r *Reconciler) init(ctx context.Context) error {
 		Client:          r.client,
 		Log:             log.FromContext(ctx),
 		Name:            DaprInstanceResourceName,
-		Namespace:       controller.OperatorNamespace(),
 		FinalizerName:   DaprInstanceFinalizerName,
 		FinalizerAction: r.Cleanup,
 	}

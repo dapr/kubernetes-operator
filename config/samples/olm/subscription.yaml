@@ -4,7 +4,7 @@ metadata:
   name: dapr-control-plane
   namespace: dapr-system
 spec:
-  channel: alpha
+  channel: beta
   name: dapr-kubernetes-operator
   installPlanApproval: Automatic
   source: daprio-catalog

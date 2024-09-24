@@ -118,12 +118,10 @@ func newRESTClientForConfig(config *rest.Config) (*rest.RESTClient, error) {
 	return rc, nil
 }
 
-func (c *Client) Dynamic(namespace string, obj *unstructured.Unstructured) (dynamic.ResourceInterface, error) {
+func (c *Client) Dynamic(obj *unstructured.Unstructured) (ResourceInterface, error) {
 	if c.discoveryLimiter.Allow() {
 		c.discoveryCache.Invalidate()
 	}
-
-	c.discoveryCache.Fresh()
 
 	mapping, err := c.mapper.RESTMapping(obj.GroupVersionKind().GroupKind(), obj.GroupVersionKind().Version)
 	if err != nil {
@@ -134,19 +132,28 @@ func (c *Client) Dynamic(namespace string, obj *unstructured.Unstructured) (dyna
 			err)
 	}
 
-	var dr dynamic.ResourceInterface
-
-	if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
-		dr = &NamespacedResource{
-			ResourceInterface: c.dynamic.Resource(mapping.Resource).Namespace(namespace),
+	switch mapping.Scope {
+	case meta.RESTScopeNamespace:
+		if obj.GetNamespace() == "" {
+			//nolint:err113
+			return nil, fmt.Errorf(
+				"missing required filed: namespace, gvks=%s, name=%s",
+				obj.GetObjectKind().GroupVersionKind().String(),
+				obj.GetName())
 		}
-	} else {
-		dr = &ClusteredResource{
+
+		dr := &NamespacedResource{
+			ResourceInterface: c.dynamic.Resource(mapping.Resource).Namespace(obj.GetNamespace()),
+		}
+
+		return dr, nil
+	default:
+		dr := &ClusteredResource{
 			ResourceInterface: c.dynamic.Resource(mapping.Resource),
 		}
-	}
 
-	return dr, nil
+		return dr, nil
+	}
 }
 
 func (c *Client) Invalidate() {

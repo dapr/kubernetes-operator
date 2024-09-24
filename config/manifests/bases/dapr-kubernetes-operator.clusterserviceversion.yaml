@@ -16,22 +16,16 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-      - description: DaprControlPlane is the Schema for the Dapr ControlPlane API.
-        displayName: DaprControlPlane
-        kind: DaprControlPlane
-        name: daprcontrolplanes.operator.dapr.io
-        version: v1alpha1
-        deprecated: true
       - description: DaprInstance is the Schema for the Dapr Instance API.
         displayName: DaprInstance
         kind: DaprInstance
         name: daprinstances.operator.dapr.io
-        version: v1alpha1
+        version: v1beta1
       - description: DaprCruiseControl is the Schema for the Dapr CruiseControl API.
         displayName: DaprCruiseControl
         kind: DaprCruiseControl
         name: daprcruisecontrols.operator.dapr.io
-        version: v1alpha1
+        version: v1beta1
   description: Dapr Control Plane Operator
   displayName: Dapr Control Plane Operator
   icon:

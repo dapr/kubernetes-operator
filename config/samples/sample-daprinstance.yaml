@@ -1,8 +1,9 @@
-apiVersion: operator.dapr.io/v1alpha1
+apiVersion: operator.dapr.io/v1beta1
 kind: DaprInstance
 metadata:
   name: "dapr-instance"
-  namespace: "dapr-system"
 spec:
+  deployment:
+    namespace: "dapr-system"
   # This object provides access to values passed into the Dpr Helm chart
   values: {}
