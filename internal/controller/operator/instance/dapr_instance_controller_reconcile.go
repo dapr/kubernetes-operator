@@ -23,6 +23,9 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/dapr/kubernetes-operator/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/dapr/kubernetes-operator/pkg/conditions"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -123,7 +126,12 @@ func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprInstance) (
 	// Update status
 	//
 
-	err = r.Client().Status().Update(ctx, rr.Resource)
+	err = r.Client().ApplyStatus(
+		ctx,
+		rr.Resource,
+		client.ForceOwnership,
+		client.FieldOwner(controller.FieldManager),
+	)
 
 	if err != nil && k8serrors.IsConflict(err) {
 		l.Info(err.Error())

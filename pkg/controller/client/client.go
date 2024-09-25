@@ -1,8 +1,11 @@
 package client
 
 import (
+	"context"
 	"fmt"
 	"time"
+
+	"github.com/dapr/kubernetes-operator/pkg/resources"
 
 	"golang.org/x/time/rate"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
@@ -150,4 +153,24 @@ func (c *Client) Invalidate() {
 	if c.discoveryCache != nil {
 		c.discoveryCache.Invalidate()
 	}
+}
+
+func (c *Client) ApplyStatus(ctx context.Context, obj ctrl.Object, opts ...ctrl.SubResourcePatchOption) error {
+	u, err := resources.ToUnstructured(c.Scheme(), obj)
+	if err != nil {
+		return fmt.Errorf("unable to convert object %s to unstructured: %w", obj, err)
+	}
+
+	// Reset field not meaningful for patch
+	delete(u.Object, "spec")
+
+	u.SetResourceVersion("")
+	u.SetManagedFields(nil)
+
+	err = c.Client.Status().Patch(ctx, u, ctrl.Apply, opts...)
+	if err != nil {
+		return fmt.Errorf("unable to pactch object %s: %w", obj, err)
+	}
+
+	return nil
 }
