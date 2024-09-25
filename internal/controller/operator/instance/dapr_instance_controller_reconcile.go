@@ -28,7 +28,6 @@ import (
 
 	"github.com/dapr/kubernetes-operator/pkg/conditions"
 
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -122,10 +121,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprInstance) (
 		return rr.Resource.Status.Conditions[i].Type < rr.Resource.Status.Conditions[j].Type
 	})
 
-	//
-	// Update status
-	//
-
 	err = r.Client().ApplyStatus(
 		ctx,
 		rr.Resource,
@@ -133,10 +128,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprInstance) (
 		client.FieldOwner(controller.FieldManager),
 	)
 
-	if err != nil && k8serrors.IsConflict(err) {
-		l.Info(err.Error())
-		return ctrl.Result{Requeue: true}, nil
-	} else if err != nil {
+	if err != nil {
 		errs = append(errs, err)
 	}
 
