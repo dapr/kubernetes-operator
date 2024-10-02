@@ -51,6 +51,9 @@ func (a *ApplyCRDsAction) Run(ctx context.Context, rc *ReconciliationRequest) er
 		return fmt.Errorf("cannot load CRDs: %w", err)
 	}
 
+	invalidate := false
+	force := rc.Resource.Generation != rc.Resource.Status.ObservedGeneration || !helm.IsSameChart(c, rc.Resource.Status.Chart)
+
 	for _, crd := range crds {
 		resources.Labels(&crd, map[string]string{
 			helm.ReleaseGeneration: strconv.FormatInt(rc.Resource.Generation, 10),
@@ -59,14 +62,20 @@ func (a *ApplyCRDsAction) Run(ctx context.Context, rc *ReconciliationRequest) er
 			helm.ReleaseVersion:    c.Version(),
 		})
 
-		err = a.apply(ctx, rc, &crd)
+		applied, err := a.apply(ctx, rc, &crd, force)
 		if err != nil {
 			return err
 		}
+
+		if applied {
+			invalidate = true
+		}
 	}
 
-	// invalidate the client so it gets aware of the new CRDs
-	rc.Client.Invalidate()
+	if invalidate {
+		// invalidate the client so it gets aware of the new CRDs
+		rc.Client.Invalidate()
+	}
 
 	return nil
 }
@@ -75,20 +84,18 @@ func (a *ApplyCRDsAction) Cleanup(_ context.Context, _ *ReconciliationRequest) e
 	return nil
 }
 
-func (a *ApplyCRDsAction) apply(ctx context.Context, rc *ReconciliationRequest, crd *unstructured.Unstructured) error {
+func (a *ApplyCRDsAction) apply(ctx context.Context, rc *ReconciliationRequest, crd *unstructured.Unstructured, apply bool) (bool, error) {
 	dc, err := rc.Client.Dynamic(rc.Resource.Namespace, crd)
 	if err != nil {
-		return fmt.Errorf("cannot create dynamic client: %w", err)
+		return false, fmt.Errorf("cannot create dynamic client: %w", err)
 	}
-
-	apply := rc.Resource.Generation != rc.Resource.Status.ObservedGeneration
 
 	_, err = dc.Get(ctx, crd.GetName(), metav1.GetOptions{})
 	if err != nil && !k8serrors.IsNotFound(err) {
-		return fmt.Errorf("cannot determine if CRD %s exists: %w", resources.Ref(crd), err)
+		return false, fmt.Errorf("cannot determine if CRD %s exists: %w", resources.Ref(crd), err)
 	}
 
-	if err != nil && k8serrors.IsNotFound(err) {
+	if k8serrors.IsNotFound(err) {
 		apply = true
 	}
 
@@ -96,11 +103,9 @@ func (a *ApplyCRDsAction) apply(ctx context.Context, rc *ReconciliationRequest, 
 		a.l.Info("run",
 			"apply", "false",
 			"gen", rc.Resource.Generation,
-			"ref", resources.Ref(crd),
-			"generation-changed", rc.Resource.Generation != rc.Resource.Status.ObservedGeneration,
-			"not-found", k8serrors.IsNotFound(err))
+			"ref", resources.Ref(crd))
 
-		return nil
+		return false, nil
 	}
 
 	_, err = dc.Apply(ctx, crd.GetName(), crd, metav1.ApplyOptions{
@@ -109,7 +114,7 @@ func (a *ApplyCRDsAction) apply(ctx context.Context, rc *ReconciliationRequest, 
 	})
 
 	if err != nil {
-		return fmt.Errorf("cannot apply CRD %s: %w", resources.Ref(crd), err)
+		return false, fmt.Errorf("cannot apply CRD %s: %w", resources.Ref(crd), err)
 	}
 
 	a.l.Info("run",
@@ -117,5 +122,5 @@ func (a *ApplyCRDsAction) apply(ctx context.Context, rc *ReconciliationRequest, 
 		"gen", rc.Resource.Generation,
 		"ref", resources.Ref(crd))
 
-	return nil
+	return true, nil
 }
