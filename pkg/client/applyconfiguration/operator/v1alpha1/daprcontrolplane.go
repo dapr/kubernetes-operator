@@ -18,12 +18,15 @@ limitations under the License.
 package v1alpha1
 
 import (
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	internal "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/internal"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
+	managedfields "k8s.io/apimachinery/pkg/util/managedfields"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// DaprControlPlaneApplyConfiguration represents an declarative configuration of the DaprControlPlane type for use
+// DaprControlPlaneApplyConfiguration represents a declarative configuration of the DaprControlPlane type for use
 // with apply.
 type DaprControlPlaneApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
@@ -32,7 +35,7 @@ type DaprControlPlaneApplyConfiguration struct {
 	Status                           *DaprControlPlaneStatusApplyConfiguration `json:"status,omitempty"`
 }
 
-// DaprControlPlane constructs an declarative configuration of the DaprControlPlane type for use with
+// DaprControlPlane constructs a declarative configuration of the DaprControlPlane type for use with
 // apply.
 func DaprControlPlane(name, namespace string) *DaprControlPlaneApplyConfiguration {
 	b := &DaprControlPlaneApplyConfiguration{}
@@ -41,6 +44,42 @@ func DaprControlPlane(name, namespace string) *DaprControlPlaneApplyConfiguratio
 	b.WithKind("DaprControlPlane")
 	b.WithAPIVersion("operator.dapr.io/v1alpha1")
 	return b
+}
+
+// ExtractDaprControlPlane extracts the applied configuration owned by fieldManager from
+// daprControlPlane. If no managedFields are found in daprControlPlane for fieldManager, a
+// DaprControlPlaneApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// daprControlPlane must be a unmodified DaprControlPlane API object that was retrieved from the Kubernetes API.
+// ExtractDaprControlPlane provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+// Experimental!
+func ExtractDaprControlPlane(daprControlPlane *operatorv1alpha1.DaprControlPlane, fieldManager string) (*DaprControlPlaneApplyConfiguration, error) {
+	return extractDaprControlPlane(daprControlPlane, fieldManager, "")
+}
+
+// ExtractDaprControlPlaneStatus is the same as ExtractDaprControlPlane except
+// that it extracts the status subresource applied configuration.
+// Experimental!
+func ExtractDaprControlPlaneStatus(daprControlPlane *operatorv1alpha1.DaprControlPlane, fieldManager string) (*DaprControlPlaneApplyConfiguration, error) {
+	return extractDaprControlPlane(daprControlPlane, fieldManager, "status")
+}
+
+func extractDaprControlPlane(daprControlPlane *operatorv1alpha1.DaprControlPlane, fieldManager string, subresource string) (*DaprControlPlaneApplyConfiguration, error) {
+	b := &DaprControlPlaneApplyConfiguration{}
+	err := managedfields.ExtractInto(daprControlPlane, internal.Parser().Type("com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprControlPlane"), fieldManager, b, subresource)
+	if err != nil {
+		return nil, err
+	}
+	b.WithName(daprControlPlane.Name)
+	b.WithNamespace(daprControlPlane.Namespace)
+
+	b.WithKind("DaprControlPlane")
+	b.WithAPIVersion("operator.dapr.io/v1alpha1")
+	return b, nil
 }
 
 // WithKind sets the Kind field in the declarative configuration to the given value
@@ -215,4 +254,10 @@ func (b *DaprControlPlaneApplyConfiguration) WithSpec(value *DaprControlPlaneSpe
 func (b *DaprControlPlaneApplyConfiguration) WithStatus(value *DaprControlPlaneStatusApplyConfiguration) *DaprControlPlaneApplyConfiguration {
 	b.Status = value
 	return b
+}
+
+// GetName retrieves the value of the Name field in the declarative configuration.
+func (b *DaprControlPlaneApplyConfiguration) GetName() *string {
+	b.ensureObjectMetaApplyConfigurationExists()
+	return b.Name
 }

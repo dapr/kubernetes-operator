@@ -17,14 +17,14 @@ limitations under the License.
 
 package v1alpha1
 
-// DaprInstanceSpecApplyConfiguration represents an declarative configuration of the DaprInstanceSpec type for use
+// DaprInstanceSpecApplyConfiguration represents a declarative configuration of the DaprInstanceSpec type for use
 // with apply.
 type DaprInstanceSpecApplyConfiguration struct {
 	Chart  *ChartSpecApplyConfiguration `json:"chart,omitempty"`
 	Values *JSONApplyConfiguration      `json:"values,omitempty"`
 }
 
-// DaprInstanceSpecApplyConfiguration constructs an declarative configuration of the DaprInstanceSpec type for use with
+// DaprInstanceSpecApplyConfiguration constructs a declarative configuration of the DaprInstanceSpec type for use with
 // apply.
 func DaprInstanceSpec() *DaprInstanceSpecApplyConfiguration {
 	return &DaprInstanceSpecApplyConfiguration{}

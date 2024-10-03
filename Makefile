@@ -30,9 +30,7 @@ HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr
 OPENSHIFT_VERSIONS ?= v4.12
 
 ## Tool Versions
-CODEGEN_VERSION ?= v0.30.5
 KUSTOMIZE_VERSION ?= v5.4.3
-CONTROLLER_TOOLS_VERSION ?= v0.16.3
 KIND_VERSION ?= v0.24.0
 KIND_IMAGE_VERSION ?= v1.30.4
 LINTER_VERSION ?= v1.61.0
@@ -52,7 +50,6 @@ OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
 OPM ?= $(LOCALBIN)/opm
 GOVULNCHECK ?= $(LOCALBIN)/govulncheck
 KO ?= $(LOCALBIN)/ko
-CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -107,11 +104,11 @@ update/dapr: ## Update the helm chart.
 ##@ Development
 
 .PHONY: manifests
-manifests: codegen-tools-install ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(PROJECT_PATH)/hack/scripts/gen_crd.sh $(PROJECT_PATH)
+manifests: ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+	$(PROJECT_PATH)/hack/scripts/gen_manifests.sh $(PROJECT_PATH)
 
 .PHONY: generate
-generate: codegen-tools-install ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+generate: ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(PROJECT_PATH)/hack/scripts/gen_res.sh $(PROJECT_PATH)
 	$(PROJECT_PATH)/hack/scripts/gen_client.sh $(PROJECT_PATH)
 
@@ -319,13 +316,6 @@ $(KUSTOMIZE): $(LOCALBIN)
 	test -s $(LOCALBIN)/kustomize || \
 	GOBIN=$(LOCALBIN) GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION)
 
-.PHONY: controller-gen
-controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary. If wrong version is installed, it will be overwritten.
-$(CONTROLLER_GEN): $(LOCALBIN)
-	test -s $(LOCALBIN)/controller-gen || \
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
-
-
 .PHONY: golangci-lint
 golangci-lint: $(LINTER)
 $(LINTER): $(LOCALBIN)
@@ -361,11 +351,6 @@ govulncheck: $(GOVULNCHECK)
 $(GOVULNCHECK): $(LOCALBIN)
 	@test -s $(GOVULNCHECK) || \
 	GOBIN=$(LOCALBIN) go install golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION)
-
-.PHONY: codegen-tools-install
-codegen-tools-install: $(LOCALBIN)
-	@echo "Installing code gen tools"
-	$(PROJECT_PATH)/hack/scripts/install_gen_tools.sh $(PROJECT_PATH) $(CODEGEN_VERSION) $(CONTROLLER_TOOLS_VERSION)
 
 .PHONY: operator-sdk
 operator-sdk: $(OPERATOR_SDK)

@@ -19,15 +19,18 @@ package applyconfiguration
 
 import (
 	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	internal "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/internal"
 	operatorv1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	testing "k8s.io/client-go/testing"
 )
 
 // ForKind returns an apply configuration type for the given GroupVersionKind, or nil if no
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=operator, Version=v1alpha1
+	// Group=operator.dapr.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithKind("ChartMeta"):
 		return &operatorv1alpha1.ChartMetaApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ChartSpec"):
@@ -55,4 +58,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 
 	}
 	return nil
+}
+
+func NewTypeConverter(scheme *runtime.Scheme) *testing.TypeConverter {
+	return &testing.TypeConverter{Scheme: scheme, TypeResolver: internal.Parser()}
 }

@@ -51,7 +51,7 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=operator, Version=v1alpha1
+	// Group=operator.dapr.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("daprcontrolplanes"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1alpha1().DaprControlPlanes().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("daprcruisecontrols"):

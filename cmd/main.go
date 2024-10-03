@@ -20,6 +20,8 @@ import (
 	"flag"
 	"os"
 
+	"github.com/dapr/kubernetes-operator/cmd/modelschema"
+
 	"github.com/dapr/kubernetes-operator/cmd/run"
 	"github.com/dapr/kubernetes-operator/pkg/logger"
 
@@ -36,7 +38,8 @@ func main() {
 		},
 	}
 
-	rootCmd.AddCommand(run.NewRunCmd())
+	rootCmd.AddCommand(modelschema.NewCmd())
+	rootCmd.AddCommand(run.NewCmd())
 
 	fs := flag.NewFlagSet("", flag.PanicOnError)
 

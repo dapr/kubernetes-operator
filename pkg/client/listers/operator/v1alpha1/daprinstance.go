@@ -19,8 +19,8 @@ package v1alpha1
 
 import (
 	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/listers"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -37,25 +37,17 @@ type DaprInstanceLister interface {
 
 // daprInstanceLister implements the DaprInstanceLister interface.
 type daprInstanceLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*v1alpha1.DaprInstance]
 }
 
 // NewDaprInstanceLister returns a new DaprInstanceLister.
 func NewDaprInstanceLister(indexer cache.Indexer) DaprInstanceLister {
-	return &daprInstanceLister{indexer: indexer}
-}
-
-// List lists all DaprInstances in the indexer.
-func (s *daprInstanceLister) List(selector labels.Selector) (ret []*v1alpha1.DaprInstance, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.DaprInstance))
-	})
-	return ret, err
+	return &daprInstanceLister{listers.New[*v1alpha1.DaprInstance](indexer, v1alpha1.Resource("daprinstance"))}
 }
 
 // DaprInstances returns an object that can list and get DaprInstances.
 func (s *daprInstanceLister) DaprInstances(namespace string) DaprInstanceNamespaceLister {
-	return daprInstanceNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return daprInstanceNamespaceLister{listers.NewNamespaced[*v1alpha1.DaprInstance](s.ResourceIndexer, namespace)}
 }
 
 // DaprInstanceNamespaceLister helps list and get DaprInstances.
@@ -73,26 +65,5 @@ type DaprInstanceNamespaceLister interface {
 // daprInstanceNamespaceLister implements the DaprInstanceNamespaceLister
 // interface.
 type daprInstanceNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all DaprInstances in the indexer for a given namespace.
-func (s daprInstanceNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.DaprInstance, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.DaprInstance))
-	})
-	return ret, err
-}
-
-// Get retrieves the DaprInstance from the indexer for a given namespace and name.
-func (s daprInstanceNamespaceLister) Get(name string) (*v1alpha1.DaprInstance, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("daprinstance"), name)
-	}
-	return obj.(*v1alpha1.DaprInstance), nil
+	listers.ResourceIndexer[*v1alpha1.DaprInstance]
 }

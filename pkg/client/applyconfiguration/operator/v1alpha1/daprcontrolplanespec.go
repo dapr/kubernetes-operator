@@ -17,13 +17,13 @@ limitations under the License.
 
 package v1alpha1
 
-// DaprControlPlaneSpecApplyConfiguration represents an declarative configuration of the DaprControlPlaneSpec type for use
+// DaprControlPlaneSpecApplyConfiguration represents a declarative configuration of the DaprControlPlaneSpec type for use
 // with apply.
 type DaprControlPlaneSpecApplyConfiguration struct {
 	Values *JSONApplyConfiguration `json:"values,omitempty"`
 }
 
-// DaprControlPlaneSpecApplyConfiguration constructs an declarative configuration of the DaprControlPlaneSpec type for use with
+// DaprControlPlaneSpecApplyConfiguration constructs a declarative configuration of the DaprControlPlaneSpec type for use with
 // apply.
 func DaprControlPlaneSpec() *DaprControlPlaneSpecApplyConfiguration {
 	return &DaprControlPlaneSpecApplyConfiguration{}

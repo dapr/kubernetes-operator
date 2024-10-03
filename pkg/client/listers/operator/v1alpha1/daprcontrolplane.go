@@ -19,8 +19,8 @@ package v1alpha1
 
 import (
 	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/listers"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -37,25 +37,17 @@ type DaprControlPlaneLister interface {
 
 // daprControlPlaneLister implements the DaprControlPlaneLister interface.
 type daprControlPlaneLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*v1alpha1.DaprControlPlane]
 }
 
 // NewDaprControlPlaneLister returns a new DaprControlPlaneLister.
 func NewDaprControlPlaneLister(indexer cache.Indexer) DaprControlPlaneLister {
-	return &daprControlPlaneLister{indexer: indexer}
-}
-
-// List lists all DaprControlPlanes in the indexer.
-func (s *daprControlPlaneLister) List(selector labels.Selector) (ret []*v1alpha1.DaprControlPlane, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.DaprControlPlane))
-	})
-	return ret, err
+	return &daprControlPlaneLister{listers.New[*v1alpha1.DaprControlPlane](indexer, v1alpha1.Resource("daprcontrolplane"))}
 }
 
 // DaprControlPlanes returns an object that can list and get DaprControlPlanes.
 func (s *daprControlPlaneLister) DaprControlPlanes(namespace string) DaprControlPlaneNamespaceLister {
-	return daprControlPlaneNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return daprControlPlaneNamespaceLister{listers.NewNamespaced[*v1alpha1.DaprControlPlane](s.ResourceIndexer, namespace)}
 }
 
 // DaprControlPlaneNamespaceLister helps list and get DaprControlPlanes.
@@ -73,26 +65,5 @@ type DaprControlPlaneNamespaceLister interface {
 // daprControlPlaneNamespaceLister implements the DaprControlPlaneNamespaceLister
 // interface.
 type daprControlPlaneNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all DaprControlPlanes in the indexer for a given namespace.
-func (s daprControlPlaneNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.DaprControlPlane, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.DaprControlPlane))
-	})
-	return ret, err
-}
-
-// Get retrieves the DaprControlPlane from the indexer for a given namespace and name.
-func (s daprControlPlaneNamespaceLister) Get(name string) (*v1alpha1.DaprControlPlane, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("daprcontrolplane"), name)
-	}
-	return obj.(*v1alpha1.DaprControlPlane), nil
+	listers.ResourceIndexer[*v1alpha1.DaprControlPlane]
 }

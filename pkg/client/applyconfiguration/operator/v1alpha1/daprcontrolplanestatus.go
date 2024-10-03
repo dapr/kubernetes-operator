@@ -21,14 +21,14 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// DaprControlPlaneStatusApplyConfiguration represents an declarative configuration of the DaprControlPlaneStatus type for use
+// DaprControlPlaneStatusApplyConfiguration represents a declarative configuration of the DaprControlPlaneStatus type for use
 // with apply.
 type DaprControlPlaneStatusApplyConfiguration struct {
 	StatusApplyConfiguration `json:",inline"`
 	Chart                    *ChartMetaApplyConfiguration `json:"chart,omitempty"`
 }
 
-// DaprControlPlaneStatusApplyConfiguration constructs an declarative configuration of the DaprControlPlaneStatus type for use with
+// DaprControlPlaneStatusApplyConfiguration constructs a declarative configuration of the DaprControlPlaneStatus type for use with
 // apply.
 func DaprControlPlaneStatus() *DaprControlPlaneStatusApplyConfiguration {
 	return &DaprControlPlaneStatusApplyConfiguration{}
