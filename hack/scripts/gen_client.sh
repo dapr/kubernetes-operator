@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 if [ $# -ne 1 ]; then
     echo "project root is expected"
@@ -12,15 +12,27 @@ mkdir -p "${PROJECT_ROOT}/pkg/client"
 
 echo "tmp dir: $TMP_DIR"
 
-echo "applyconfiguration-gen"
-"${PROJECT_ROOT}"/bin/applyconfiguration-gen \
+
+echo "Generating openapi schema"
+go run k8s.io/kube-openapi/cmd/openapi-gen \
+  --output-file zz_generated.openapi.go \
+  --output-dir "pkg/generated/openapi" \
+  --output-pkg "github.com/dapr/kubernetes-operator/pkg/generated/openapi" \
+  github.com/dapr/kubernetes-operator/api/operator/v1alpha1 \
+  k8s.io/apimachinery/pkg/apis/meta/v1 \
+  k8s.io/apimachinery/pkg/runtime \
+  k8s.io/apimachinery/pkg/version
+
+echo "Generate ApplyConfiguration"
+go run k8s.io/code-generator/cmd/applyconfiguration-gen \
+  --openapi-schema <(go run ${PROJECT_ROOT}/cmd/main.go modelschema) \
   --go-header-file="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   --output-dir="${TMP_DIR}/client/applyconfiguration" \
   --output-pkg=github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration \
   github.com/dapr/kubernetes-operator/api/operator/v1alpha1
 
-echo "client-gen"
-"${PROJECT_ROOT}"/bin/client-gen \
+echo "Generate client"
+go run k8s.io/code-generator/cmd/client-gen \
   --go-header-file="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   --output-dir="${TMP_DIR}/client/clientset" \
   --input-base=github.com/dapr/kubernetes-operator/api \
@@ -30,15 +42,15 @@ echo "client-gen"
   --apply-configuration-package=github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration \
   --output-pkg=github.com/dapr/kubernetes-operator/pkg/client/clientset
 
-echo "lister-gen"
-"${PROJECT_ROOT}"/bin/lister-gen \
+echo "Generate lister"
+go run k8s.io/code-generator/cmd/lister-gen \
   --go-header-file="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   --output-dir="${TMP_DIR}/client/listers" \
   --output-pkg=github.com/dapr/kubernetes-operator/pkg/client/listers \
   github.com/dapr/kubernetes-operator/api/operator/v1alpha1
 
-echo "informer-gen"
-"${PROJECT_ROOT}"/bin/informer-gen \
+echo "Generate informer"
+go run k8s.io/code-generator/cmd/informer-gen \
   --go-header-file="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   --output-dir="${TMP_DIR}/client/informers" \
   --versioned-clientset-package=github.com/dapr/kubernetes-operator/pkg/client/clientset/versioned \

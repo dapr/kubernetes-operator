@@ -19,12 +19,14 @@ package v1alpha1
 
 import (
 	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	internal "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/internal"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
+	managedfields "k8s.io/apimachinery/pkg/util/managedfields"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// DaprCruiseControlApplyConfiguration represents an declarative configuration of the DaprCruiseControl type for use
+// DaprCruiseControlApplyConfiguration represents a declarative configuration of the DaprCruiseControl type for use
 // with apply.
 type DaprCruiseControlApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
@@ -33,7 +35,7 @@ type DaprCruiseControlApplyConfiguration struct {
 	Status                           *DaprCruiseControlStatusApplyConfiguration `json:"status,omitempty"`
 }
 
-// DaprCruiseControl constructs an declarative configuration of the DaprCruiseControl type for use with
+// DaprCruiseControl constructs a declarative configuration of the DaprCruiseControl type for use with
 // apply.
 func DaprCruiseControl(name, namespace string) *DaprCruiseControlApplyConfiguration {
 	b := &DaprCruiseControlApplyConfiguration{}
@@ -42,6 +44,42 @@ func DaprCruiseControl(name, namespace string) *DaprCruiseControlApplyConfigurat
 	b.WithKind("DaprCruiseControl")
 	b.WithAPIVersion("operator.dapr.io/v1alpha1")
 	return b
+}
+
+// ExtractDaprCruiseControl extracts the applied configuration owned by fieldManager from
+// daprCruiseControl. If no managedFields are found in daprCruiseControl for fieldManager, a
+// DaprCruiseControlApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// daprCruiseControl must be a unmodified DaprCruiseControl API object that was retrieved from the Kubernetes API.
+// ExtractDaprCruiseControl provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+// Experimental!
+func ExtractDaprCruiseControl(daprCruiseControl *v1alpha1.DaprCruiseControl, fieldManager string) (*DaprCruiseControlApplyConfiguration, error) {
+	return extractDaprCruiseControl(daprCruiseControl, fieldManager, "")
+}
+
+// ExtractDaprCruiseControlStatus is the same as ExtractDaprCruiseControl except
+// that it extracts the status subresource applied configuration.
+// Experimental!
+func ExtractDaprCruiseControlStatus(daprCruiseControl *v1alpha1.DaprCruiseControl, fieldManager string) (*DaprCruiseControlApplyConfiguration, error) {
+	return extractDaprCruiseControl(daprCruiseControl, fieldManager, "status")
+}
+
+func extractDaprCruiseControl(daprCruiseControl *v1alpha1.DaprCruiseControl, fieldManager string, subresource string) (*DaprCruiseControlApplyConfiguration, error) {
+	b := &DaprCruiseControlApplyConfiguration{}
+	err := managedfields.ExtractInto(daprCruiseControl, internal.Parser().Type("com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprCruiseControl"), fieldManager, b, subresource)
+	if err != nil {
+		return nil, err
+	}
+	b.WithName(daprCruiseControl.Name)
+	b.WithNamespace(daprCruiseControl.Namespace)
+
+	b.WithKind("DaprCruiseControl")
+	b.WithAPIVersion("operator.dapr.io/v1alpha1")
+	return b, nil
 }
 
 // WithKind sets the Kind field in the declarative configuration to the given value
@@ -216,4 +254,10 @@ func (b *DaprCruiseControlApplyConfiguration) WithSpec(value v1alpha1.DaprCruise
 func (b *DaprCruiseControlApplyConfiguration) WithStatus(value *DaprCruiseControlStatusApplyConfiguration) *DaprCruiseControlApplyConfiguration {
 	b.Status = value
 	return b
+}
+
+// GetName retrieves the value of the Name field in the declarative configuration.
+func (b *DaprCruiseControlApplyConfiguration) GetName() *string {
+	b.ensureObjectMetaApplyConfigurationExists()
+	return b.Name
 }

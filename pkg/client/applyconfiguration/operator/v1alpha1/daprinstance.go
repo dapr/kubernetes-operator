@@ -18,12 +18,15 @@ limitations under the License.
 package v1alpha1
 
 import (
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	internal "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/internal"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
+	managedfields "k8s.io/apimachinery/pkg/util/managedfields"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// DaprInstanceApplyConfiguration represents an declarative configuration of the DaprInstance type for use
+// DaprInstanceApplyConfiguration represents a declarative configuration of the DaprInstance type for use
 // with apply.
 type DaprInstanceApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
@@ -32,7 +35,7 @@ type DaprInstanceApplyConfiguration struct {
 	Status                           *DaprInstanceStatusApplyConfiguration `json:"status,omitempty"`
 }
 
-// DaprInstance constructs an declarative configuration of the DaprInstance type for use with
+// DaprInstance constructs a declarative configuration of the DaprInstance type for use with
 // apply.
 func DaprInstance(name, namespace string) *DaprInstanceApplyConfiguration {
 	b := &DaprInstanceApplyConfiguration{}
@@ -41,6 +44,42 @@ func DaprInstance(name, namespace string) *DaprInstanceApplyConfiguration {
 	b.WithKind("DaprInstance")
 	b.WithAPIVersion("operator.dapr.io/v1alpha1")
 	return b
+}
+
+// ExtractDaprInstance extracts the applied configuration owned by fieldManager from
+// daprInstance. If no managedFields are found in daprInstance for fieldManager, a
+// DaprInstanceApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// daprInstance must be a unmodified DaprInstance API object that was retrieved from the Kubernetes API.
+// ExtractDaprInstance provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+// Experimental!
+func ExtractDaprInstance(daprInstance *operatorv1alpha1.DaprInstance, fieldManager string) (*DaprInstanceApplyConfiguration, error) {
+	return extractDaprInstance(daprInstance, fieldManager, "")
+}
+
+// ExtractDaprInstanceStatus is the same as ExtractDaprInstance except
+// that it extracts the status subresource applied configuration.
+// Experimental!
+func ExtractDaprInstanceStatus(daprInstance *operatorv1alpha1.DaprInstance, fieldManager string) (*DaprInstanceApplyConfiguration, error) {
+	return extractDaprInstance(daprInstance, fieldManager, "status")
+}
+
+func extractDaprInstance(daprInstance *operatorv1alpha1.DaprInstance, fieldManager string, subresource string) (*DaprInstanceApplyConfiguration, error) {
+	b := &DaprInstanceApplyConfiguration{}
+	err := managedfields.ExtractInto(daprInstance, internal.Parser().Type("com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprInstance"), fieldManager, b, subresource)
+	if err != nil {
+		return nil, err
+	}
+	b.WithName(daprInstance.Name)
+	b.WithNamespace(daprInstance.Namespace)
+
+	b.WithKind("DaprInstance")
+	b.WithAPIVersion("operator.dapr.io/v1alpha1")
+	return b, nil
 }
 
 // WithKind sets the Kind field in the declarative configuration to the given value
@@ -215,4 +254,10 @@ func (b *DaprInstanceApplyConfiguration) WithSpec(value *DaprInstanceSpecApplyCo
 func (b *DaprInstanceApplyConfiguration) WithStatus(value *DaprInstanceStatusApplyConfiguration) *DaprInstanceApplyConfiguration {
 	b.Status = value
 	return b
+}
+
+// GetName retrieves the value of the Name field in the declarative configuration.
+func (b *DaprInstanceApplyConfiguration) GetName() *string {
+	b.ensureObjectMetaApplyConfigurationExists()
+	return b.Name
 }

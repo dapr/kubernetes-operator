@@ -17,7 +17,7 @@ limitations under the License.
 
 package v1alpha1
 
-// ChartMetaApplyConfiguration represents an declarative configuration of the ChartMeta type for use
+// ChartMetaApplyConfiguration represents a declarative configuration of the ChartMeta type for use
 // with apply.
 type ChartMetaApplyConfiguration struct {
 	Repo    *string `json:"repo,omitempty"`
@@ -25,7 +25,7 @@ type ChartMetaApplyConfiguration struct {
 	Version *string `json:"version,omitempty"`
 }
 
-// ChartMetaApplyConfiguration constructs an declarative configuration of the ChartMeta type for use with
+// ChartMetaApplyConfiguration constructs a declarative configuration of the ChartMeta type for use with
 // apply.
 func ChartMeta() *ChartMetaApplyConfiguration {
 	return &ChartMetaApplyConfiguration{}

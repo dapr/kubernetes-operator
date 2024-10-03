@@ -17,7 +17,7 @@ limitations under the License.
 
 package v1alpha1
 
-// ChartSpecApplyConfiguration represents an declarative configuration of the ChartSpec type for use
+// ChartSpecApplyConfiguration represents a declarative configuration of the ChartSpec type for use
 // with apply.
 type ChartSpecApplyConfiguration struct {
 	Repo    *string `json:"repo,omitempty"`
@@ -26,7 +26,7 @@ type ChartSpecApplyConfiguration struct {
 	Secret  *string `json:"secret,omitempty"`
 }
 
-// ChartSpecApplyConfiguration constructs an declarative configuration of the ChartSpec type for use with
+// ChartSpecApplyConfiguration constructs a declarative configuration of the ChartSpec type for use with
 // apply.
 func ChartSpec() *ChartSpecApplyConfiguration {
 	return &ChartSpecApplyConfiguration{}

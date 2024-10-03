@@ -21,13 +21,13 @@ import (
 	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
 )
 
-// JSONApplyConfiguration represents an declarative configuration of the JSON type for use
+// JSONApplyConfiguration represents a declarative configuration of the JSON type for use
 // with apply.
 type JSONApplyConfiguration struct {
 	v1alpha1.RawMessage `json:",inline"`
 }
 
-// JSONApplyConfiguration constructs an declarative configuration of the JSON type for use with
+// JSONApplyConfiguration constructs a declarative configuration of the JSON type for use with
 // apply.
 func JSON() *JSONApplyConfiguration {
 	return &JSONApplyConfiguration{}

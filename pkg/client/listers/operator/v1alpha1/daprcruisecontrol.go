@@ -19,8 +19,8 @@ package v1alpha1
 
 import (
 	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/listers"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -37,25 +37,17 @@ type DaprCruiseControlLister interface {
 
 // daprCruiseControlLister implements the DaprCruiseControlLister interface.
 type daprCruiseControlLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*v1alpha1.DaprCruiseControl]
 }
 
 // NewDaprCruiseControlLister returns a new DaprCruiseControlLister.
 func NewDaprCruiseControlLister(indexer cache.Indexer) DaprCruiseControlLister {
-	return &daprCruiseControlLister{indexer: indexer}
-}
-
-// List lists all DaprCruiseControls in the indexer.
-func (s *daprCruiseControlLister) List(selector labels.Selector) (ret []*v1alpha1.DaprCruiseControl, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.DaprCruiseControl))
-	})
-	return ret, err
+	return &daprCruiseControlLister{listers.New[*v1alpha1.DaprCruiseControl](indexer, v1alpha1.Resource("daprcruisecontrol"))}
 }
 
 // DaprCruiseControls returns an object that can list and get DaprCruiseControls.
 func (s *daprCruiseControlLister) DaprCruiseControls(namespace string) DaprCruiseControlNamespaceLister {
-	return daprCruiseControlNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return daprCruiseControlNamespaceLister{listers.NewNamespaced[*v1alpha1.DaprCruiseControl](s.ResourceIndexer, namespace)}
 }
 
 // DaprCruiseControlNamespaceLister helps list and get DaprCruiseControls.
@@ -73,26 +65,5 @@ type DaprCruiseControlNamespaceLister interface {
 // daprCruiseControlNamespaceLister implements the DaprCruiseControlNamespaceLister
 // interface.
 type daprCruiseControlNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all DaprCruiseControls in the indexer for a given namespace.
-func (s daprCruiseControlNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.DaprCruiseControl, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.DaprCruiseControl))
-	})
-	return ret, err
-}
-
-// Get retrieves the DaprCruiseControl from the indexer for a given namespace and name.
-func (s daprCruiseControlNamespaceLister) Get(name string) (*v1alpha1.DaprCruiseControl, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("daprcruisecontrol"), name)
-	}
-	return obj.(*v1alpha1.DaprCruiseControl), nil
+	listers.ResourceIndexer[*v1alpha1.DaprCruiseControl]
 }

@@ -23,37 +23,11 @@ import (
 	"github.com/dapr/kubernetes-operator/pkg/controller"
 )
 
-//nolint:gochecknoinits
-func init() {
-	utilruntime.Must(daprApi.AddToScheme(controller.Scheme))
-	utilruntime.Must(apiextensions.AddToScheme(controller.Scheme))
-}
+const (
+	cmdName = "run"
+)
 
-// computeListWatch computes the cache's ListWatch by object.
-func computeListWatch() (map[rtclient.Object]rtcache.ByObject, error) {
-	selector, err := helm.ReleaseSelector()
-	if err != nil {
-		return nil, fmt.Errorf("unable to compute cache's watch selector: %w", err)
-	}
-
-	selectors := map[rtclient.Object]rtcache.ByObject{
-		// k8s
-		&rbacv1.ClusterRole{}:                    {Label: selector},
-		&rbacv1.ClusterRoleBinding{}:             {Label: selector},
-		&rbacv1.Role{}:                           {Label: selector},
-		&rbacv1.RoleBinding{}:                    {Label: selector},
-		&admregv1.MutatingWebhookConfiguration{}: {Label: selector},
-		&corev1.Secret{}:                         {Label: selector},
-		&corev1.Service{}:                        {Label: selector},
-		&corev1.ServiceAccount{}:                 {Label: selector},
-		&appsv1.StatefulSet{}:                    {Label: selector},
-		&appsv1.Deployment{}:                     {Label: selector},
-	}
-
-	return selectors, nil
-}
-
-func NewRunCmd() *cobra.Command {
+func NewCmd() *cobra.Command {
 	co := controller.Options{
 		MetricsAddr:                   ":8080",
 		ProbeAddr:                     ":8081",
@@ -69,8 +43,8 @@ func NewRunCmd() *cobra.Command {
 	}
 
 	cmd := cobra.Command{
-		Use:   "run",
-		Short: "run",
+		Use:   cmdName,
+		Short: cmdName,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			selector, err := computeListWatch()
 			if err != nil {
@@ -113,4 +87,34 @@ func NewRunCmd() *cobra.Command {
 		&helmOpts.ChartsDir, "helm-charts-dir", helmOpts.ChartsDir, "Helm charts dir.")
 
 	return &cmd
+}
+
+//nolint:gochecknoinits
+func init() {
+	utilruntime.Must(daprApi.AddToScheme(controller.Scheme))
+	utilruntime.Must(apiextensions.AddToScheme(controller.Scheme))
+}
+
+// computeListWatch computes the cache's ListWatch by object.
+func computeListWatch() (map[rtclient.Object]rtcache.ByObject, error) {
+	selector, err := helm.ReleaseSelector()
+	if err != nil {
+		return nil, fmt.Errorf("unable to compute cache's watch selector: %w", err)
+	}
+
+	selectors := map[rtclient.Object]rtcache.ByObject{
+		// k8s
+		&rbacv1.ClusterRole{}:                    {Label: selector},
+		&rbacv1.ClusterRoleBinding{}:             {Label: selector},
+		&rbacv1.Role{}:                           {Label: selector},
+		&rbacv1.RoleBinding{}:                    {Label: selector},
+		&admregv1.MutatingWebhookConfiguration{}: {Label: selector},
+		&corev1.Secret{}:                         {Label: selector},
+		&corev1.Service{}:                        {Label: selector},
+		&corev1.ServiceAccount{}:                 {Label: selector},
+		&appsv1.StatefulSet{}:                    {Label: selector},
+		&appsv1.Deployment{}:                     {Label: selector},
+	}
+
+	return selectors, nil
 }
