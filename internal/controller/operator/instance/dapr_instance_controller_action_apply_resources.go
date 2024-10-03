@@ -63,23 +63,18 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 		return istr < jstr
 	})
 
-	installedVersion := ""
-	if rc.Resource.Status.Chart != nil {
-		installedVersion = rc.Resource.Status.Chart.Version
-	}
-
-	force := rc.Resource.Generation != rc.Resource.Status.ObservedGeneration || c.Version() != installedVersion
+	force := rc.Resource.Generation != rc.Resource.Status.ObservedGeneration || !helm.IsSameChart(c, rc.Resource.Status.Chart)
 
 	if force {
 		rc.Reconciler.Event(
 			rc.Resource,
 			corev1.EventTypeNormal,
 			"RenderFullHelmTemplate",
-			fmt.Sprintf("Render full Helm template (observedGeneration: %d, generation: %d, installedChartVersion: %s, chartVersion: %s)",
+			fmt.Sprintf("Render full Helm template (observedGeneration: %d, generation: %d, installedChart: %v, chart: %v)",
 				rc.Resource.Status.ObservedGeneration,
 				rc.Resource.Generation,
-				installedVersion,
-				c.Version()),
+				rc.Resource.Status.Chart,
+				c.Spec()),
 		)
 	}
 
