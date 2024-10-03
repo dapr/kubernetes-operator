@@ -1,6 +1,5 @@
-apiVersion: operator.dapr.io/v1alpha1
+apiVersion: operator.dapr.io/v1beta1
 kind: DaprCruiseControl
 metadata:
   name: "dapr-cruise-control"
-  namespace: "dapr-system"
 spec: {}

@@ -1,7 +1,8 @@
 package controller
 
 import (
-	daptCtrlApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	daptCtrlApi "github.com/dapr/kubernetes-operator/api/operator/v1beta1"
+	"github.com/go-logr/logr"
 	rtcache "sigs.k8s.io/controller-runtime/pkg/cache"
 	rtclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -26,6 +27,7 @@ type Options struct {
 	EnableLeaderElection          bool
 	ReleaseLeaderElectionOnCancel bool
 	WatchSelectors                map[rtclient.Object]rtcache.ByObject
+	Logger                        logr.Logger
 }
 
 type WithStatus interface {

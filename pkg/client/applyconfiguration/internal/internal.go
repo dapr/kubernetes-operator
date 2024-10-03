@@ -38,7 +38,7 @@ func Parser() *typed.Parser {
 var parserOnce sync.Once
 var parser *typed.Parser
 var schemaYAML = typed.YAMLObject(`types:
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.ChartMeta
+- name: com.github.dapr.kubernetes-operator.api.operator.v1beta1.ChartMeta
   map:
     fields:
     - name: name
@@ -50,7 +50,7 @@ var schemaYAML = typed.YAMLObject(`types:
     - name: version
       type:
         scalar: string
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.ChartSpec
+- name: com.github.dapr.kubernetes-operator.api.operator.v1beta1.ChartSpec
   map:
     fields:
     - name: name
@@ -65,7 +65,7 @@ var schemaYAML = typed.YAMLObject(`types:
     - name: version
       type:
         scalar: string
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprControlPlane
+- name: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DaprCruiseControl
   map:
     fields:
     - name: apiVersion
@@ -80,59 +80,13 @@ var schemaYAML = typed.YAMLObject(`types:
       default: {}
     - name: spec
       type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprControlPlaneSpec
+        namedType: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DaprCruiseControlSpec
       default: {}
     - name: status
       type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprControlPlaneStatus
+        namedType: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DaprCruiseControlStatus
       default: {}
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprControlPlaneSpec
-  map:
-    fields:
-    - name: values
-      type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.JSON
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprControlPlaneStatus
-  map:
-    fields:
-    - name: chart
-      type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.ChartMeta
-    - name: conditions
-      type:
-        list:
-          elementType:
-            namedType: io.k8s.apimachinery.pkg.apis.meta.v1.Condition
-          elementRelationship: atomic
-    - name: observedGeneration
-      type:
-        scalar: numeric
-    - name: phase
-      type:
-        scalar: string
-      default: ""
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprCruiseControl
-  map:
-    fields:
-    - name: apiVersion
-      type:
-        scalar: string
-    - name: kind
-      type:
-        scalar: string
-    - name: metadata
-      type:
-        namedType: io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta
-      default: {}
-    - name: spec
-      type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprCruiseControlSpec
-      default: {}
-    - name: status
-      type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprCruiseControlStatus
-      default: {}
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprCruiseControlSpec
+- name: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DaprCruiseControlSpec
   map:
     elementType:
       scalar: untyped
@@ -144,12 +98,12 @@ var schemaYAML = typed.YAMLObject(`types:
         elementType:
           namedType: __untyped_deduced_
         elementRelationship: separable
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprCruiseControlStatus
+- name: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DaprCruiseControlStatus
   map:
     fields:
     - name: chart
       type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.ChartMeta
+        namedType: com.github.dapr.kubernetes-operator.api.operator.v1beta1.ChartMeta
     - name: conditions
       type:
         list:
@@ -163,7 +117,7 @@ var schemaYAML = typed.YAMLObject(`types:
       type:
         scalar: string
       default: ""
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprInstance
+- name: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DaprInstance
   map:
     fields:
     - name: apiVersion
@@ -178,27 +132,31 @@ var schemaYAML = typed.YAMLObject(`types:
       default: {}
     - name: spec
       type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprInstanceSpec
+        namedType: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DaprInstanceSpec
       default: {}
     - name: status
       type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprInstanceStatus
+        namedType: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DaprInstanceStatus
       default: {}
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprInstanceSpec
+- name: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DaprInstanceSpec
   map:
     fields:
     - name: chart
       type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.ChartSpec
+        namedType: com.github.dapr.kubernetes-operator.api.operator.v1beta1.ChartSpec
+    - name: deployment
+      type:
+        namedType: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DeploymentSpec
+      default: {}
     - name: values
       type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.JSON
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprInstanceStatus
+        namedType: com.github.dapr.kubernetes-operator.api.operator.v1beta1.JSON
+- name: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DaprInstanceStatus
   map:
     fields:
     - name: chart
       type:
-        namedType: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.ChartMeta
+        namedType: com.github.dapr.kubernetes-operator.api.operator.v1beta1.ChartMeta
     - name: conditions
       type:
         list:
@@ -212,7 +170,13 @@ var schemaYAML = typed.YAMLObject(`types:
       type:
         scalar: string
       default: ""
-- name: com.github.dapr.kubernetes-operator.api.operator.v1alpha1.JSON
+- name: com.github.dapr.kubernetes-operator.api.operator.v1beta1.DeploymentSpec
+  map:
+    fields:
+    - name: namespace
+      type:
+        scalar: string
+- name: com.github.dapr.kubernetes-operator.api.operator.v1beta1.JSON
   map:
     elementType:
       scalar: untyped

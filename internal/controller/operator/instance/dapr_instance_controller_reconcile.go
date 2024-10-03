@@ -30,23 +30,17 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1beta1"
 )
 
 func (r *Reconciler) reconciliationRequest(res *daprApi.DaprInstance) (ReconciliationRequest, error) {
 	rr := ReconciliationRequest{
-		Client: r.Client(),
-		NamespacedName: types.NamespacedName{
-			Name:      res.Name,
-			Namespace: res.Namespace,
-		},
-		ClusterType: r.ClusterType,
-		Reconciler:  r,
-		Resource:    res,
+		Client:     r.Client(),
+		Reconciler: r,
+		Resource:   res,
 		Helm: Helm{
 			engine:      r.helmEngine,
 			chartDir:    r.helmOptions.ChartsDir,
@@ -82,7 +76,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprInstance) (
 	}
 
 	l := log.FromContext(ctx)
-	l.Info("Reconciling", "resource", rr.NamespacedName.String())
+	l.Info("Reconciling", "resource", rr.Resource.Name)
 
 	//
 	// Reconcile
@@ -147,7 +141,7 @@ func (r *Reconciler) Cleanup(ctx context.Context, res *daprApi.DaprInstance) err
 	}
 
 	l := log.FromContext(ctx)
-	l.Info("Cleanup", "resource", rr.NamespacedName.String())
+	l.Info("Cleanup", "resource", rr.Resource.Name)
 
 	// Cleanup leftovers if needed
 	for i := len(r.actions) - 1; i >= 0; i-- {

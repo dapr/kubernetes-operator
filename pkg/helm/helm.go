@@ -1,7 +1,7 @@
 package helm
 
 import (
-	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1beta1"
 	helme "github.com/lburgazzoli/k8s-manifests-renderer-helm/engine"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
@@ -10,7 +10,6 @@ import (
 const (
 	ReleaseGeneration = "helm.operator.dapr.io/release.generation"
 	ReleaseName       = "helm.operator.dapr.io/release.name"
-	ReleaseNamespace  = "helm.operator.dapr.io/release.namespace"
 	ReleaseVersion    = "helm.operator.dapr.io/release.version"
 
 	ChartsDir = "helm-charts/dapr"
@@ -27,14 +26,8 @@ func ReleaseSelector() (labels.Selector, error) {
 		return nil, err
 	}
 
-	hasReleaseNamespaceLabel, err := labels.NewRequirement(ReleaseNamespace, selection.Exists, []string{})
-	if err != nil {
-		return nil, err
-	}
-
 	selector := labels.NewSelector().
-		Add(*hasReleaseNameLabel).
-		Add(*hasReleaseNamespaceLabel)
+		Add(*hasReleaseNameLabel)
 
 	return selector, nil
 }

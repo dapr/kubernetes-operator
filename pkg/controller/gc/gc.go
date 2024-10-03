@@ -80,7 +80,7 @@ func (gc *GC) deleteEachOf(
 
 		if err := c.List(ctx, &items, options...); err != nil {
 			if k8serrors.IsForbidden(err) {
-				gc.l.Info("cannot gc, forbidden", "gvk", GVK.String())
+				gc.l.Info("cannot gc, forbidden", "gvks", GVK.String())
 
 				continue
 			}
@@ -136,7 +136,7 @@ func (gc *GC) delete(
 		}
 
 		return false, fmt.Errorf(
-			"cannot delete resources gvk:%s, namespace: %s, name: %s, err: %w",
+			"cannot delete resources gvks:%s, namespace: %s, name: %s, err: %w",
 			resource.GroupVersionKind().String(),
 			resource.GetNamespace(),
 			resource.GetName(),

@@ -50,6 +50,7 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 		LeaderElectionReleaseOnCancel: options.ReleaseLeaderElectionOnCancel,
 		LeaderElectionNamespace:       options.LeaderElectionNamespace,
 		PprofBindAddress:              options.PprofAddr,
+		Logger:                        options.Logger,
 
 		Metrics: metricsserver.Options{
 			BindAddress: options.MetricsAddr,
@@ -85,8 +86,6 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 }
 
 func OperatorNamespace() string {
-	// by default, the controller expect singleton resources to be created in the same
-	// namespace where it runs, if not fallback to the default namespace
 	ns := os.Getenv(NamespaceEnv)
 	if ns == "" {
 		ns = NamespaceDefault

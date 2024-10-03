@@ -50,11 +50,11 @@ func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) e
 	var readyCondition metav1.Condition
 
 	if deployments+statefulSets > 0 {
-		reason := "Ready"
+		reason := conditions.ReasonReady
 		status := metav1.ConditionTrue
 
 		if readyDeployments+readyReplicaSets != deployments+statefulSets {
-			reason = "InProgress"
+			reason = conditions.ReasonInProgress
 			status = metav1.ConditionFalse
 		}
 
@@ -71,7 +71,7 @@ func (a *ConditionsAction) Run(ctx context.Context, rc *ReconciliationRequest) e
 		readyCondition = metav1.Condition{
 			Type:               conditions.TypeReady,
 			Status:             metav1.ConditionFalse,
-			Reason:             "InProgress",
+			Reason:             conditions.ReasonInProgress,
 			Message:            "no deployments/replicasets",
 			ObservedGeneration: rc.Resource.Generation,
 		}
@@ -87,7 +87,7 @@ func (a *ConditionsAction) Cleanup(_ context.Context, _ *ReconciliationRequest) 
 }
 
 func (a *ConditionsAction) deployments(ctx context.Context, rc *ReconciliationRequest, selector labels.Selector) (int, int, error) {
-	objects, err := rc.Client.AppsV1().Deployments(rc.Resource.Namespace).List(ctx, metav1.ListOptions{
+	objects, err := rc.Client.AppsV1().Deployments(rc.Resource.Spec.Deployment.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: selector.String(),
 	})
 
@@ -107,7 +107,7 @@ func (a *ConditionsAction) deployments(ctx context.Context, rc *ReconciliationRe
 }
 
 func (a *ConditionsAction) statefulSets(ctx context.Context, rc *ReconciliationRequest, selector labels.Selector) (int, int, error) {
-	objects, err := rc.Client.AppsV1().StatefulSets(rc.Resource.Namespace).List(ctx, metav1.ListOptions{
+	objects, err := rc.Client.AppsV1().StatefulSets(rc.Resource.Spec.Deployment.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: selector.String(),
 	})
 

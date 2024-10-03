@@ -125,7 +125,7 @@ func DeployOperator(test support.Test, ns *corev1.Namespace, image string) {
 				Namespace: ns.Name,
 			},
 			Spec: &olmV1Alpha1.SubscriptionSpec{
-				Channel:                "alpha",
+				Channel:                "beta",
 				Package:                "dapr-kubernetes-operator",
 				InstallPlanApproval:    olmV1Alpha1.ApprovalAutomatic,
 				CatalogSource:          catalog.Name,

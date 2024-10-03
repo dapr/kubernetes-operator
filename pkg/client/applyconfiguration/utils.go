@@ -18,9 +18,9 @@ limitations under the License.
 package applyconfiguration
 
 import (
-	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	v1beta1 "github.com/dapr/kubernetes-operator/api/operator/v1beta1"
 	internal "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/internal"
-	operatorv1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
+	operatorv1beta1 "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1beta1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	testing "k8s.io/client-go/testing"
@@ -30,31 +30,27 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=operator.dapr.io, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithKind("ChartMeta"):
-		return &operatorv1alpha1.ChartMetaApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("ChartSpec"):
-		return &operatorv1alpha1.ChartSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DaprControlPlane"):
-		return &operatorv1alpha1.DaprControlPlaneApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DaprControlPlaneSpec"):
-		return &operatorv1alpha1.DaprControlPlaneSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DaprControlPlaneStatus"):
-		return &operatorv1alpha1.DaprControlPlaneStatusApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DaprCruiseControl"):
-		return &operatorv1alpha1.DaprCruiseControlApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DaprCruiseControlStatus"):
-		return &operatorv1alpha1.DaprCruiseControlStatusApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DaprInstance"):
-		return &operatorv1alpha1.DaprInstanceApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DaprInstanceSpec"):
-		return &operatorv1alpha1.DaprInstanceSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DaprInstanceStatus"):
-		return &operatorv1alpha1.DaprInstanceStatusApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("JSON"):
-		return &operatorv1alpha1.JSONApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("Status"):
-		return &operatorv1alpha1.StatusApplyConfiguration{}
+	// Group=operator.dapr.io, Version=v1beta1
+	case v1beta1.SchemeGroupVersion.WithKind("ChartMeta"):
+		return &operatorv1beta1.ChartMetaApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("ChartSpec"):
+		return &operatorv1beta1.ChartSpecApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("DaprCruiseControl"):
+		return &operatorv1beta1.DaprCruiseControlApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("DaprCruiseControlStatus"):
+		return &operatorv1beta1.DaprCruiseControlStatusApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("DaprInstance"):
+		return &operatorv1beta1.DaprInstanceApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("DaprInstanceSpec"):
+		return &operatorv1beta1.DaprInstanceSpecApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("DaprInstanceStatus"):
+		return &operatorv1beta1.DaprInstanceStatusApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("DeploymentSpec"):
+		return &operatorv1beta1.DeploymentSpecApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("JSON"):
+		return &operatorv1beta1.JSONApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("Status"):
+		return &operatorv1beta1.StatusApplyConfiguration{}
 
 	}
 	return nil

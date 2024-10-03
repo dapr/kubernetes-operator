@@ -6,6 +6,10 @@ import (
 	"sort"
 	"strconv"
 
+	ctrlCli "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/dapr/kubernetes-operator/pkg/gvks"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/dapr/kubernetes-operator/pkg/controller/predicates"
@@ -15,14 +19,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 
-	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1beta1"
 	"github.com/dapr/kubernetes-operator/pkg/controller/client"
 	"github.com/dapr/kubernetes-operator/pkg/helm"
-	"github.com/dapr/kubernetes-operator/pkg/pointer"
 	"github.com/dapr/kubernetes-operator/pkg/resources"
 )
 
@@ -50,17 +52,20 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 		return fmt.Errorf("cannot load chart: %w", err)
 	}
 
-	items, err := c.Render(ctx, rc.Resource.Name, rc.Resource.Namespace, int(rc.Resource.Generation), rc.Helm.ChartValues)
+	items, err := c.Render(
+		ctx,
+		rc.Resource.Name,
+		rc.Resource.Spec.Deployment.Namespace,
+		int(rc.Resource.Generation),
+		rc.Helm.ChartValues,
+	)
+
 	if err != nil {
 		return fmt.Errorf("cannot render a chart: %w", err)
 	}
 
-	// TODO: this must be ordered by priority/relations
 	sort.Slice(items, func(i int, j int) bool {
-		istr := items[i].GroupVersionKind().Kind + ":" + items[i].GetName()
-		jstr := items[j].GroupVersionKind().Kind + ":" + items[j].GetName()
-
-		return istr < jstr
+		return resources.Ref(&items[i]) < resources.Ref(&items[j])
 	})
 
 	force := rc.Resource.Generation != rc.Resource.Status.ObservedGeneration || !helm.IsSameChart(c, rc.Resource.Status.Chart)
@@ -82,18 +87,10 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 		resources.Labels(&obj, map[string]string{
 			helm.ReleaseGeneration: strconv.FormatInt(rc.Resource.Generation, 10),
 			helm.ReleaseName:       rc.Resource.Name,
-			helm.ReleaseNamespace:  rc.Resource.Namespace,
 			helm.ReleaseVersion:    c.Version(),
 		})
 
-		gvk := obj.GroupVersionKind()
-
-		if !force {
-			force = !a.installOnly(gvk)
-		}
-
-		err = a.apply(ctx, rc, &obj, force)
-		if err != nil {
+		if err = a.apply(ctx, rc, &obj, force || !a.installOnly(&obj)); err != nil {
 			return err
 		}
 	}
@@ -101,122 +98,37 @@ func (a *ApplyResourcesAction) Run(ctx context.Context, rc *ReconciliationReques
 	return nil
 }
 
-func (a *ApplyResourcesAction) Cleanup(ctx context.Context, rc *ReconciliationRequest) error {
-	c, err := rc.Chart(ctx)
-	if err != nil {
-		return fmt.Errorf("cannot load chart: %w", err)
-	}
-
-	items, err := c.Render(ctx, rc.Resource.Name, rc.Resource.Namespace, int(rc.Resource.Generation), rc.Helm.ChartValues)
-	if err != nil {
-		return fmt.Errorf("cannot render a chart: %w", err)
-	}
-
-	for i := range items {
-		obj := items[i]
-
-		dc, err := rc.Client.Dynamic(rc.Resource.Namespace, &obj)
-		if err != nil {
-			return fmt.Errorf("cannot create dynamic client: %w", err)
-		}
-
-		// Delete clustered resources
-		if _, ok := dc.(*client.ClusteredResource); ok {
-			err := dc.Delete(ctx, obj.GetName(), metav1.DeleteOptions{
-				PropagationPolicy: pointer.Any(metav1.DeletePropagationForeground),
-			})
-
-			if err != nil && !k8serrors.IsNotFound(err) {
-				return fmt.Errorf("cannot delete object %s: %w", resources.Ref(&obj), err)
-			}
-
-			a.l.Info("delete", "ref", resources.Ref(&obj))
-		}
-	}
-
+func (a *ApplyResourcesAction) Cleanup(_ context.Context, _ *ReconciliationRequest) error {
 	return nil
 }
 
-func (a *ApplyResourcesAction) watchForUpdates(gvk schema.GroupVersionKind) bool {
-	if gvk.Group == "" && gvk.Version == "v1" && gvk.Kind == "Secret" {
-		return false
-	}
+func (a *ApplyResourcesAction) apply(ctx context.Context, rc *ReconciliationRequest, in *unstructured.Unstructured, force bool) error {
+	obj := in.DeepCopy()
+	obj.SetNamespace(rc.Resource.Spec.Deployment.Namespace)
+	obj.SetOwnerReferences(resources.OwnerReferences(rc.Resource))
 
-	if gvk.Group == "admissionregistration.k8s.io" && gvk.Version == "v1" && gvk.Kind == "MutatingWebhookConfiguration" {
-		return false
-	}
-
-	if gvk.Group == "apiextensions.k8s.io" && gvk.Version == "v1" && gvk.Kind == "CustomResourceDefinition" {
-		return false
-	}
-
-	return true
-}
-
-func (a *ApplyResourcesAction) watchStatus(gvk schema.GroupVersionKind) bool {
-	if gvk.Group == "apps" && gvk.Version == "v1" && gvk.Kind == "Deployment" {
-		return true
-	}
-
-	return false
-}
-
-func (a *ApplyResourcesAction) installOnly(gvk schema.GroupVersionKind) bool {
-	if gvk.Group == "" && gvk.Version == "v1" && gvk.Kind == "Secret" {
-		return true
-	}
-
-	if gvk.Group == "admissionregistration.k8s.io" && gvk.Version == "v1" && gvk.Kind == "MutatingWebhookConfiguration" {
-		return true
-	}
-
-	if gvk.Group == "apiextensions.k8s.io" && gvk.Version == "v1" && gvk.Kind == "CustomResourceDefinition" {
-		return true
-	}
-
-	return false
-}
-
-//nolint:cyclop
-func (a *ApplyResourcesAction) apply(ctx context.Context, rc *ReconciliationRequest, obj *unstructured.Unstructured, force bool) error {
-	dc, err := rc.Client.Dynamic(rc.Resource.Namespace, obj)
+	dc, err := rc.Client.Dynamic(obj)
 	if err != nil {
 		return fmt.Errorf("cannot create dynamic client: %w", err)
 	}
 
-	switch dc.(type) {
-	//
-	// NamespacedResource: in this case, filtering with ownership can be implemented
-	// as all the namespaced resources created by this controller have the Dapr CR as
-	// an owner
-	//
-	case *client.NamespacedResource:
-		if err := a.watchNamespaceScopeResource(rc, obj); err != nil {
-			return err
-		}
+	if dc.Scope() == client.ResourceScopeCluster {
+		obj.SetNamespace("")
+	}
 
-	//
-	// ClusteredResource: in this case, ownership based filtering is not supported
-	// as you cannot have a non namespaced owner. For such reason, the resource for
-	// which a reconcile should be triggered can be identified by using the labels
-	// added by the controller to all the generated resources
-	//
-	//    helm.operator.dapr.io/resource.namespace = ${namespace}
-	//    helm.operator.dapr.io/resource.name = ${name}
-	//
-	case *client.ClusteredResource:
-		if err := a.watchClusterScopeResource(rc, obj); err != nil {
-			return err
-		}
+	if err := a.watchResource(rc, obj); err != nil {
+		return err
 	}
 
 	if !force {
-		old, err := dc.Get(ctx, obj.GetName(), metav1.GetOptions{})
-		if err != nil && !k8serrors.IsNotFound(err) {
-			return fmt.Errorf("cannot get object %s: %w", resources.Ref(obj), err)
-		}
+		exists, err := a.exists(ctx, rc, in)
 
-		if old != nil {
+		switch {
+		case err != nil:
+			return err
+		case !exists:
+			break
+		default:
 			//
 			// Every time the template is rendered, the helm function genSignedCert kicks in and
 			// re-generated certs which causes a number os side effects and makes the set-up quite
@@ -234,8 +146,10 @@ func (a *ApplyResourcesAction) apply(ctx context.Context, rc *ReconciliationRequ
 			//
 			a.l.Info("run",
 				"apply", "false",
-				"gen", rc.Resource.Generation,
 				"ref", resources.Ref(obj),
+				"gen", in.GetLabels()[helm.ReleaseGeneration],
+				"version", in.GetLabels()[helm.ReleaseVersion],
+				"scope", dc.Scope(),
 				"reason", "resource marked as install-only")
 
 			return nil
@@ -253,36 +167,51 @@ func (a *ApplyResourcesAction) apply(ctx context.Context, rc *ReconciliationRequ
 
 	a.l.Info("run",
 		"apply", "true",
-		"gen", rc.Resource.Generation,
-		"ref", resources.Ref(obj))
+		"ref", resources.Ref(obj),
+		"gen", in.GetLabels()[helm.ReleaseGeneration],
+		"version", in.GetLabels()[helm.ReleaseVersion],
+		"scope", dc.Scope())
 
 	return nil
 }
 
-func (a *ApplyResourcesAction) watchNamespaceScopeResource(rc *ReconciliationRequest, obj *unstructured.Unstructured) error {
-	gvk := obj.GroupVersionKind()
-
-	obj.SetOwnerReferences(resources.OwnerReferences(rc.Resource))
-	obj.SetNamespace(rc.Resource.Namespace)
-
-	r := gvk.GroupVersion().String() + ":" + gvk.Kind
+func (a *ApplyResourcesAction) watchResource(rc *ReconciliationRequest, obj *unstructured.Unstructured) error {
+	r := resources.GvkRef(obj)
 
 	if _, ok := a.subscriptions[r]; ok {
 		return nil
 	}
 
 	if _, ok := a.subscriptions[r]; !ok {
-		a.l.Info("watch", "scope", "namespace", "ref", r)
+		var err error
 
-		err := rc.Reconciler.Watch(
-			obj,
-			rc.Reconciler.EnqueueRequestForOwner(&daprApi.DaprInstance{}, handler.OnlyControllerOwner()),
-			dependantWithLabels(
-				predicates.WithWatchUpdate(a.watchForUpdates(gvk)),
-				predicates.WithWatchDeleted(true),
-				predicates.WithWatchStatus(a.watchStatus(gvk)),
-			),
-		)
+		if a.watchStatus(obj) {
+			a.l.Info("watch", "ref", r, "meta-only", false)
+
+			err = rc.Reconciler.Watch(
+				obj,
+				rc.Reconciler.EnqueueRequestForOwner(&daprApi.DaprInstance{}, handler.OnlyControllerOwner()),
+				dependantWithLabels(
+					predicates.WithWatchUpdate(!a.installOnly(obj)),
+					predicates.WithWatchDeleted(true),
+					predicates.WithWatchStatus(true),
+				),
+			)
+		} else {
+			a.l.Info("watch", "ref", r, "meta-only", true)
+
+			po := metav1.PartialObjectMetadata{}
+			po.SetGroupVersionKind(obj.GroupVersionKind())
+
+			err = rc.Reconciler.Watch(
+				&po,
+				rc.Reconciler.EnqueueRequestForOwner(&daprApi.DaprInstance{}, handler.OnlyControllerOwner()),
+				partialDependantWithLabels(
+					predicates.PartialWatchUpdate(!a.installOnly(obj)),
+					predicates.PartialWatchDeleted(true),
+				),
+			)
+		}
 
 		if err != nil {
 			return err
@@ -294,34 +223,57 @@ func (a *ApplyResourcesAction) watchNamespaceScopeResource(rc *ReconciliationReq
 	return nil
 }
 
-func (a *ApplyResourcesAction) watchClusterScopeResource(rc *ReconciliationRequest, obj *unstructured.Unstructured) error {
-	gvk := obj.GroupVersionKind()
+func (a *ApplyResourcesAction) watchStatus(obj ctrlCli.Object) bool {
+	in := obj.GetObjectKind().GroupVersionKind()
 
-	r := gvk.GroupVersion().String() + ":" + gvk.Kind
+	switch {
+	case in == gvks.Deployment:
+		return true
+	case in == gvks.StatefulSet:
+		return true
+	default:
+		return false
+	}
+}
 
-	if _, ok := a.subscriptions[r]; ok {
-		return nil
+func (a *ApplyResourcesAction) installOnly(obj ctrlCli.Object) bool {
+	in := obj.GetObjectKind().GroupVersionKind()
+
+	switch {
+	case in == gvks.Secret:
+		return true
+	case in == gvks.MutatingWebhookConfiguration:
+		return true
+	case in == gvks.CustomResourceDefinition:
+		return true
+	default:
+		return false
+	}
+}
+
+func (a *ApplyResourcesAction) exists(ctx context.Context, rc *ReconciliationRequest, in ctrlCli.Object) (bool, error) {
+	var obj ctrlCli.Object
+
+	if !a.watchStatus(in) {
+		p := metav1.PartialObjectMetadata{}
+		p.SetGroupVersionKind(in.GetObjectKind().GroupVersionKind())
+
+		obj = &p
+	} else {
+		p := unstructured.Unstructured{}
+		p.SetGroupVersionKind(in.GetObjectKind().GroupVersionKind())
+
+		obj = &p
 	}
 
-	if _, ok := a.subscriptions[r]; !ok {
-		a.l.Info("watch", "scope", "cluster", "ref", r)
-
-		err := rc.Reconciler.Watch(
-			obj,
-			rc.Reconciler.EnqueueRequestsFromMapFunc(labelsToRequest),
-			dependantWithLabels(
-				predicates.WithWatchUpdate(a.watchForUpdates(gvk)),
-				predicates.WithWatchDeleted(true),
-				predicates.WithWatchStatus(a.watchStatus(gvk)),
-			),
-		)
-
-		if err != nil {
-			return err
-		}
-
-		a.subscriptions[r] = struct{}{}
+	err := rc.Client.Get(ctx, ctrlCli.ObjectKeyFromObject(in), obj)
+	if k8serrors.IsNotFound(err) {
+		return false, nil
 	}
 
-	return nil
+	if err != nil {
+		return false, fmt.Errorf("cannot get object %s: %w", resources.Ref(in), err)
+	}
+
+	return true, nil
 }

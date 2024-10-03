@@ -25,8 +25,8 @@ ${PROJECT_ROOT}/bin/kustomize build "${PROJECT_ROOT}/config/manifests" | ${PROJE
   --overwrite \
   --package "${BUNDLE_NAME}" \
   --version "${BUNDLE_VERSION}" \
-  --channels "alpha" \
-  --default-channel "alpha" \
+  --channels "beta" \
+  --default-channel "beta" \
   --output-dir "${BUNDLE_NAME}"
 
 echo "Patch bundle metadata"

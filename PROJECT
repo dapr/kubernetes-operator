@@ -11,27 +11,16 @@ repo: github.com/dapr/kubernetes-operator
 resources:
 - api:
     crdVersion: v1
-    namespaced: true
-  controller: true
-  domain: dapr.io
-  group: operator
-  kind: DaprControlPlane
-  path: github.com/dapr/kubernetes-operator/api/operator/v1alpha1
-  version: v1alpha1
-- api:
-    crdVersion: v1
-    namespaced: true
   domain: dapr.io
   group: operator
   kind: DaprInstance
-  path: github.com/dapr/kubernetes-operator/api/operator/v1alpha1
-  version: v1alpha1
+  path: github.com/dapr/kubernetes-operator/api/operator/v1beta1
+  version: v1beta1
 - api:
     crdVersion: v1
-    namespaced: true
   domain: dapr.io
   group: operator
   kind: DaprCruiseControl
-  path: github.com/dapr/kubernetes-operator/api/operator/v1alpha1
-  version: v1alpha1
+  path: github.com/dapr/kubernetes-operator/api/operator/v1beta1
+  version: v1beta1
 version: "3"

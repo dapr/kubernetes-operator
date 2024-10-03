@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/dapr/kubernetes-operator/pkg/controller"
+
 	"github.com/dapr/kubernetes-operator/pkg/controller/gc"
 	"github.com/dapr/kubernetes-operator/pkg/helm"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -56,7 +58,7 @@ func (a *GCAction) Run(ctx context.Context, rc *ReconciliationRequest) error {
 		return fmt.Errorf("cannot compute gc selector: %w", err)
 	}
 
-	deleted, err := a.gc.Run(ctx, rc.Client, rc.Resource.Namespace, s, func(ctx context.Context, obj unstructured.Unstructured) (bool, error) {
+	deleted, err := a.gc.Run(ctx, rc.Client, controller.OperatorNamespace(), s, func(ctx context.Context, obj unstructured.Unstructured) (bool, error) {
 		if obj.GetLabels() == nil {
 			return false, nil
 		}

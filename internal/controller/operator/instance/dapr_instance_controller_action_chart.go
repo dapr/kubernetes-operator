@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	"github.com/dapr/kubernetes-operator/api/operator/v1beta1"
 	"github.com/dapr/kubernetes-operator/pkg/controller/client"
 	"github.com/go-logr/logr"
 	helme "github.com/lburgazzoli/k8s-manifests-renderer-helm/engine"
@@ -40,7 +40,7 @@ func (a *ChartAction) Run(ctx context.Context, rc *ReconciliationRequest) error 
 	}
 
 	if rc.Resource.Status.Chart == nil {
-		rc.Resource.Status.Chart = &v1alpha1.ChartMeta{}
+		rc.Resource.Status.Chart = &v1beta1.ChartMeta{}
 	}
 
 	rc.Resource.Status.Chart.Repo = ChartRepoEmbedded

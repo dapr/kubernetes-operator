@@ -1,4 +1,4 @@
-apiVersion: operator.dapr.io/v1alpha1
+apiVersion: operator.dapr.io/v1beta1
 kind: DaprInstance
 metadata:
   name: "dapr-instance"

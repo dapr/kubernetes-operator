@@ -74,16 +74,20 @@ func Label(target *unstructured.Unstructured, key string) string {
 
 func Ref(obj client.Object) string {
 	name := obj.GetName()
-	if obj.GetNamespace() == "" {
-		name = obj.GetNamespace() + ":" + obj.GetName()
+	if obj.GetNamespace() != "" {
+		name = obj.GetNamespace() + "/" + obj.GetName()
 	}
 
 	return fmt.Sprintf(
 		"%s:%s:%s",
-		obj.GetObjectKind().GroupVersionKind().Kind,
 		obj.GetObjectKind().GroupVersionKind().GroupVersion().String(),
+		obj.GetObjectKind().GroupVersionKind().Kind,
 		name,
 	)
+}
+func GvkRef(obj client.Object) string {
+	gvk := obj.GetObjectKind().GroupVersionKind()
+	return gvk.GroupVersion().String() + ":" + gvk.Kind
 }
 
 func ToUnstructured(s *runtime.Scheme, obj runtime.Object) (*unstructured.Unstructured, error) {

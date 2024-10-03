@@ -69,7 +69,6 @@ func RemoveFinalizer(ctx context.Context, client ctrlClient.Client, o ctrlClient
 type BaseReconciler[T controller.ResourceObject] struct {
 	Log             logr.Logger
 	Name            string
-	Namespace       string
 	FinalizerName   string
 	FinalizerAction func(ctx context.Context, res T) error
 	Delegate        reconcile.ObjectReconciler[T]
@@ -83,7 +82,7 @@ func (s *BaseReconciler[T]) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, ctrlClient.IgnoreNotFound(err)
 	}
 
-	if res.GetName() != s.Name || res.GetNamespace() != s.Namespace {
+	if res.GetName() != s.Name {
 		res.GetStatus().Phase = conditions.TypeError
 
 		meta.SetStatusCondition(&res.GetStatus().Conditions, metav1.Condition{
@@ -91,10 +90,9 @@ func (s *BaseReconciler[T]) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			Status: metav1.ConditionFalse,
 			Reason: conditions.ReasonUnsupportedConfiguration,
 			Message: fmt.Sprintf(
-				"Unsupported resource, the operator handles a single %s resource named %s in namespace %s",
+				"Unsupported resource, the operator handles a single %s resource named %s",
 				res.GetObjectKind().GroupVersionKind().String(),
-				s.Name,
-				s.Namespace),
+				s.Name),
 		})
 
 		err := s.Client.Status().Update(ctx, res)
