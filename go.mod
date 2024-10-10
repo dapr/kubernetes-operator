@@ -27,7 +27,7 @@ require (
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-openapi v0.0.0-20240430033511-f0e62f92d13f
 	sigs.k8s.io/controller-runtime v0.19.0
-	sigs.k8s.io/controller-tools v0.16.3
+	sigs.k8s.io/controller-tools v0.16.4
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 )
 
@@ -74,7 +74,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
-	github.com/gobuffalo/flect v1.0.2 // indirect
+	github.com/gobuffalo/flect v1.0.3 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -149,15 +149,15 @@ require (
 	go.starlark.net v0.0.0-20230814145427-12f4cb8177e4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.26.0 // indirect
-	golang.org/x/mod v0.20.0 // indirect
-	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/crypto v0.28.0 // indirect
+	golang.org/x/mod v0.21.0 // indirect
+	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
-	golang.org/x/term v0.23.0 // indirect
-	golang.org/x/text v0.17.0 // indirect
-	golang.org/x/tools v0.24.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/term v0.25.0 // indirect
+	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/tools v0.26.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240701130421-f6361c86f094 // indirect
 	google.golang.org/grpc v1.65.0 // indirect
