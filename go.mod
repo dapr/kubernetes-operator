@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/logr v1.4.2
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/go-cleanhttp v0.5.2
-	github.com/lburgazzoli/gomega-matchers v0.1.0
+	github.com/lburgazzoli/gomega-matchers v0.1.1
 	github.com/lburgazzoli/k8s-manifests-renderer-helm v0.1.3
 	github.com/onsi/gomega v1.34.2
 	github.com/operator-framework/api v0.27.0
