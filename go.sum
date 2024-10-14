@@ -245,8 +245,8 @@ github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 h1:SOEGU9fKiNWd/HOJuq
 github.com/lann/builder v0.0.0-20180802200727-47ae307949d0/go.mod h1:dXGbAdH5GtBTC4WfIxhKZfyBF/HBFgRZSWwZ9g/He9o=
 github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 h1:P6pPBnrTSX3DEVR4fDembhRWSsG5rVo6hYhAB/ADZrk=
 github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0/go.mod h1:vmVJ0l/dxyfGW6FmdpVm2joNMFikkuWg0EoCKLGUMNw=
-github.com/lburgazzoli/gomega-matchers v0.1.0 h1:jkW45zWWGz6CP9EaUCKWcWgXiogiuHEsba28BMWv3IY=
-github.com/lburgazzoli/gomega-matchers v0.1.0/go.mod h1:MwRD1wEQrYBrON1pBYI/bwohSd3xeqflZa9nxXeSd9Q=
+github.com/lburgazzoli/gomega-matchers v0.1.1 h1:it5XiuJGJB2Noq1KayamTgEe7Ls2/Cycezt3g6xyuo4=
+github.com/lburgazzoli/gomega-matchers v0.1.1/go.mod h1:sTPi8iTNViVEDJujnMzYicDshmo6G4rl9+gF/O02/V8=
 github.com/lburgazzoli/k8s-manifests-renderer-helm v0.1.3 h1:P3VLDIraHPjJeD6tim0ueJu8nZslE171IB3ldRGDsQM=
 github.com/lburgazzoli/k8s-manifests-renderer-helm v0.1.3/go.mod h1:m3GWnxJgaLSTqc6k3EZZpjdDSIE+HqyjQicjgxn4xAo=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
