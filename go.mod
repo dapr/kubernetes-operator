@@ -21,9 +21,9 @@ require (
 	helm.sh/helm/v3 v3.16.1
 	k8s.io/api v0.31.1
 	k8s.io/apiextensions-apiserver v0.31.1
-	k8s.io/apimachinery v0.31.1
+	k8s.io/apimachinery v0.31.2
 	k8s.io/client-go v0.31.1
-	k8s.io/code-generator v0.31.1
+	k8s.io/code-generator v0.31.2
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-openapi v0.0.0-20240430033511-f0e62f92d13f
 	sigs.k8s.io/controller-runtime v0.19.0
