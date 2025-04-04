@@ -3,7 +3,9 @@ package predicates
 import (
 	"reflect"
 
-	"github.com/wI2L/jsondiff"
+	"github.com/dapr/kubernetes-operator/pkg/resources"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -58,15 +60,14 @@ func (p DependentPredicate) Delete(e event.DeleteEvent) bool {
 
 	o, ok := e.Object.(*unstructured.Unstructured)
 	if !ok {
-		log.Error(nil, "unexpected object type", "gvk", e.Object.GetObjectKind().GroupVersionKind().String())
+		log.Error(nil, "unexpected object type", "gvks", e.Object.GetObjectKind().GroupVersionKind().String())
 		return false
 	}
 
-	log.Info("Reconciling due to dependent resource deletion",
-		"name", o.GetName(),
-		"namespace", o.GetNamespace(),
-		"apiVersion", o.GroupVersionKind().GroupVersion(),
-		"kind", o.GroupVersionKind().Kind)
+	log.Info(
+		"Reconciling due to dependent resource delete",
+		"ref", resources.Ref(o),
+		"partial", false)
 
 	return true
 }
@@ -82,13 +83,13 @@ func (p DependentPredicate) Update(e event.UpdateEvent) bool {
 
 	oldObj, ok := e.ObjectOld.(*unstructured.Unstructured)
 	if !ok {
-		log.Error(nil, "unexpected old object type", "gvk", e.ObjectOld.GetObjectKind().GroupVersionKind().String())
+		log.Error(nil, "unexpected old object type", "gvks", e.ObjectOld.GetObjectKind().GroupVersionKind().String())
 		return false
 	}
 
 	newObj, ok := e.ObjectNew.(*unstructured.Unstructured)
 	if !ok {
-		log.Error(nil, "unexpected new object type", "gvk", e.ObjectOld.GetObjectKind().GroupVersionKind().String())
+		log.Error(nil, "unexpected new object type", "gvks", e.ObjectOld.GetObjectKind().GroupVersionKind().String())
 		return false
 	}
 
@@ -113,18 +114,85 @@ func (p DependentPredicate) Update(e event.UpdateEvent) bool {
 		return false
 	}
 
-	patch, err := jsondiff.Compare(oldObj, newObj)
-	if err != nil {
-		log.Error(err, "failed to generate diff")
-		return true
+	log.Info(
+		"Reconciling due to dependent resource update",
+		"ref", resources.Ref(newObj),
+		"partial", false)
+
+	return true
+}
+
+var _ predicate.Predicate = PartialDependentPredicate{}
+
+type PartialDependentPredicateOption func(*PartialDependentPredicate) *PartialDependentPredicate
+
+func PartialWatchDeleted(val bool) PartialDependentPredicateOption {
+	return func(in *PartialDependentPredicate) *PartialDependentPredicate {
+		in.WatchDelete = val
+		return in
+	}
+}
+
+func PartialWatchUpdate(val bool) PartialDependentPredicateOption {
+	return func(in *PartialDependentPredicate) *PartialDependentPredicate {
+		in.WatchUpdate = val
+		return in
+	}
+}
+
+type PartialDependentPredicate struct {
+	WatchDelete bool
+	WatchUpdate bool
+
+	predicate.Funcs
+}
+
+func (p PartialDependentPredicate) Create(event.CreateEvent) bool {
+	return false
+}
+
+func (p PartialDependentPredicate) Generic(event.GenericEvent) bool {
+	return false
+}
+
+func (p PartialDependentPredicate) Delete(e event.DeleteEvent) bool {
+	if !p.WatchDelete {
+		return false
 	}
 
-	log.Info("Reconciling due to dependent resource update",
-		"name", newObj.GetName(),
-		"namespace", newObj.GetNamespace(),
-		"apiVersion", newObj.GroupVersionKind().GroupVersion(),
-		"kind", newObj.GroupVersionKind().Kind,
-		"diff", patch.String())
+	o, ok := e.Object.(*metav1.PartialObjectMetadata)
+	if !ok {
+		log.Error(nil, "unexpected object type", "gvks", e.Object.GetObjectKind().GroupVersionKind().String())
+		return false
+	}
+
+	log.Info(
+		"Reconciling due to dependent resource delete",
+		"ref", resources.Ref(o),
+		"partial", true)
+
+	return true
+}
+
+func (p PartialDependentPredicate) Update(e event.UpdateEvent) bool {
+	if !p.WatchUpdate {
+		return false
+	}
+
+	if e.ObjectOld.GetResourceVersion() == e.ObjectNew.GetResourceVersion() {
+		return false
+	}
+
+	newObj, ok := e.ObjectNew.(*metav1.PartialObjectMetadata)
+	if !ok {
+		log.Error(nil, "unexpected new object type", "gvks", e.ObjectNew.GetObjectKind().GroupVersionKind().String())
+		return false
+	}
+
+	log.Info(
+		"Reconciling due to dependent resource update",
+		"ref", resources.Ref(newObj),
+		"partial", true)
 
 	return true
 }

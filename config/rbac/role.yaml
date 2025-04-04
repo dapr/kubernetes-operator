@@ -57,7 +57,6 @@ rules:
 - apiGroups:
   - operator.dapr.io
   resources:
-  - daprcontrolplanes
   - daprinstances
   verbs:
   - create
@@ -70,14 +69,12 @@ rules:
 - apiGroups:
   - operator.dapr.io
   resources:
-  - daprcontrolplanes/finalizers
   - daprinstances/finalizers
   verbs:
   - update
 - apiGroups:
   - operator.dapr.io
   resources:
-  - daprcontrolplanes/status
   - daprinstances/status
   verbs:
   - get

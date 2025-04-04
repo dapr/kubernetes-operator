@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/dapr/kubernetes-operator/pkg/gvks"
+	ctrcli "sigs.k8s.io/controller-runtime/pkg/client"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -58,7 +61,6 @@ func (a *ApplyCRDsAction) Run(ctx context.Context, rc *ReconciliationRequest) er
 		resources.Labels(&crd, map[string]string{
 			helm.ReleaseGeneration: strconv.FormatInt(rc.Resource.Generation, 10),
 			helm.ReleaseName:       rc.Resource.Name,
-			helm.ReleaseNamespace:  rc.Resource.Namespace,
 			helm.ReleaseVersion:    c.Version(),
 		})
 
@@ -85,12 +87,17 @@ func (a *ApplyCRDsAction) Cleanup(_ context.Context, _ *ReconciliationRequest) e
 }
 
 func (a *ApplyCRDsAction) apply(ctx context.Context, rc *ReconciliationRequest, crd *unstructured.Unstructured, apply bool) (bool, error) {
-	dc, err := rc.Client.Dynamic(rc.Resource.Namespace, crd)
+	dc, err := rc.Client.Dynamic(crd)
 	if err != nil {
 		return false, fmt.Errorf("cannot create dynamic client: %w", err)
 	}
 
-	_, err = dc.Get(ctx, crd.GetName(), metav1.GetOptions{})
+	// metadata only retrieval, no need to retrieve the entire CRD as we only need to check
+	// for its existence
+	p := metav1.PartialObjectMetadata{}
+	p.SetGroupVersionKind(gvks.CustomResourceDefinition)
+
+	err = rc.Client.Get(ctx, ctrcli.ObjectKeyFromObject(crd), &p)
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return false, fmt.Errorf("cannot determine if CRD %s exists: %w", resources.Ref(crd), err)
 	}

@@ -11,7 +11,7 @@ import (
 
 	helmsupport "github.com/dapr/kubernetes-operator/test/support/helm"
 
-	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1beta1"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/go-logr/logr/testr"

@@ -16,7 +16,7 @@ spec:
     shortNames:
     - di
     singular: daprinstance
-  scope: Namespaced
+  scope: Cluster
   versions:
   - additionalPrinterColumns:
     - description: Ready
@@ -39,7 +39,7 @@ spec:
       jsonPath: .status.chart.version
       name: Chart Version
       type: string
-    name: v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: DaprInstance is the Schema for the daprinstances API.
@@ -77,11 +77,22 @@ spec:
                   version:
                     type: string
                 type: object
+              deployment:
+                properties:
+                  namespace:
+                    description: Namespace represent the target namespace where the
+                      Dapr resources will be installed
+                    type: string
+                required:
+                - namespace
+                type: object
               values:
                 description: |-
                   JSON represents any valid JSON value.
                   These types are supported: bool, int64, float64, string, []interface{}, map[string]interface{} and nil.
                 x-kubernetes-preserve-unknown-fields: true
+            required:
+            - deployment
             type: object
           status:
             description: DaprInstanceStatus defines the observed state of DaprInstance.
@@ -160,6 +171,9 @@ spec:
             - phase
             type: object
         type: object
+        x-kubernetes-validations:
+        - message: DaprInstance name must be dapr-instance
+          rule: self.metadata.name == 'dapr-instance'
     served: true
     storage: true
     subresources:

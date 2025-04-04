@@ -7,29 +7,16 @@ import (
 
 	"github.com/dapr/kubernetes-operator/pkg/helm"
 
+	"github.com/dapr/kubernetes-operator/pkg/controller/predicates"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
-	"k8s.io/apimachinery/pkg/types"
-	ctrlCli "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	"github.com/dapr/kubernetes-operator/pkg/controller/predicates"
 )
 
 func gcSelector(ctx context.Context, rc *ReconciliationRequest) (labels.Selector, error) {
 	c, err := rc.Chart(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cannot load chart: %w", err)
-	}
-
-	namespace, err := labels.NewRequirement(
-		helm.ReleaseNamespace,
-		selection.Equals,
-		[]string{rc.Resource.Namespace})
-
-	if err != nil {
-		return nil, fmt.Errorf("cannot determine release namespace requirement: %w", err)
 	}
 
 	name, err := labels.NewRequirement(
@@ -60,36 +47,11 @@ func gcSelector(ctx context.Context, rc *ReconciliationRequest) (labels.Selector
 	}
 
 	selector := labels.NewSelector().
-		Add(*namespace).
 		Add(*name).
 		Add(*generation).
 		Add(*version)
 
 	return selector, nil
-}
-
-func labelsToRequest(_ context.Context, object ctrlCli.Object) []reconcile.Request {
-	allLabels := object.GetLabels()
-	if allLabels == nil {
-		return nil
-	}
-
-	name := allLabels[helm.ReleaseName]
-	if name == "" {
-		return nil
-	}
-
-	namespace := allLabels[helm.ReleaseNamespace]
-	if namespace == "" {
-		return nil
-	}
-
-	return []reconcile.Request{{
-		NamespacedName: types.NamespacedName{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}}
 }
 
 func dependantWithLabels(opts ...predicates.DependentPredicateOption) predicate.Predicate {
@@ -103,8 +65,19 @@ func dependantWithLabels(opts ...predicates.DependentPredicateOption) predicate.
 		&predicates.HasLabel{
 			Name: helm.ReleaseName,
 		},
+		dp,
+	)
+}
+func partialDependantWithLabels(opts ...predicates.PartialDependentPredicateOption) predicate.Predicate {
+	dp := &predicates.PartialDependentPredicate{}
+
+	for i := range opts {
+		dp = opts[i](dp)
+	}
+
+	return predicate.And(
 		&predicates.HasLabel{
-			Name: helm.ReleaseNamespace,
+			Name: helm.ReleaseName,
 		},
 		dp,
 	)
@@ -114,15 +87,6 @@ func currentReleaseSelector(ctx context.Context, rc *ReconciliationRequest) (lab
 	c, err := rc.Chart(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cannot load chart: %w", err)
-	}
-
-	namespace, err := labels.NewRequirement(
-		helm.ReleaseNamespace,
-		selection.Equals,
-		[]string{rc.Resource.Namespace})
-
-	if err != nil {
-		return nil, fmt.Errorf("cannot determine release namespace requirement: %w", err)
 	}
 
 	name, err := labels.NewRequirement(
@@ -153,7 +117,6 @@ func currentReleaseSelector(ctx context.Context, rc *ReconciliationRequest) (lab
 	}
 
 	selector := labels.NewSelector().
-		Add(*namespace).
 		Add(*name).
 		Add(*generation).
 		Add(*version)

@@ -3,24 +3,25 @@ package run
 import (
 	"fmt"
 
-	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
-
-	"github.com/dapr/kubernetes-operator/internal/controller/operator/controlplane"
-	"github.com/dapr/kubernetes-operator/internal/controller/operator/instance"
-	"github.com/dapr/kubernetes-operator/pkg/helm"
-
 	"github.com/spf13/cobra"
+
 	admregv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	ctrlRt "sigs.k8s.io/controller-runtime"
 	rtcache "sigs.k8s.io/controller-runtime/pkg/cache"
 	rtclient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1beta1"
+	"github.com/dapr/kubernetes-operator/internal/controller/operator/instance"
 	"github.com/dapr/kubernetes-operator/pkg/controller"
+	"github.com/dapr/kubernetes-operator/pkg/helm"
 )
 
 const (
@@ -52,12 +53,9 @@ func NewCmd() *cobra.Command {
 			}
 
 			co.WatchSelectors = selector
+			co.Logger = ctrlRt.Log.WithName("controller")
 
 			return controller.Start(co, func(manager manager.Manager, opts controller.Options) error {
-				if _, err := controlplane.NewReconciler(cmd.Context(), manager, helmOpts); err != nil {
-					return fmt.Errorf("unable to set-up DaprControlPlane reconciler: %w", err)
-				}
-
 				if _, err := instance.NewReconciler(cmd.Context(), manager, helmOpts); err != nil {
 					return fmt.Errorf("unable to set-up DaprInstance reconciler: %w", err)
 				}
@@ -103,17 +101,18 @@ func computeListWatch() (map[rtclient.Object]rtcache.ByObject, error) {
 	}
 
 	selectors := map[rtclient.Object]rtcache.ByObject{
-		// k8s
+		&admregv1.MutatingWebhookConfiguration{}: {Label: selector},
+		&appsv1.StatefulSet{}:                    {Label: selector},
+		&appsv1.Deployment{}:                     {Label: selector},
+		&corev1.Secret{}:                         {Label: selector},
+		&corev1.ConfigMap{}:                      {Label: selector},
+		&corev1.Service{}:                        {Label: selector},
+		&corev1.ServiceAccount{}:                 {Label: selector},
+		&policyv1.PodDisruptionBudget{}:          {Label: selector},
 		&rbacv1.ClusterRole{}:                    {Label: selector},
 		&rbacv1.ClusterRoleBinding{}:             {Label: selector},
 		&rbacv1.Role{}:                           {Label: selector},
 		&rbacv1.RoleBinding{}:                    {Label: selector},
-		&admregv1.MutatingWebhookConfiguration{}: {Label: selector},
-		&corev1.Secret{}:                         {Label: selector},
-		&corev1.Service{}:                        {Label: selector},
-		&corev1.ServiceAccount{}:                 {Label: selector},
-		&appsv1.StatefulSet{}:                    {Label: selector},
-		&appsv1.Deployment{}:                     {Label: selector},
 	}
 
 	return selectors, nil
