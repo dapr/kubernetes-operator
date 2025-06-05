@@ -1,6 +1,6 @@
 module github.com/dapr/kubernetes-operator
 
-go 1.22.6
+go 1.23.0
 
 require (
 	github.com/dapr/go-sdk v1.11.0
@@ -16,7 +16,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/wI2L/jsondiff v0.6.0
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
-	golang.org/x/time v0.6.0
+	golang.org/x/time v0.12.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.16.1
 	k8s.io/api v0.31.1
