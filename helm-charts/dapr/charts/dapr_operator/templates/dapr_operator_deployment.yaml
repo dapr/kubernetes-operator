@@ -71,6 +71,7 @@ spec:
 {{- if eq .Values.global.daprControlPlaneOs "linux" }}
         securityContext:
           runAsNonRoot: {{ .Values.runAsNonRoot }}
+          allowPrivilegeEscalation: false
   {{- if eq .Values.debug.enabled true }}
           capabilities:
             add: ["SYS_PTRACE"]
@@ -176,7 +177,7 @@ spec:
       volumes:
         - name: dapr-operator-tmp
           emptyDir:
-            sizeLimit: 2Mi
+            sizeLimit: 64Mi
             medium: Memory
         - name: dapr-trust-bundle
           configMap:

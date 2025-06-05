@@ -18,13 +18,13 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
-	operatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	apioperatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
 	versioned "github.com/dapr/kubernetes-operator/pkg/client/clientset/versioned"
 	internalinterfaces "github.com/dapr/kubernetes-operator/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/listers/operator/v1alpha1"
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/listers/operator/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -35,7 +35,7 @@ import (
 // DaprCruiseControls.
 type DaprCruiseControlInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.DaprCruiseControlLister
+	Lister() operatorv1alpha1.DaprCruiseControlLister
 }
 
 type daprCruiseControlInformer struct {
@@ -61,16 +61,28 @@ func NewFilteredDaprCruiseControlInformer(client versioned.Interface, namespace 
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1alpha1().DaprCruiseControls(namespace).List(context.TODO(), options)
+				return client.OperatorV1alpha1().DaprCruiseControls(namespace).List(context.Background(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1alpha1().DaprCruiseControls(namespace).Watch(context.TODO(), options)
+				return client.OperatorV1alpha1().DaprCruiseControls(namespace).Watch(context.Background(), options)
+			},
+			ListWithContextFunc: func(ctx context.Context, options v1.ListOptions) (runtime.Object, error) {
+				if tweakListOptions != nil {
+					tweakListOptions(&options)
+				}
+				return client.OperatorV1alpha1().DaprCruiseControls(namespace).List(ctx, options)
+			},
+			WatchFuncWithContext: func(ctx context.Context, options v1.ListOptions) (watch.Interface, error) {
+				if tweakListOptions != nil {
+					tweakListOptions(&options)
+				}
+				return client.OperatorV1alpha1().DaprCruiseControls(namespace).Watch(ctx, options)
 			},
 		},
-		&operatorv1alpha1.DaprCruiseControl{},
+		&apioperatorv1alpha1.DaprCruiseControl{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,9 +93,9 @@ func (f *daprCruiseControlInformer) defaultInformer(client versioned.Interface, 
 }
 
 func (f *daprCruiseControlInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&operatorv1alpha1.DaprCruiseControl{}, f.defaultInformer)
+	return f.factory.InformerFor(&apioperatorv1alpha1.DaprCruiseControl{}, f.defaultInformer)
 }
 
-func (f *daprCruiseControlInformer) Lister() v1alpha1.DaprCruiseControlLister {
-	return v1alpha1.NewDaprCruiseControlLister(f.Informer().GetIndexer())
+func (f *daprCruiseControlInformer) Lister() operatorv1alpha1.DaprCruiseControlLister {
+	return operatorv1alpha1.NewDaprCruiseControlLister(f.Informer().GetIndexer())
 }

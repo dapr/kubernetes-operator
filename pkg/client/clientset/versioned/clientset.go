@@ -18,8 +18,8 @@ limitations under the License.
 package versioned
 
 import (
-	"fmt"
-	"net/http"
+	fmt "fmt"
+	http "net/http"
 
 	operatorv1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	discovery "k8s.io/client-go/discovery"

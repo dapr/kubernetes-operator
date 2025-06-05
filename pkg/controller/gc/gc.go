@@ -3,12 +3,11 @@ package gc
 import (
 	"context"
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
 	"sync"
 	"time"
-
-	"golang.org/x/exp/maps"
 
 	"github.com/go-logr/logr"
 	"golang.org/x/time/rate"
@@ -233,7 +232,7 @@ func (gc *GC) computeDeletableTypes(ctx context.Context, c *client.Client, ns st
 		}
 	}
 
-	gc.collectableGVKs = maps.Keys(GVKs)
+	gc.collectableGVKs = slices.Collect(maps.Keys(GVKs))
 	slices.SortFunc(gc.collectableGVKs, func(a, b schema.GroupVersionKind) int {
 		return strings.Compare(a.String(), b.String())
 	})

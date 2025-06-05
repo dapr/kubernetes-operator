@@ -18,10 +18,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/listers"
-	"k8s.io/client-go/tools/cache"
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	labels "k8s.io/apimachinery/pkg/labels"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // DaprControlPlaneLister helps list DaprControlPlanes.
@@ -29,7 +29,7 @@ import (
 type DaprControlPlaneLister interface {
 	// List lists all DaprControlPlanes in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.DaprControlPlane, err error)
+	List(selector labels.Selector) (ret []*operatorv1alpha1.DaprControlPlane, err error)
 	// DaprControlPlanes returns an object that can list and get DaprControlPlanes.
 	DaprControlPlanes(namespace string) DaprControlPlaneNamespaceLister
 	DaprControlPlaneListerExpansion
@@ -37,17 +37,17 @@ type DaprControlPlaneLister interface {
 
 // daprControlPlaneLister implements the DaprControlPlaneLister interface.
 type daprControlPlaneLister struct {
-	listers.ResourceIndexer[*v1alpha1.DaprControlPlane]
+	listers.ResourceIndexer[*operatorv1alpha1.DaprControlPlane]
 }
 
 // NewDaprControlPlaneLister returns a new DaprControlPlaneLister.
 func NewDaprControlPlaneLister(indexer cache.Indexer) DaprControlPlaneLister {
-	return &daprControlPlaneLister{listers.New[*v1alpha1.DaprControlPlane](indexer, v1alpha1.Resource("daprcontrolplane"))}
+	return &daprControlPlaneLister{listers.New[*operatorv1alpha1.DaprControlPlane](indexer, operatorv1alpha1.Resource("daprcontrolplane"))}
 }
 
 // DaprControlPlanes returns an object that can list and get DaprControlPlanes.
 func (s *daprControlPlaneLister) DaprControlPlanes(namespace string) DaprControlPlaneNamespaceLister {
-	return daprControlPlaneNamespaceLister{listers.NewNamespaced[*v1alpha1.DaprControlPlane](s.ResourceIndexer, namespace)}
+	return daprControlPlaneNamespaceLister{listers.NewNamespaced[*operatorv1alpha1.DaprControlPlane](s.ResourceIndexer, namespace)}
 }
 
 // DaprControlPlaneNamespaceLister helps list and get DaprControlPlanes.
@@ -55,15 +55,15 @@ func (s *daprControlPlaneLister) DaprControlPlanes(namespace string) DaprControl
 type DaprControlPlaneNamespaceLister interface {
 	// List lists all DaprControlPlanes in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.DaprControlPlane, err error)
+	List(selector labels.Selector) (ret []*operatorv1alpha1.DaprControlPlane, err error)
 	// Get retrieves the DaprControlPlane from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1alpha1.DaprControlPlane, error)
+	Get(name string) (*operatorv1alpha1.DaprControlPlane, error)
 	DaprControlPlaneNamespaceListerExpansion
 }
 
 // daprControlPlaneNamespaceLister implements the DaprControlPlaneNamespaceLister
 // interface.
 type daprControlPlaneNamespaceLister struct {
-	listers.ResourceIndexer[*v1alpha1.DaprControlPlane]
+	listers.ResourceIndexer[*operatorv1alpha1.DaprControlPlane]
 }

@@ -102,7 +102,9 @@ func With(t *testing.T) Test {
 	lr := testr.New(t)
 	klog.SetLogger(lr.WithName("client"))
 
+	//nolint:usetesting
 	ctx := context.Background()
+
 	if deadline, ok := t.Deadline(); ok {
 		withDeadline, cancel := context.WithDeadline(ctx, deadline)
 		t.Cleanup(cancel)
