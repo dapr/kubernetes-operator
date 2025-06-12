@@ -18,10 +18,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/listers"
-	"k8s.io/client-go/tools/cache"
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	labels "k8s.io/apimachinery/pkg/labels"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // DaprInstanceLister helps list DaprInstances.
@@ -29,7 +29,7 @@ import (
 type DaprInstanceLister interface {
 	// List lists all DaprInstances in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.DaprInstance, err error)
+	List(selector labels.Selector) (ret []*operatorv1alpha1.DaprInstance, err error)
 	// DaprInstances returns an object that can list and get DaprInstances.
 	DaprInstances(namespace string) DaprInstanceNamespaceLister
 	DaprInstanceListerExpansion
@@ -37,17 +37,17 @@ type DaprInstanceLister interface {
 
 // daprInstanceLister implements the DaprInstanceLister interface.
 type daprInstanceLister struct {
-	listers.ResourceIndexer[*v1alpha1.DaprInstance]
+	listers.ResourceIndexer[*operatorv1alpha1.DaprInstance]
 }
 
 // NewDaprInstanceLister returns a new DaprInstanceLister.
 func NewDaprInstanceLister(indexer cache.Indexer) DaprInstanceLister {
-	return &daprInstanceLister{listers.New[*v1alpha1.DaprInstance](indexer, v1alpha1.Resource("daprinstance"))}
+	return &daprInstanceLister{listers.New[*operatorv1alpha1.DaprInstance](indexer, operatorv1alpha1.Resource("daprinstance"))}
 }
 
 // DaprInstances returns an object that can list and get DaprInstances.
 func (s *daprInstanceLister) DaprInstances(namespace string) DaprInstanceNamespaceLister {
-	return daprInstanceNamespaceLister{listers.NewNamespaced[*v1alpha1.DaprInstance](s.ResourceIndexer, namespace)}
+	return daprInstanceNamespaceLister{listers.NewNamespaced[*operatorv1alpha1.DaprInstance](s.ResourceIndexer, namespace)}
 }
 
 // DaprInstanceNamespaceLister helps list and get DaprInstances.
@@ -55,15 +55,15 @@ func (s *daprInstanceLister) DaprInstances(namespace string) DaprInstanceNamespa
 type DaprInstanceNamespaceLister interface {
 	// List lists all DaprInstances in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.DaprInstance, err error)
+	List(selector labels.Selector) (ret []*operatorv1alpha1.DaprInstance, err error)
 	// Get retrieves the DaprInstance from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1alpha1.DaprInstance, error)
+	Get(name string) (*operatorv1alpha1.DaprInstance, error)
 	DaprInstanceNamespaceListerExpansion
 }
 
 // daprInstanceNamespaceLister implements the DaprInstanceNamespaceLister
 // interface.
 type daprInstanceNamespaceLister struct {
-	listers.ResourceIndexer[*v1alpha1.DaprInstance]
+	listers.ResourceIndexer[*operatorv1alpha1.DaprInstance]
 }

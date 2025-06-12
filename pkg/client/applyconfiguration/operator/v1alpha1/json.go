@@ -18,13 +18,13 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
 )
 
 // JSONApplyConfiguration represents a declarative configuration of the JSON type for use
 // with apply.
 type JSONApplyConfiguration struct {
-	v1alpha1.RawMessage `json:",inline"`
+	operatorv1alpha1.RawMessage `json:",inline"`
 }
 
 // JSONApplyConfiguration constructs a declarative configuration of the JSON type for use with

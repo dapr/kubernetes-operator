@@ -18,10 +18,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 
-	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
-	operatorv1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	applyconfigurationoperatorv1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
 	scheme "github.com/dapr/kubernetes-operator/pkg/client/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -37,36 +37,37 @@ type DaprInstancesGetter interface {
 
 // DaprInstanceInterface has methods to work with DaprInstance resources.
 type DaprInstanceInterface interface {
-	Create(ctx context.Context, daprInstance *v1alpha1.DaprInstance, opts v1.CreateOptions) (*v1alpha1.DaprInstance, error)
-	Update(ctx context.Context, daprInstance *v1alpha1.DaprInstance, opts v1.UpdateOptions) (*v1alpha1.DaprInstance, error)
+	Create(ctx context.Context, daprInstance *operatorv1alpha1.DaprInstance, opts v1.CreateOptions) (*operatorv1alpha1.DaprInstance, error)
+	Update(ctx context.Context, daprInstance *operatorv1alpha1.DaprInstance, opts v1.UpdateOptions) (*operatorv1alpha1.DaprInstance, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, daprInstance *v1alpha1.DaprInstance, opts v1.UpdateOptions) (*v1alpha1.DaprInstance, error)
+	UpdateStatus(ctx context.Context, daprInstance *operatorv1alpha1.DaprInstance, opts v1.UpdateOptions) (*operatorv1alpha1.DaprInstance, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.DaprInstance, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.DaprInstanceList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*operatorv1alpha1.DaprInstance, error)
+	List(ctx context.Context, opts v1.ListOptions) (*operatorv1alpha1.DaprInstanceList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.DaprInstance, err error)
-	Apply(ctx context.Context, daprInstance *operatorv1alpha1.DaprInstanceApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.DaprInstance, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *operatorv1alpha1.DaprInstance, err error)
+	Apply(ctx context.Context, daprInstance *applyconfigurationoperatorv1alpha1.DaprInstanceApplyConfiguration, opts v1.ApplyOptions) (result *operatorv1alpha1.DaprInstance, err error)
 	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-	ApplyStatus(ctx context.Context, daprInstance *operatorv1alpha1.DaprInstanceApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.DaprInstance, err error)
+	ApplyStatus(ctx context.Context, daprInstance *applyconfigurationoperatorv1alpha1.DaprInstanceApplyConfiguration, opts v1.ApplyOptions) (result *operatorv1alpha1.DaprInstance, err error)
 	DaprInstanceExpansion
 }
 
 // daprInstances implements DaprInstanceInterface
 type daprInstances struct {
-	*gentype.ClientWithListAndApply[*v1alpha1.DaprInstance, *v1alpha1.DaprInstanceList, *operatorv1alpha1.DaprInstanceApplyConfiguration]
+	*gentype.ClientWithListAndApply[*operatorv1alpha1.DaprInstance, *operatorv1alpha1.DaprInstanceList, *applyconfigurationoperatorv1alpha1.DaprInstanceApplyConfiguration]
 }
 
 // newDaprInstances returns a DaprInstances
 func newDaprInstances(c *OperatorV1alpha1Client, namespace string) *daprInstances {
 	return &daprInstances{
-		gentype.NewClientWithListAndApply[*v1alpha1.DaprInstance, *v1alpha1.DaprInstanceList, *operatorv1alpha1.DaprInstanceApplyConfiguration](
+		gentype.NewClientWithListAndApply[*operatorv1alpha1.DaprInstance, *operatorv1alpha1.DaprInstanceList, *applyconfigurationoperatorv1alpha1.DaprInstanceApplyConfiguration](
 			"daprinstances",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1alpha1.DaprInstance { return &v1alpha1.DaprInstance{} },
-			func() *v1alpha1.DaprInstanceList { return &v1alpha1.DaprInstanceList{} }),
+			func() *operatorv1alpha1.DaprInstance { return &operatorv1alpha1.DaprInstance{} },
+			func() *operatorv1alpha1.DaprInstanceList { return &operatorv1alpha1.DaprInstanceList{} },
+		),
 	}
 }

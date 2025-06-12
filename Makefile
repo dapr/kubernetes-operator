@@ -24,18 +24,18 @@ LOCALBIN := $(PROJECT_PATH)/bin
 
 HELM_CHART_REPO ?= https://dapr.github.io/helm-charts
 HELM_CHART ?= dapr
-HELM_CHART_VERSION ?= 1.14.1
+HELM_CHART_VERSION ?= 1.15.5
 HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr-$(HELM_CHART_VERSION).tgz
 
 OPENSHIFT_VERSIONS ?= v4.12
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.4.3
-KIND_VERSION ?= v0.24.0
-KIND_IMAGE_VERSION ?= v1.30.4
-LINTER_VERSION ?= v1.61.0
-OPERATOR_SDK_VERSION ?= v1.37.0
-OPM_VERSION ?= v1.47.0
+KIND_VERSION ?= v0.29.0
+KIND_IMAGE_VERSION ?= v1.33.1
+LINTER_VERSION ?= v2.1.6
+OPERATOR_SDK_VERSION ?= v1.39.2
+OPM_VERSION ?= v1.55.0
 GOVULNCHECK_VERSION ?= latest
 KO_VERSION ?= latest
 
@@ -181,19 +181,8 @@ check/lint: golangci-lint
 	@echo "run golangci-lint"
 	@$(LINTER) run \
 		--config .golangci.yml \
-		--out-format tab \
-		--exclude-dirs etc \
 		--timeout $(LINT_TIMEOUT) \
 		--verbose
-
-.PHONY: check/lint/fix
-check/lint/fix: golangci-lint
-	@$(LINTER) run \
-		--config .golangci.yml \
-		--out-format tab \
-		--exclude-dirs etc \
-		--timeout $(LINT_TIMEOUT) \
-		--fix
 
 .PHONY: check/vuln
 check/vuln: govulncheck
@@ -320,7 +309,7 @@ $(KUSTOMIZE): $(LOCALBIN)
 golangci-lint: $(LINTER)
 $(LINTER): $(LOCALBIN)
 	@test -s $(LOCALBIN)/golangci-lint || \
-	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(LINTER_VERSION)
+	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(LINTER_VERSION)
 
 .PHONY: goimport
 goimport: $(GOIMPORT)

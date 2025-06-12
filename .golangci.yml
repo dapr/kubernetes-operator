@@ -1,74 +1,75 @@
-# ---------------------------------------------------------------------------
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ---------------------------------------------------------------------------
-
-linters-settings:
-  lll:
-    line-length: 170
-  goconst:
-    ignore-tests: true
-  revive:
-    rules:
-      - name: dot-imports
-        disabled: true
-  mnd:
-    checks:
-      - argument
-      - case
-      - operation
-      - return
-      - assign
-    ignored-functions:
-      - '^len\.'
-      - '^strings\.SplitN$'
-      - '^make$'
-  wsl:
-    allow-cuddle-declarations: true
-    allow-separated-leading-comment: true
-  nlreturn:
-    block-size: 2
-  testpackage:
-    skip-regexp: test/e2e/...
-  funlen:
-    ignore-comments: true
-issues:
-  exclude-rules:
-    # Exclude some linters from running on tests files.
-    - path: test
-      linters:
-        - wrapcheck
-        - funlen
-        - gochecknoinits
-    - path: api
-      linters:
-        - gochecknoinits
+version: "2"
 linters:
-  enable-all: true
+  default: all
   disable:
-    #deprecated
-    - gomnd
-    - execinquery
-    - exportloopref
-    # keep
-    - varnamelen
-    - godox # there are a bunch of TODOs that must be solved
-    - gci
-    - gofumpt
-    - exhaustruct
-    - paralleltest
-    - ireturn
-    - gochecknoglobals
     - depguard
+    - exhaustruct
+    - gochecknoglobals
+    - godox
+    - ireturn
+    - mnd
+    - paralleltest
+    - varnamelen
+    - funcorder
+    - staticcheck
+    - recvcheck
+  settings:
+    funlen:
+      ignore-comments: true
+    lll:
+      line-length: 170
+    mnd:
+      checks:
+        - argument
+        - case
+        - operation
+        - return
+        - assign
+      ignored-functions:
+        - ^len\.
+        - ^strings\.SplitN$
+        - ^make$
+    nlreturn:
+      block-size: 2
+    revive:
+      rules:
+        - name: dot-imports
+          disabled: true
+    testpackage:
+      skip-regexp: test/e2e/...
+    wsl:
+      allow-separated-leading-comment: true
+      allow-cuddle-declarations: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - funlen
+          - gochecknoinits
+          - wrapcheck
+        path: test
+      - linters:
+          - gochecknoinits
+        path: api
+      - linters:
+          - goconst
+        path: (.+)_test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

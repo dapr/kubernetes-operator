@@ -38,7 +38,7 @@ func DaprControlPlaneStatus() *DaprControlPlaneStatusApplyConfiguration {
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Phase field is set to the value of the last call.
 func (b *DaprControlPlaneStatusApplyConfiguration) WithPhase(value string) *DaprControlPlaneStatusApplyConfiguration {
-	b.Phase = &value
+	b.StatusApplyConfiguration.Phase = &value
 	return b
 }
 
@@ -50,7 +50,7 @@ func (b *DaprControlPlaneStatusApplyConfiguration) WithConditions(values ...*v1.
 		if values[i] == nil {
 			panic("nil value passed to WithConditions")
 		}
-		b.Conditions = append(b.Conditions, *values[i])
+		b.StatusApplyConfiguration.Conditions = append(b.StatusApplyConfiguration.Conditions, *values[i])
 	}
 	return b
 }
@@ -59,7 +59,7 @@ func (b *DaprControlPlaneStatusApplyConfiguration) WithConditions(values ...*v1.
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ObservedGeneration field is set to the value of the last call.
 func (b *DaprControlPlaneStatusApplyConfiguration) WithObservedGeneration(value int64) *DaprControlPlaneStatusApplyConfiguration {
-	b.ObservedGeneration = &value
+	b.StatusApplyConfiguration.ObservedGeneration = &value
 	return b
 }
 

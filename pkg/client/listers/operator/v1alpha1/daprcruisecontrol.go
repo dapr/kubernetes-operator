@@ -18,10 +18,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/listers"
-	"k8s.io/client-go/tools/cache"
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	labels "k8s.io/apimachinery/pkg/labels"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // DaprCruiseControlLister helps list DaprCruiseControls.
@@ -29,7 +29,7 @@ import (
 type DaprCruiseControlLister interface {
 	// List lists all DaprCruiseControls in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.DaprCruiseControl, err error)
+	List(selector labels.Selector) (ret []*operatorv1alpha1.DaprCruiseControl, err error)
 	// DaprCruiseControls returns an object that can list and get DaprCruiseControls.
 	DaprCruiseControls(namespace string) DaprCruiseControlNamespaceLister
 	DaprCruiseControlListerExpansion
@@ -37,17 +37,17 @@ type DaprCruiseControlLister interface {
 
 // daprCruiseControlLister implements the DaprCruiseControlLister interface.
 type daprCruiseControlLister struct {
-	listers.ResourceIndexer[*v1alpha1.DaprCruiseControl]
+	listers.ResourceIndexer[*operatorv1alpha1.DaprCruiseControl]
 }
 
 // NewDaprCruiseControlLister returns a new DaprCruiseControlLister.
 func NewDaprCruiseControlLister(indexer cache.Indexer) DaprCruiseControlLister {
-	return &daprCruiseControlLister{listers.New[*v1alpha1.DaprCruiseControl](indexer, v1alpha1.Resource("daprcruisecontrol"))}
+	return &daprCruiseControlLister{listers.New[*operatorv1alpha1.DaprCruiseControl](indexer, operatorv1alpha1.Resource("daprcruisecontrol"))}
 }
 
 // DaprCruiseControls returns an object that can list and get DaprCruiseControls.
 func (s *daprCruiseControlLister) DaprCruiseControls(namespace string) DaprCruiseControlNamespaceLister {
-	return daprCruiseControlNamespaceLister{listers.NewNamespaced[*v1alpha1.DaprCruiseControl](s.ResourceIndexer, namespace)}
+	return daprCruiseControlNamespaceLister{listers.NewNamespaced[*operatorv1alpha1.DaprCruiseControl](s.ResourceIndexer, namespace)}
 }
 
 // DaprCruiseControlNamespaceLister helps list and get DaprCruiseControls.
@@ -55,15 +55,15 @@ func (s *daprCruiseControlLister) DaprCruiseControls(namespace string) DaprCruis
 type DaprCruiseControlNamespaceLister interface {
 	// List lists all DaprCruiseControls in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.DaprCruiseControl, err error)
+	List(selector labels.Selector) (ret []*operatorv1alpha1.DaprCruiseControl, err error)
 	// Get retrieves the DaprCruiseControl from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1alpha1.DaprCruiseControl, error)
+	Get(name string) (*operatorv1alpha1.DaprCruiseControl, error)
 	DaprCruiseControlNamespaceListerExpansion
 }
 
 // daprCruiseControlNamespaceLister implements the DaprCruiseControlNamespaceLister
 // interface.
 type daprCruiseControlNamespaceLister struct {
-	listers.ResourceIndexer[*v1alpha1.DaprCruiseControl]
+	listers.ResourceIndexer[*operatorv1alpha1.DaprCruiseControl]
 }

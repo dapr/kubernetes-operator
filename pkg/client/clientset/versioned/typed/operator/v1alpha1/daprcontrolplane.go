@@ -18,10 +18,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 
-	v1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
-	operatorv1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	applyconfigurationoperatorv1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/applyconfiguration/operator/v1alpha1"
 	scheme "github.com/dapr/kubernetes-operator/pkg/client/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -37,36 +37,37 @@ type DaprControlPlanesGetter interface {
 
 // DaprControlPlaneInterface has methods to work with DaprControlPlane resources.
 type DaprControlPlaneInterface interface {
-	Create(ctx context.Context, daprControlPlane *v1alpha1.DaprControlPlane, opts v1.CreateOptions) (*v1alpha1.DaprControlPlane, error)
-	Update(ctx context.Context, daprControlPlane *v1alpha1.DaprControlPlane, opts v1.UpdateOptions) (*v1alpha1.DaprControlPlane, error)
+	Create(ctx context.Context, daprControlPlane *operatorv1alpha1.DaprControlPlane, opts v1.CreateOptions) (*operatorv1alpha1.DaprControlPlane, error)
+	Update(ctx context.Context, daprControlPlane *operatorv1alpha1.DaprControlPlane, opts v1.UpdateOptions) (*operatorv1alpha1.DaprControlPlane, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, daprControlPlane *v1alpha1.DaprControlPlane, opts v1.UpdateOptions) (*v1alpha1.DaprControlPlane, error)
+	UpdateStatus(ctx context.Context, daprControlPlane *operatorv1alpha1.DaprControlPlane, opts v1.UpdateOptions) (*operatorv1alpha1.DaprControlPlane, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.DaprControlPlane, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.DaprControlPlaneList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*operatorv1alpha1.DaprControlPlane, error)
+	List(ctx context.Context, opts v1.ListOptions) (*operatorv1alpha1.DaprControlPlaneList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.DaprControlPlane, err error)
-	Apply(ctx context.Context, daprControlPlane *operatorv1alpha1.DaprControlPlaneApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.DaprControlPlane, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *operatorv1alpha1.DaprControlPlane, err error)
+	Apply(ctx context.Context, daprControlPlane *applyconfigurationoperatorv1alpha1.DaprControlPlaneApplyConfiguration, opts v1.ApplyOptions) (result *operatorv1alpha1.DaprControlPlane, err error)
 	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-	ApplyStatus(ctx context.Context, daprControlPlane *operatorv1alpha1.DaprControlPlaneApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.DaprControlPlane, err error)
+	ApplyStatus(ctx context.Context, daprControlPlane *applyconfigurationoperatorv1alpha1.DaprControlPlaneApplyConfiguration, opts v1.ApplyOptions) (result *operatorv1alpha1.DaprControlPlane, err error)
 	DaprControlPlaneExpansion
 }
 
 // daprControlPlanes implements DaprControlPlaneInterface
 type daprControlPlanes struct {
-	*gentype.ClientWithListAndApply[*v1alpha1.DaprControlPlane, *v1alpha1.DaprControlPlaneList, *operatorv1alpha1.DaprControlPlaneApplyConfiguration]
+	*gentype.ClientWithListAndApply[*operatorv1alpha1.DaprControlPlane, *operatorv1alpha1.DaprControlPlaneList, *applyconfigurationoperatorv1alpha1.DaprControlPlaneApplyConfiguration]
 }
 
 // newDaprControlPlanes returns a DaprControlPlanes
 func newDaprControlPlanes(c *OperatorV1alpha1Client, namespace string) *daprControlPlanes {
 	return &daprControlPlanes{
-		gentype.NewClientWithListAndApply[*v1alpha1.DaprControlPlane, *v1alpha1.DaprControlPlaneList, *operatorv1alpha1.DaprControlPlaneApplyConfiguration](
+		gentype.NewClientWithListAndApply[*operatorv1alpha1.DaprControlPlane, *operatorv1alpha1.DaprControlPlaneList, *applyconfigurationoperatorv1alpha1.DaprControlPlaneApplyConfiguration](
 			"daprcontrolplanes",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1alpha1.DaprControlPlane { return &v1alpha1.DaprControlPlane{} },
-			func() *v1alpha1.DaprControlPlaneList { return &v1alpha1.DaprControlPlaneList{} }),
+			func() *operatorv1alpha1.DaprControlPlane { return &operatorv1alpha1.DaprControlPlane{} },
+			func() *operatorv1alpha1.DaprControlPlaneList { return &operatorv1alpha1.DaprControlPlaneList{} },
+		),
 	}
 }

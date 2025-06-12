@@ -18,13 +18,13 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
-	operatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
+	apioperatorv1alpha1 "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
 	versioned "github.com/dapr/kubernetes-operator/pkg/client/clientset/versioned"
 	internalinterfaces "github.com/dapr/kubernetes-operator/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/listers/operator/v1alpha1"
+	operatorv1alpha1 "github.com/dapr/kubernetes-operator/pkg/client/listers/operator/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -35,7 +35,7 @@ import (
 // DaprInstances.
 type DaprInstanceInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.DaprInstanceLister
+	Lister() operatorv1alpha1.DaprInstanceLister
 }
 
 type daprInstanceInformer struct {
@@ -61,16 +61,28 @@ func NewFilteredDaprInstanceInformer(client versioned.Interface, namespace strin
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1alpha1().DaprInstances(namespace).List(context.TODO(), options)
+				return client.OperatorV1alpha1().DaprInstances(namespace).List(context.Background(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1alpha1().DaprInstances(namespace).Watch(context.TODO(), options)
+				return client.OperatorV1alpha1().DaprInstances(namespace).Watch(context.Background(), options)
+			},
+			ListWithContextFunc: func(ctx context.Context, options v1.ListOptions) (runtime.Object, error) {
+				if tweakListOptions != nil {
+					tweakListOptions(&options)
+				}
+				return client.OperatorV1alpha1().DaprInstances(namespace).List(ctx, options)
+			},
+			WatchFuncWithContext: func(ctx context.Context, options v1.ListOptions) (watch.Interface, error) {
+				if tweakListOptions != nil {
+					tweakListOptions(&options)
+				}
+				return client.OperatorV1alpha1().DaprInstances(namespace).Watch(ctx, options)
 			},
 		},
-		&operatorv1alpha1.DaprInstance{},
+		&apioperatorv1alpha1.DaprInstance{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,9 +93,9 @@ func (f *daprInstanceInformer) defaultInformer(client versioned.Interface, resyn
 }
 
 func (f *daprInstanceInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&operatorv1alpha1.DaprInstance{}, f.defaultInformer)
+	return f.factory.InformerFor(&apioperatorv1alpha1.DaprInstance{}, f.defaultInformer)
 }
 
-func (f *daprInstanceInformer) Lister() v1alpha1.DaprInstanceLister {
-	return v1alpha1.NewDaprInstanceLister(f.Informer().GetIndexer())
+func (f *daprInstanceInformer) Lister() operatorv1alpha1.DaprInstanceLister {
+	return operatorv1alpha1.NewDaprInstanceLister(f.Informer().GetIndexer())
 }
