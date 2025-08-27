@@ -24,7 +24,7 @@ LOCALBIN := $(PROJECT_PATH)/bin
 
 HELM_CHART_REPO ?= https://dapr.github.io/helm-charts
 HELM_CHART ?= dapr
-HELM_CHART_VERSION ?= 1.15.5
+HELM_CHART_VERSION ?= 1.15.10
 HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr-$(HELM_CHART_VERSION).tgz
 
 OPENSHIFT_VERSIONS ?= v4.12
@@ -33,9 +33,9 @@ OPENSHIFT_VERSIONS ?= v4.12
 KUSTOMIZE_VERSION ?= v5.4.3
 KIND_VERSION ?= v0.29.0
 KIND_IMAGE_VERSION ?= v1.33.1
-LINTER_VERSION ?= v2.1.6
-OPERATOR_SDK_VERSION ?= v1.39.2
-OPM_VERSION ?= v1.55.0
+LINTER_VERSION ?= v2.4.0
+OPERATOR_SDK_VERSION ?= v1.41.1
+OPM_VERSION ?= v1.56.0
 GOVULNCHECK_VERSION ?= latest
 KO_VERSION ?= latest
 
@@ -43,7 +43,6 @@ KO_VERSION ?= latest
 KUBECTL ?= kubectl
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 LINTER ?= $(LOCALBIN)/golangci-lint
-GOIMPORT ?= $(LOCALBIN)/goimports
 YQ ?= $(LOCALBIN)/yq
 KIND ?= $(LOCALBIN)/kind
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
@@ -113,9 +112,9 @@ generate: ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject
 	$(PROJECT_PATH)/hack/scripts/gen_client.sh $(PROJECT_PATH)
 
 .PHONY: fmt
-fmt: goimport ## Run go fmt, gomiport against code.
-	$(GOIMPORT) -l -w .
-	go fmt ./...
+fmt: golangci-lint
+	@$(LINTER) fmt \
+		--config .golangci.yml
 
 .PHONY: vet
 vet: ## Run go vet against code.
@@ -174,7 +173,7 @@ deps:  ## Tidy up deps.
 
 
 .PHONY: check
-check: check/lint  check/vuln
+check: check/lint check/vuln
 
 .PHONY: check/lint
 check/lint: golangci-lint
@@ -188,6 +187,18 @@ check/lint: golangci-lint
 check/vuln: govulncheck
 	@echo "run govulncheck"
 	@$(GOVULNCHECK) ./...
+
+
+.PHONY: lint
+lint: check/lint
+
+.PHONY: lint/fix
+lint/fix: golangci-lint
+	@echo "run golangci-lint"
+	@$(LINTER) run \
+		--config .golangci.yml \
+		--fix
+
 
 .PHONY: docker/build
 docker/build: test ## Build docker image with the manager.
@@ -310,12 +321,6 @@ golangci-lint: $(LINTER)
 $(LINTER): $(LOCALBIN)
 	@test -s $(LOCALBIN)/golangci-lint || \
 	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(LINTER_VERSION)
-
-.PHONY: goimport
-goimport: $(GOIMPORT)
-$(GOIMPORT): $(LOCALBIN)
-	@test -s $(LOCALBIN)/goimport || \
-	GOBIN=$(LOCALBIN) go install golang.org/x/tools/cmd/goimports@latest
 
 .PHONY: yq
 yq: $(YQ)

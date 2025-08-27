@@ -91,12 +91,13 @@ func ToUnstructured(s *runtime.Scheme, obj runtime.Object) (*unstructured.Unstru
 	case *unstructured.Unstructured:
 		return ot, nil
 	default:
-		var err error
-		var u unstructured.Unstructured
-
-		u.Object, err = runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+		udata, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert to unstructured: %w", err)
+		}
+
+		u := unstructured.Unstructured{
+			Object: udata,
 		}
 
 		gvk := u.GroupVersionKind()

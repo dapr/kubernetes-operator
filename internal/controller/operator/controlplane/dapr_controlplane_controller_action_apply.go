@@ -61,7 +61,6 @@ func (a *ApplyAction) Run(ctx context.Context, rr *ReconciliationRequest) error 
 		metav1.ApplyOptions{
 			FieldManager: controller.FieldManager,
 		})
-
 	if err != nil {
 		return fmt.Errorf("failure to apply changes to %s: %w", rr.NamespacedName, err)
 	}

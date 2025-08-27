@@ -36,11 +36,11 @@ func WithWatchStatus(val bool) DependentPredicateOption {
 }
 
 type DependentPredicate struct {
+	predicate.Funcs
+
 	WatchDelete bool
 	WatchUpdate bool
 	WatchStatus bool
-
-	predicate.Funcs
 }
 
 func (p DependentPredicate) Create(event.CreateEvent) bool {

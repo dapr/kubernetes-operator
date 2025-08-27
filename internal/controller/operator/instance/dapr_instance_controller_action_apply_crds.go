@@ -112,7 +112,6 @@ func (a *ApplyCRDsAction) apply(ctx context.Context, rc *ReconciliationRequest, 
 		FieldManager: controller.FieldManager,
 		Force:        true,
 	})
-
 	if err != nil {
 		return false, fmt.Errorf("cannot apply CRD %s: %w", resources.Ref(crd), err)
 	}

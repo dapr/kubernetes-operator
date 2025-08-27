@@ -58,7 +58,6 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 			ByObject: options.WatchSelectors,
 		},
 	})
-
 	if err != nil {
 		return fmt.Errorf("unable to create manager: %w", err)
 	}

@@ -33,7 +33,8 @@ type DaprInstanceSpec struct {
 // DaprInstanceStatus defines the observed state of DaprInstance.
 type DaprInstanceStatus struct {
 	Status `json:",inline"`
-	Chart  *ChartMeta `json:"chart,omitempty"`
+
+	Chart *ChartMeta `json:"chart,omitempty"`
 }
 
 // +genclient
@@ -70,7 +71,8 @@ func (in *DaprInstance) GetConditions() conditions.Conditions {
 type DaprInstanceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []DaprInstance `json:"items"`
+
+	Items []DaprInstance `json:"items"`
 }
 
 func init() {

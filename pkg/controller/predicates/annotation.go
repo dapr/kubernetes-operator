@@ -9,6 +9,7 @@ var _ predicate.Predicate = AnnotationChanged{}
 
 type AnnotationChanged struct {
 	predicate.Funcs
+
 	Name string
 }
 

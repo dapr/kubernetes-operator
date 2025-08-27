@@ -185,7 +185,6 @@ func (r *Reconciler) Watch(obj ctrlCli.Object, eh handler.EventHandler, predicat
 			predicates...,
 		),
 	)
-
 	if err != nil {
 		return fmt.Errorf(
 			"error configuring watcher for resource %s:%s, reson: %w",

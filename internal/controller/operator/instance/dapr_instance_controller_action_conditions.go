@@ -90,7 +90,6 @@ func (a *ConditionsAction) deployments(ctx context.Context, rc *ReconciliationRe
 	objects, err := rc.Client.AppsV1().Deployments(rc.Resource.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: selector.String(),
 	})
-
 	if err != nil {
 		return 0, 0, fmt.Errorf("cannot list deployments: %w", err)
 	}
@@ -110,7 +109,6 @@ func (a *ConditionsAction) statefulSets(ctx context.Context, rc *ReconciliationR
 	objects, err := rc.Client.AppsV1().StatefulSets(rc.Resource.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: selector.String(),
 	})
-
 	if err != nil {
 		return 0, 0, fmt.Errorf("cannot list stateful sets: %w", err)
 	}
