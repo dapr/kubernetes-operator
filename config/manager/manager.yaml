@@ -72,6 +72,8 @@ spec:
         image: controller:latest
         name: dapr-control-plane
         env:
+          - name: HELM_CACHE_HOME
+            value: /tmp/helm
           - name: DAPR_KUBERNETES_OPERATOR_NAMESPACE
             valueFrom:
               fieldRef:
