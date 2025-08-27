@@ -27,7 +27,6 @@ func gcSelector(ctx context.Context, rc *ReconciliationRequest) (labels.Selector
 		helm.ReleaseNamespace,
 		selection.Equals,
 		[]string{rc.Resource.Namespace})
-
 	if err != nil {
 		return nil, fmt.Errorf("cannot determine release namespace requirement: %w", err)
 	}
@@ -36,7 +35,6 @@ func gcSelector(ctx context.Context, rc *ReconciliationRequest) (labels.Selector
 		helm.ReleaseName,
 		selection.Equals,
 		[]string{rc.Resource.Name})
-
 	if err != nil {
 		return nil, fmt.Errorf("cannot determine release name requirement: %w", err)
 	}
@@ -45,7 +43,6 @@ func gcSelector(ctx context.Context, rc *ReconciliationRequest) (labels.Selector
 		helm.ReleaseGeneration,
 		selection.Exists,
 		[]string{})
-
 	if err != nil {
 		return nil, fmt.Errorf("cannot determine generation requirement: %w", err)
 	}
@@ -54,7 +51,6 @@ func gcSelector(ctx context.Context, rc *ReconciliationRequest) (labels.Selector
 		helm.ReleaseVersion,
 		selection.Equals,
 		[]string{c.Version()})
-
 	if err != nil {
 		return nil, fmt.Errorf("cannot determine release version requirement: %w", err)
 	}
@@ -120,7 +116,6 @@ func currentReleaseSelector(ctx context.Context, rc *ReconciliationRequest) (lab
 		helm.ReleaseNamespace,
 		selection.Equals,
 		[]string{rc.Resource.Namespace})
-
 	if err != nil {
 		return nil, fmt.Errorf("cannot determine release namespace requirement: %w", err)
 	}
@@ -129,7 +124,6 @@ func currentReleaseSelector(ctx context.Context, rc *ReconciliationRequest) (lab
 		helm.ReleaseName,
 		selection.Equals,
 		[]string{rc.Resource.Name})
-
 	if err != nil {
 		return nil, fmt.Errorf("cannot determine release name requirement: %w", err)
 	}
@@ -138,7 +132,6 @@ func currentReleaseSelector(ctx context.Context, rc *ReconciliationRequest) (lab
 		helm.ReleaseGeneration,
 		selection.Equals,
 		[]string{strconv.FormatInt(rc.Resource.Generation, 10)})
-
 	if err != nil {
 		return nil, fmt.Errorf("cannot determine generation requirement: %w", err)
 	}
@@ -147,7 +140,6 @@ func currentReleaseSelector(ctx context.Context, rc *ReconciliationRequest) (lab
 		helm.ReleaseVersion,
 		selection.Equals,
 		[]string{c.Version()})
-
 	if err != nil {
 		return nil, fmt.Errorf("cannot determine release version requirement: %w", err)
 	}

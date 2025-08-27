@@ -127,7 +127,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, res *daprApi.DaprInstance) (
 		client.ForceOwnership,
 		client.FieldOwner(controller.FieldManager),
 	)
-
 	if err != nil {
 		errs = append(errs, err)
 	}

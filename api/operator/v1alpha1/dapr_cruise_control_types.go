@@ -28,7 +28,8 @@ type DaprCruiseControlSpec struct {
 // DaprCruiseControlStatus defines the observed state of DaprCruiseControl.
 type DaprCruiseControlStatus struct {
 	Status `json:",inline"`
-	Chart  *ChartMeta `json:"chart,omitempty"`
+
+	Chart *ChartMeta `json:"chart,omitempty"`
 }
 
 // +genclient
@@ -65,7 +66,8 @@ func (in *DaprCruiseControl) GetConditions() conditions.Conditions {
 type DaprCruiseControlList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []DaprCruiseControl `json:"items"`
+
+	Items []DaprCruiseControl `json:"items"`
 }
 
 func init() {

@@ -246,7 +246,6 @@ func (a *ApplyResourcesAction) apply(ctx context.Context, rc *ReconciliationRequ
 		FieldManager: controller.FieldManager,
 		Force:        true,
 	})
-
 	if err != nil {
 		return fmt.Errorf("cannot patch object %s: %w", resources.Ref(obj), err)
 	}
@@ -283,7 +282,6 @@ func (a *ApplyResourcesAction) watchNamespaceScopeResource(rc *ReconciliationReq
 				predicates.WithWatchStatus(a.watchStatus(gvk)),
 			),
 		)
-
 		if err != nil {
 			return err
 		}
@@ -315,7 +313,6 @@ func (a *ApplyResourcesAction) watchClusterScopeResource(rc *ReconciliationReque
 				predicates.WithWatchStatus(a.watchStatus(gvk)),
 			),
 		)
-
 		if err != nil {
 			return err
 		}

@@ -28,7 +28,8 @@ type DaprControlPlaneSpec struct {
 
 type DaprControlPlaneStatus struct {
 	Status `json:",inline"`
-	Chart  *ChartMeta `json:"chart,omitempty"`
+
+	Chart *ChartMeta `json:"chart,omitempty"`
 }
 
 // +genclient
@@ -64,7 +65,8 @@ func (in *DaprControlPlane) GetConditions() conditions.Conditions {
 type DaprControlPlaneList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []DaprControlPlane `json:"items"`
+
+	Items []DaprControlPlane `json:"items"`
 }
 
 func init() {

@@ -65,7 +65,6 @@ func (rr *ReconciliationRequest) Chart(ctx context.Context) (*helme.Chart, error
 		cs,
 		chartOpts...,
 	)
-
 	if err != nil {
 		return nil, fmt.Errorf("failure loading chart: %w", err)
 	}

@@ -102,7 +102,6 @@ func With(t *testing.T) Test {
 	lr := testr.New(t)
 	klog.SetLogger(lr.WithName("client"))
 
-	//nolint:usetesting
 	ctx := context.Background()
 
 	if deadline, ok := t.Deadline(); ok {
@@ -198,7 +197,6 @@ func (t *T) Helm() *helmsupport.Helm {
 		h, err := helmsupport.New(helmsupport.WithLog(func(s string, i ...interface{}) {
 			t.T().Logf("[helm] "+s, i...)
 		}))
-
 		if err != nil {
 			t.T().Fatalf("Error creating helm client: %v", err)
 		}

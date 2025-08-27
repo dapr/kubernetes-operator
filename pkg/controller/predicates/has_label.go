@@ -10,6 +10,7 @@ var _ predicate.Predicate = HasLabel{}
 
 type HasLabel struct {
 	predicate.Funcs
+
 	Name string
 }
 

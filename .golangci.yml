@@ -1,6 +1,8 @@
 version: "2"
 linters:
   default: all
+  enable:
+    - wsl_v5
   disable:
     - depguard
     - exhaustruct
@@ -13,7 +15,14 @@ linters:
     - funcorder
     - staticcheck
     - recvcheck
+    - noinlineerr
+    - wsl
   settings:
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      branch-max-lines: 2
+      disable:
     funlen:
       ignore-comments: true
     lll:
@@ -37,9 +46,6 @@ linters:
           disabled: true
     testpackage:
       skip-regexp: test/e2e/...
-    wsl:
-      allow-separated-leading-comment: true
-      allow-cuddle-declarations: true
   exclusions:
     generated: lax
     presets:
