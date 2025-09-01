@@ -10,7 +10,7 @@ require (
 	github.com/lburgazzoli/gomega-matchers v0.1.1
 	github.com/lburgazzoli/k8s-manifests-renderer-helm v0.1.4
 	github.com/onsi/gomega v1.38.2
-	github.com/operator-framework/api v0.33.0
+	github.com/operator-framework/api v0.34.0
 	github.com/operator-framework/operator-lifecycle-manager v0.33.0
 	github.com/rs/xid v1.6.0
 	github.com/spf13/cobra v1.9.1
@@ -158,8 +158,7 @@ require (
 	sigs.k8s.io/kustomize/api v0.19.0 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.19.0 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v6 v6.2.0 // indirect
-	sigs.k8s.io/yaml v1.5.0 // indirect
+	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
 tool (
