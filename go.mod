@@ -15,7 +15,7 @@ require (
 	github.com/rs/xid v1.6.0
 	github.com/spf13/cobra v1.9.1
 	github.com/wI2L/jsondiff v0.7.0
-	golang.org/x/time v0.12.0
+	golang.org/x/time v0.13.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.18.6
 	k8s.io/api v0.33.4
@@ -158,7 +158,6 @@ require (
 	sigs.k8s.io/kustomize/api v0.19.0 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.19.0 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v6 v6.2.0 // indirect
 	sigs.k8s.io/yaml v1.5.0 // indirect
 )
 
