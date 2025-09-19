@@ -81,6 +81,7 @@ func extractDaprInstance(daprInstance *operatorv1alpha1.DaprInstance, fieldManag
 	b.WithAPIVersion("operator.dapr.io/v1alpha1")
 	return b, nil
 }
+func (b DaprInstanceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
@@ -256,8 +257,24 @@ func (b *DaprInstanceApplyConfiguration) WithStatus(value *DaprInstanceStatusApp
 	return b
 }
 
+// GetKind retrieves the value of the Kind field in the declarative configuration.
+func (b *DaprInstanceApplyConfiguration) GetKind() *string {
+	return b.TypeMetaApplyConfiguration.Kind
+}
+
+// GetAPIVersion retrieves the value of the APIVersion field in the declarative configuration.
+func (b *DaprInstanceApplyConfiguration) GetAPIVersion() *string {
+	return b.TypeMetaApplyConfiguration.APIVersion
+}
+
 // GetName retrieves the value of the Name field in the declarative configuration.
 func (b *DaprInstanceApplyConfiguration) GetName() *string {
 	b.ensureObjectMetaApplyConfigurationExists()
 	return b.ObjectMetaApplyConfiguration.Name
+}
+
+// GetNamespace retrieves the value of the Namespace field in the declarative configuration.
+func (b *DaprInstanceApplyConfiguration) GetNamespace() *string {
+	b.ensureObjectMetaApplyConfigurationExists()
+	return b.ObjectMetaApplyConfiguration.Namespace
 }
