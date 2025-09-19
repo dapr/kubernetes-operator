@@ -43,6 +43,8 @@ spec:
 {{ toYaml . | indent 8 }}
 {{- end }}
     spec:
+      securityContext:
+        fsGroup: {{ .Values.fsGroup }}
       containers:
       - name: dapr-placement-server
         livenessProbe:
@@ -131,9 +133,9 @@ spec:
   {{- if eq .Values.cluster.forceInMemoryLog false }}
         - "--raft-logstore-path"
     {{- if eq .Values.global.daprControlPlaneOs "windows" }}
-        - "{{ .Values.cluster.logStoreWinPath }}\\cluster-v2-$(PLACEMENT_ID)"
+        - "{{ .Values.cluster.logStoreWinPath }}\\cluster-v2-nonroot-$(PLACEMENT_ID)"
     {{- else }}
-        - "{{ .Values.cluster.logStorePath }}/cluster-v2-$(PLACEMENT_ID)"
+        - "{{ .Values.cluster.logStorePath }}/cluster-v2-nonroot-$(PLACEMENT_ID)"
     {{- end }}
   {{- end }}
 {{- end }}
@@ -165,12 +167,8 @@ spec:
         - "--mode=kubernetes"
 {{- if eq .Values.global.daprControlPlaneOs "linux" }}
         securityContext:
-{{- if eq .Values.cluster.forceInMemoryLog true }}
           runAsNonRoot: {{ .Values.runAsNonRoot }}
           allowPrivilegeEscalation: false
-{{- else }}
-          runAsUser: 0
-{{- end }}
   {{- if eq .Values.debug.enabled true }}
           capabilities:
             add: ["SYS_PTRACE"]
