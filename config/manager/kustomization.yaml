@@ -9,4 +9,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: docker.io/daprio/kubernetes-operator
-  newTag: 0.0.11
+  newTag: 0.0.12
