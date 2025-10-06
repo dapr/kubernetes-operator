@@ -1,28 +1,28 @@
 apiVersion: v2
-appVersion: 1.16.0
+appVersion: 1.16.1
 dependencies:
 - name: dapr_rbac
   repository: file://dapr_rbac
-  version: 1.16.0
+  version: 1.16.1
 - name: dapr_operator
   repository: file://dapr_operator
-  version: 1.16.0
+  version: 1.16.1
 - name: dapr_placement
   repository: file://dapr_placement
-  version: 1.16.0
+  version: 1.16.1
 - name: dapr_sidecar_injector
   repository: file://dapr_sidecar_injector
-  version: 1.16.0
+  version: 1.16.1
 - name: dapr_sentry
   repository: file://dapr_sentry
-  version: 1.16.0
+  version: 1.16.1
 - name: dapr_scheduler
   repository: file://dapr_scheduler
-  version: 1.16.0
+  version: 1.16.1
 - name: dapr_config
   repository: file://dapr_config
-  version: 1.16.0
+  version: 1.16.1
 description: A Helm chart for Dapr on Kubernetes
 icon: https://dapr.io/images/dapr.svg
 name: dapr
-version: 1.16.0
+version: 1.16.1
