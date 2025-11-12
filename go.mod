@@ -1,13 +1,13 @@
 module github.com/dapr/kubernetes-operator
 
-go 1.24.8
+go 1.24.10
 
 require (
 	github.com/dapr/go-sdk v1.13.0
 	github.com/go-logr/logr v1.4.3
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/go-cleanhttp v0.5.2
-	github.com/lburgazzoli/gomega-matchers v0.1.1
+	github.com/lburgazzoli/gomega-matchers v0.4.0
 	github.com/lburgazzoli/k8s-manifests-renderer-helm v0.1.4
 	github.com/onsi/gomega v1.38.2
 	github.com/operator-framework/api v0.35.0
@@ -24,7 +24,7 @@ require (
 	k8s.io/client-go v0.34.1
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912
-	sigs.k8s.io/controller-runtime v0.22.3
+	sigs.k8s.io/controller-runtime v0.22.4
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0
 )
 
@@ -92,7 +92,7 @@ require (
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/itchyny/gojq v0.12.17 // indirect
-	github.com/itchyny/timefmt-go v0.1.6 // indirect
+	github.com/itchyny/timefmt-go v0.1.7 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
