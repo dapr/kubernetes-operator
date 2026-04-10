@@ -11,12 +11,12 @@ import (
 
 type ReleaseOptions[T any] struct {
 	Client *T
-	Values map[string]interface{}
+	Values map[string]any
 }
 
 type ConfigurationOption func(*action.Configuration)
 
-func WithLog(value func(string, ...interface{})) ConfigurationOption {
+func WithLog(value func(string, ...any)) ConfigurationOption {
 	return func(opt *action.Configuration) {
 		opt.Log = value
 	}

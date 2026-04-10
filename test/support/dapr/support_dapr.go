@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dapr/kubernetes-operator/pkg/pointer"
+	"k8s.io/utils/ptr"
 
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -47,17 +47,17 @@ func DeployTestApp(t support.Test, name string, namespace string) {
 		t.Ctx(),
 		name,
 		&unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"apiVersion": componentRes.GroupVersion().String(),
 				"kind":       "Component",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name":      name,
 					"namespace": namespace,
 				},
-				"spec": map[string]interface{}{
+				"spec": map[string]any{
 					"type":     "state.in-memory",
 					"version":  "v1",
-					"metadata": []interface{}{},
+					"metadata": []any{},
 				},
 			},
 		},
@@ -75,7 +75,7 @@ func DeployTestApp(t support.Test, name string, namespace string) {
 			t.Ctx(),
 			name,
 			metav1.DeleteOptions{
-				PropagationPolicy: pointer.Any(metav1.DeletePropagationForeground),
+				PropagationPolicy: ptr.To(metav1.DeletePropagationForeground),
 			},
 		)
 

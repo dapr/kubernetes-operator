@@ -175,11 +175,11 @@ func TestDaprInstanceDeployWithApp(t *testing.T) {
 	instance := dapr.DeployInstance(
 		test,
 		daprAc.DaprInstanceSpec().
-			WithValues(dapr.Values(test, map[string]interface{}{
+			WithValues(dapr.Values(test, map[string]any{
 				// enable pod watchdog as sometimes the sidecar for some
 				// (yet) unknown reason is not injected when the pod is
 				// created, hence the dapr app won't properly start up
-				"dapr_operator": map[string]interface{}{
+				"dapr_operator": map[string]any{
 					"watchInterval": "1s",
 				},
 			})),

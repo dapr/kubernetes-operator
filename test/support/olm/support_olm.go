@@ -3,7 +3,7 @@ package olm
 import (
 	"fmt"
 
-	"github.com/dapr/kubernetes-operator/pkg/pointer"
+	"k8s.io/utils/ptr"
 
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -52,7 +52,7 @@ func DeployOperator(test support.Test, ns *corev1.Namespace, image string) {
 			test.Ctx(),
 			og.Name,
 			metav1.DeleteOptions{
-				PropagationPolicy: pointer.Any(metav1.DeletePropagationForeground),
+				PropagationPolicy: ptr.To(metav1.DeletePropagationForeground),
 			},
 		)
 

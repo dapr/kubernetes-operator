@@ -46,29 +46,14 @@ func DaprControlPlane(name, namespace string) *DaprControlPlaneApplyConfiguratio
 	return b
 }
 
-// ExtractDaprControlPlane extracts the applied configuration owned by fieldManager from
-// daprControlPlane. If no managedFields are found in daprControlPlane for fieldManager, a
-// DaprControlPlaneApplyConfiguration is returned with only the Name, Namespace (if applicable),
-// APIVersion and Kind populated. It is possible that no managed fields were found for because other
-// field managers have taken ownership of all the fields previously owned by fieldManager, or because
-// the fieldManager never owned fields any fields.
+// ExtractDaprControlPlaneFrom extracts the applied configuration owned by fieldManager from
+// daprControlPlane for the specified subresource. Pass an empty string for subresource to extract
+// the main resource. Common subresources include "status", "scale", etc.
 // daprControlPlane must be a unmodified DaprControlPlane API object that was retrieved from the Kubernetes API.
-// ExtractDaprControlPlane provides a way to perform a extract/modify-in-place/apply workflow.
+// ExtractDaprControlPlaneFrom provides a way to perform a extract/modify-in-place/apply workflow.
 // Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
 // applied if another fieldManager has updated or force applied any of the previously applied fields.
-// Experimental!
-func ExtractDaprControlPlane(daprControlPlane *operatorv1alpha1.DaprControlPlane, fieldManager string) (*DaprControlPlaneApplyConfiguration, error) {
-	return extractDaprControlPlane(daprControlPlane, fieldManager, "")
-}
-
-// ExtractDaprControlPlaneStatus is the same as ExtractDaprControlPlane except
-// that it extracts the status subresource applied configuration.
-// Experimental!
-func ExtractDaprControlPlaneStatus(daprControlPlane *operatorv1alpha1.DaprControlPlane, fieldManager string) (*DaprControlPlaneApplyConfiguration, error) {
-	return extractDaprControlPlane(daprControlPlane, fieldManager, "status")
-}
-
-func extractDaprControlPlane(daprControlPlane *operatorv1alpha1.DaprControlPlane, fieldManager string, subresource string) (*DaprControlPlaneApplyConfiguration, error) {
+func ExtractDaprControlPlaneFrom(daprControlPlane *operatorv1alpha1.DaprControlPlane, fieldManager string, subresource string) (*DaprControlPlaneApplyConfiguration, error) {
 	b := &DaprControlPlaneApplyConfiguration{}
 	err := managedfields.ExtractInto(daprControlPlane, internal.Parser().Type("com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprControlPlane"), fieldManager, b, subresource)
 	if err != nil {
@@ -81,6 +66,27 @@ func extractDaprControlPlane(daprControlPlane *operatorv1alpha1.DaprControlPlane
 	b.WithAPIVersion("operator.dapr.io/v1alpha1")
 	return b, nil
 }
+
+// ExtractDaprControlPlane extracts the applied configuration owned by fieldManager from
+// daprControlPlane. If no managedFields are found in daprControlPlane for fieldManager, a
+// DaprControlPlaneApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// daprControlPlane must be a unmodified DaprControlPlane API object that was retrieved from the Kubernetes API.
+// ExtractDaprControlPlane provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+func ExtractDaprControlPlane(daprControlPlane *operatorv1alpha1.DaprControlPlane, fieldManager string) (*DaprControlPlaneApplyConfiguration, error) {
+	return ExtractDaprControlPlaneFrom(daprControlPlane, fieldManager, "")
+}
+
+// ExtractDaprControlPlaneStatus extracts the applied configuration owned by fieldManager from
+// daprControlPlane for the status subresource.
+func ExtractDaprControlPlaneStatus(daprControlPlane *operatorv1alpha1.DaprControlPlane, fieldManager string) (*DaprControlPlaneApplyConfiguration, error) {
+	return ExtractDaprControlPlaneFrom(daprControlPlane, fieldManager, "status")
+}
+
 func (b DaprControlPlaneApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

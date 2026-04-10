@@ -14,7 +14,7 @@ echo "tmp dir: $TMP_DIR"
 
 
 echo "Generating openapi schema"
-go run k8s.io/kube-openapi/cmd/openapi-gen \
+go tool openapi-gen \
   --output-file zz_generated.openapi.go \
   --output-dir "pkg/generated/openapi" \
   --output-pkg "github.com/dapr/kubernetes-operator/pkg/generated/openapi" \
@@ -24,7 +24,7 @@ go run k8s.io/kube-openapi/cmd/openapi-gen \
   k8s.io/apimachinery/pkg/version
 
 echo "Generate ApplyConfiguration"
-go run k8s.io/code-generator/cmd/applyconfiguration-gen \
+go tool applyconfiguration-gen \
   --openapi-schema <(go run ${PROJECT_ROOT}/cmd/main.go modelschema) \
   --go-header-file="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   --output-dir="${TMP_DIR}/client/applyconfiguration" \
@@ -32,7 +32,7 @@ go run k8s.io/code-generator/cmd/applyconfiguration-gen \
   github.com/dapr/kubernetes-operator/api/operator/v1alpha1
 
 echo "Generate client"
-go run k8s.io/code-generator/cmd/client-gen \
+go tool client-gen \
   --go-header-file="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   --output-dir="${TMP_DIR}/client/clientset" \
   --input-base=github.com/dapr/kubernetes-operator/api \
@@ -43,14 +43,14 @@ go run k8s.io/code-generator/cmd/client-gen \
   --output-pkg=github.com/dapr/kubernetes-operator/pkg/client/clientset
 
 echo "Generate lister"
-go run k8s.io/code-generator/cmd/lister-gen \
+go tool lister-gen \
   --go-header-file="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   --output-dir="${TMP_DIR}/client/listers" \
   --output-pkg=github.com/dapr/kubernetes-operator/pkg/client/listers \
   github.com/dapr/kubernetes-operator/api/operator/v1alpha1
 
 echo "Generate informer"
-go run k8s.io/code-generator/cmd/informer-gen \
+go tool informer-gen \
   --go-header-file="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   --output-dir="${TMP_DIR}/client/informers" \
   --versioned-clientset-package=github.com/dapr/kubernetes-operator/pkg/client/clientset/versioned \

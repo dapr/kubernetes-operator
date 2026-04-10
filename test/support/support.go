@@ -6,11 +6,11 @@ import (
 
 	"github.com/onsi/gomega"
 
-	"github.com/dapr/kubernetes-operator/pkg/pointer"
 	"github.com/dapr/kubernetes-operator/pkg/resources"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/utils/ptr"
 )
 
 //nolint:cyclop
@@ -52,7 +52,7 @@ func runCleanup(t Test, in runtime.Object) error {
 		t.Ctx(),
 		un.GetName(),
 		metav1.DeleteOptions{
-			PropagationPolicy: pointer.Any(metav1.DeletePropagationForeground),
+			PropagationPolicy: ptr.To(metav1.DeletePropagationForeground),
 		})
 
 	if err != nil && !k8serrors.IsNotFound(err) {

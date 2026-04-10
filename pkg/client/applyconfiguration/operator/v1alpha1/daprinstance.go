@@ -28,6 +28,8 @@ import (
 
 // DaprInstanceApplyConfiguration represents a declarative configuration of the DaprInstance type for use
 // with apply.
+//
+// DaprInstance is the Schema for the daprinstances API.
 type DaprInstanceApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
@@ -46,29 +48,14 @@ func DaprInstance(name, namespace string) *DaprInstanceApplyConfiguration {
 	return b
 }
 
-// ExtractDaprInstance extracts the applied configuration owned by fieldManager from
-// daprInstance. If no managedFields are found in daprInstance for fieldManager, a
-// DaprInstanceApplyConfiguration is returned with only the Name, Namespace (if applicable),
-// APIVersion and Kind populated. It is possible that no managed fields were found for because other
-// field managers have taken ownership of all the fields previously owned by fieldManager, or because
-// the fieldManager never owned fields any fields.
+// ExtractDaprInstanceFrom extracts the applied configuration owned by fieldManager from
+// daprInstance for the specified subresource. Pass an empty string for subresource to extract
+// the main resource. Common subresources include "status", "scale", etc.
 // daprInstance must be a unmodified DaprInstance API object that was retrieved from the Kubernetes API.
-// ExtractDaprInstance provides a way to perform a extract/modify-in-place/apply workflow.
+// ExtractDaprInstanceFrom provides a way to perform a extract/modify-in-place/apply workflow.
 // Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
 // applied if another fieldManager has updated or force applied any of the previously applied fields.
-// Experimental!
-func ExtractDaprInstance(daprInstance *operatorv1alpha1.DaprInstance, fieldManager string) (*DaprInstanceApplyConfiguration, error) {
-	return extractDaprInstance(daprInstance, fieldManager, "")
-}
-
-// ExtractDaprInstanceStatus is the same as ExtractDaprInstance except
-// that it extracts the status subresource applied configuration.
-// Experimental!
-func ExtractDaprInstanceStatus(daprInstance *operatorv1alpha1.DaprInstance, fieldManager string) (*DaprInstanceApplyConfiguration, error) {
-	return extractDaprInstance(daprInstance, fieldManager, "status")
-}
-
-func extractDaprInstance(daprInstance *operatorv1alpha1.DaprInstance, fieldManager string, subresource string) (*DaprInstanceApplyConfiguration, error) {
+func ExtractDaprInstanceFrom(daprInstance *operatorv1alpha1.DaprInstance, fieldManager string, subresource string) (*DaprInstanceApplyConfiguration, error) {
 	b := &DaprInstanceApplyConfiguration{}
 	err := managedfields.ExtractInto(daprInstance, internal.Parser().Type("com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprInstance"), fieldManager, b, subresource)
 	if err != nil {
@@ -81,6 +68,27 @@ func extractDaprInstance(daprInstance *operatorv1alpha1.DaprInstance, fieldManag
 	b.WithAPIVersion("operator.dapr.io/v1alpha1")
 	return b, nil
 }
+
+// ExtractDaprInstance extracts the applied configuration owned by fieldManager from
+// daprInstance. If no managedFields are found in daprInstance for fieldManager, a
+// DaprInstanceApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// daprInstance must be a unmodified DaprInstance API object that was retrieved from the Kubernetes API.
+// ExtractDaprInstance provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+func ExtractDaprInstance(daprInstance *operatorv1alpha1.DaprInstance, fieldManager string) (*DaprInstanceApplyConfiguration, error) {
+	return ExtractDaprInstanceFrom(daprInstance, fieldManager, "")
+}
+
+// ExtractDaprInstanceStatus extracts the applied configuration owned by fieldManager from
+// daprInstance for the status subresource.
+func ExtractDaprInstanceStatus(daprInstance *operatorv1alpha1.DaprInstance, fieldManager string) (*DaprInstanceApplyConfiguration, error) {
+	return ExtractDaprInstanceFrom(daprInstance, fieldManager, "status")
+}
+
 func (b DaprInstanceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

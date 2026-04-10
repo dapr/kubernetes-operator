@@ -56,7 +56,7 @@ func NewDaprControlPlaneInformer(client versioned.Interface, namespace string, r
 // one. This reduces memory footprint and number of connections to the server.
 func NewFilteredDaprControlPlaneInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
-		&cache.ListWatch{
+		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
@@ -81,7 +81,7 @@ func NewFilteredDaprControlPlaneInformer(client versioned.Interface, namespace s
 				}
 				return client.OperatorV1alpha1().DaprControlPlanes(namespace).Watch(ctx, options)
 			},
-		},
+		}, client),
 		&apioperatorv1alpha1.DaprControlPlane{},
 		resyncPeriod,
 		indexers,

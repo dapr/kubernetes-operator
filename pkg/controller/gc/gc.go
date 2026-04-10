@@ -68,7 +68,7 @@ func (gc *GC) deleteEachOf(
 
 	for _, GVK := range gc.collectableGVKs {
 		items := unstructured.UnstructuredList{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"apiVersion": GVK.GroupVersion().String(),
 				"kind":       GVK.Kind,
 			},

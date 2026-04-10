@@ -6,7 +6,7 @@ fi
 
 PROJECT_ROOT="$1"
 
-go run sigs.k8s.io/controller-tools/cmd/controller-gen \
+go tool controller-gen \
   rbac:roleName=dapr-control-plane-role \
   crd \
   paths="{./api/operator/...,./internal/...}" \

@@ -29,7 +29,7 @@ func (h *Helm) Install(ctx context.Context, chart string, options ...InstallOpti
 
 	io := ReleaseOptions[action.Install]{
 		Client: client,
-		Values: make(map[string]interface{}),
+		Values: make(map[string]any),
 	}
 
 	for _, option := range options {
@@ -50,6 +50,6 @@ func (h *Helm) Install(ctx context.Context, chart string, options ...InstallOpti
 	return client.RunWithContext(
 		ctx,
 		chartRequested,
-		maputils.Merge(map[string]interface{}{}, io.Values),
+		maputils.Merge(map[string]any{}, io.Values),
 	)
 }

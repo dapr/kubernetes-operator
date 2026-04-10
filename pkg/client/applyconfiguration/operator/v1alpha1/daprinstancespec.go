@@ -19,6 +19,8 @@ package v1alpha1
 
 // DaprInstanceSpecApplyConfiguration represents a declarative configuration of the DaprInstanceSpec type for use
 // with apply.
+//
+// DaprInstanceSpec defines the desired state of DaprInstance.
 type DaprInstanceSpecApplyConfiguration struct {
 	Chart  *ChartSpecApplyConfiguration `json:"chart,omitempty"`
 	Values *JSONApplyConfiguration      `json:"values,omitempty"`

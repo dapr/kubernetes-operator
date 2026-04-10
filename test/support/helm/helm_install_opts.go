@@ -19,7 +19,7 @@ func WithInstallNamespace(value string) InstallOption {
 	}
 }
 
-func WithInstallValue(name string, value interface{}) InstallOption {
+func WithInstallValue(name string, value any) InstallOption {
 	return func(install *ReleaseOptions[action.Install]) {
 		install.Values[name] = value
 	}
@@ -31,7 +31,7 @@ func WithInstallVersion(value string) InstallOption {
 	}
 }
 
-func WithInstallValues(values map[string]interface{}) InstallOption {
+func WithInstallValues(values map[string]any) InstallOption {
 	return func(install *ReleaseOptions[action.Install]) {
 		install.Values = maputils.Merge(install.Values, values)
 	}

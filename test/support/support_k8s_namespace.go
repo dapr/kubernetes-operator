@@ -1,11 +1,11 @@
 package support
 
 import (
-	"github.com/dapr/kubernetes-operator/pkg/pointer"
 	"github.com/onsi/gomega"
 	"github.com/rs/xid"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 )
 
 func createTestNamespace(t Test, options ...Option[*corev1.Namespace]) *corev1.Namespace {
@@ -32,7 +32,7 @@ func deleteTestNamespace(t Test, namespace *corev1.Namespace) {
 	t.T().Helper()
 
 	err := t.Client().CoreV1().Namespaces().Delete(t.Ctx(), namespace.Name, metav1.DeleteOptions{
-		PropagationPolicy: pointer.Any(metav1.DeletePropagationBackground),
+		PropagationPolicy: ptr.To(metav1.DeletePropagationBackground),
 	})
 
 	t.Expect(err).NotTo(gomega.HaveOccurred())

@@ -28,6 +28,8 @@ import (
 
 // DaprCruiseControlApplyConfiguration represents a declarative configuration of the DaprCruiseControl type for use
 // with apply.
+//
+// DaprCruiseControl is the Schema for the daprcruisecontrols API.
 type DaprCruiseControlApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
@@ -46,29 +48,14 @@ func DaprCruiseControl(name, namespace string) *DaprCruiseControlApplyConfigurat
 	return b
 }
 
-// ExtractDaprCruiseControl extracts the applied configuration owned by fieldManager from
-// daprCruiseControl. If no managedFields are found in daprCruiseControl for fieldManager, a
-// DaprCruiseControlApplyConfiguration is returned with only the Name, Namespace (if applicable),
-// APIVersion and Kind populated. It is possible that no managed fields were found for because other
-// field managers have taken ownership of all the fields previously owned by fieldManager, or because
-// the fieldManager never owned fields any fields.
+// ExtractDaprCruiseControlFrom extracts the applied configuration owned by fieldManager from
+// daprCruiseControl for the specified subresource. Pass an empty string for subresource to extract
+// the main resource. Common subresources include "status", "scale", etc.
 // daprCruiseControl must be a unmodified DaprCruiseControl API object that was retrieved from the Kubernetes API.
-// ExtractDaprCruiseControl provides a way to perform a extract/modify-in-place/apply workflow.
+// ExtractDaprCruiseControlFrom provides a way to perform a extract/modify-in-place/apply workflow.
 // Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
 // applied if another fieldManager has updated or force applied any of the previously applied fields.
-// Experimental!
-func ExtractDaprCruiseControl(daprCruiseControl *operatorv1alpha1.DaprCruiseControl, fieldManager string) (*DaprCruiseControlApplyConfiguration, error) {
-	return extractDaprCruiseControl(daprCruiseControl, fieldManager, "")
-}
-
-// ExtractDaprCruiseControlStatus is the same as ExtractDaprCruiseControl except
-// that it extracts the status subresource applied configuration.
-// Experimental!
-func ExtractDaprCruiseControlStatus(daprCruiseControl *operatorv1alpha1.DaprCruiseControl, fieldManager string) (*DaprCruiseControlApplyConfiguration, error) {
-	return extractDaprCruiseControl(daprCruiseControl, fieldManager, "status")
-}
-
-func extractDaprCruiseControl(daprCruiseControl *operatorv1alpha1.DaprCruiseControl, fieldManager string, subresource string) (*DaprCruiseControlApplyConfiguration, error) {
+func ExtractDaprCruiseControlFrom(daprCruiseControl *operatorv1alpha1.DaprCruiseControl, fieldManager string, subresource string) (*DaprCruiseControlApplyConfiguration, error) {
 	b := &DaprCruiseControlApplyConfiguration{}
 	err := managedfields.ExtractInto(daprCruiseControl, internal.Parser().Type("com.github.dapr.kubernetes-operator.api.operator.v1alpha1.DaprCruiseControl"), fieldManager, b, subresource)
 	if err != nil {
@@ -81,6 +68,27 @@ func extractDaprCruiseControl(daprCruiseControl *operatorv1alpha1.DaprCruiseCont
 	b.WithAPIVersion("operator.dapr.io/v1alpha1")
 	return b, nil
 }
+
+// ExtractDaprCruiseControl extracts the applied configuration owned by fieldManager from
+// daprCruiseControl. If no managedFields are found in daprCruiseControl for fieldManager, a
+// DaprCruiseControlApplyConfiguration is returned with only the Name, Namespace (if applicable),
+// APIVersion and Kind populated. It is possible that no managed fields were found for because other
+// field managers have taken ownership of all the fields previously owned by fieldManager, or because
+// the fieldManager never owned fields any fields.
+// daprCruiseControl must be a unmodified DaprCruiseControl API object that was retrieved from the Kubernetes API.
+// ExtractDaprCruiseControl provides a way to perform a extract/modify-in-place/apply workflow.
+// Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
+// applied if another fieldManager has updated or force applied any of the previously applied fields.
+func ExtractDaprCruiseControl(daprCruiseControl *operatorv1alpha1.DaprCruiseControl, fieldManager string) (*DaprCruiseControlApplyConfiguration, error) {
+	return ExtractDaprCruiseControlFrom(daprCruiseControl, fieldManager, "")
+}
+
+// ExtractDaprCruiseControlStatus extracts the applied configuration owned by fieldManager from
+// daprCruiseControl for the status subresource.
+func ExtractDaprCruiseControlStatus(daprCruiseControl *operatorv1alpha1.DaprCruiseControl, fieldManager string) (*DaprCruiseControlApplyConfiguration, error) {
+	return ExtractDaprCruiseControlFrom(daprCruiseControl, fieldManager, "status")
+}
+
 func (b DaprCruiseControlApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

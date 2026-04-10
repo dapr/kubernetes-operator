@@ -6,6 +6,6 @@ fi
 
 PROJECT_ROOT="$1"
 
-go run sigs.k8s.io/controller-tools/cmd/controller-gen \
+go tool controller-gen \
   object:headerFile="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   paths="{./api/operator/...,./internal/...}"
