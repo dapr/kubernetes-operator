@@ -57,7 +57,6 @@ func NewCmd() *cobra.Command {
 					Swagger: "2.0",
 				},
 			})
-
 			if err != nil {
 				return fmt.Errorf("error serializing api definitions: %w", err)
 			}

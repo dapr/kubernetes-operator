@@ -194,7 +194,7 @@ func (t *T) Client() *supportclient.Client {
 
 func (t *T) Helm() *helmsupport.Helm {
 	t.helmOnce.Do(func() {
-		h, err := helmsupport.New(helmsupport.WithLog(func(s string, i ...interface{}) {
+		h, err := helmsupport.New(helmsupport.WithLog(func(s string, i ...any) {
 			t.T().Logf("[helm] "+s, i...)
 		}))
 		if err != nil {

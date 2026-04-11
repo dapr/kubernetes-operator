@@ -23,6 +23,8 @@ import (
 
 // DaprCruiseControlStatusApplyConfiguration represents a declarative configuration of the DaprCruiseControlStatus type for use
 // with apply.
+//
+// DaprCruiseControlStatus defines the observed state of DaprCruiseControl.
 type DaprCruiseControlStatusApplyConfiguration struct {
 	StatusApplyConfiguration `json:",inline"`
 	Chart                    *ChartMetaApplyConfiguration `json:"chart,omitempty"`

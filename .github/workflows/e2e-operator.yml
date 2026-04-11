@@ -52,7 +52,7 @@ jobs:
           go-version-file: 'go.mod'
           check-latest: true
       - name: 'SetUp Kubectl'
-        uses: azure/setup-kubectl@v4
+        uses: azure/setup-kubectl@v5
         with:
           version: v${{ matrix.kubernetes-version }}
       - name: 'SetUp KinD'

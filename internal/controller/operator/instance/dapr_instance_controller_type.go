@@ -36,8 +36,8 @@ type Helm struct {
 	engine         *helme.Instance
 	chart          *helme.Chart
 	chartDir       string
-	ChartValues    map[string]interface{}
-	chartOverrides map[string]interface{}
+	ChartValues    map[string]any
+	chartOverrides map[string]any
 }
 
 func (rr *ReconciliationRequest) Chart(ctx context.Context) (*helme.Chart, error) {

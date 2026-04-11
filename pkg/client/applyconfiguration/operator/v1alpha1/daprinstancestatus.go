@@ -23,6 +23,8 @@ import (
 
 // DaprInstanceStatusApplyConfiguration represents a declarative configuration of the DaprInstanceStatus type for use
 // with apply.
+//
+// DaprInstanceStatus defines the observed state of DaprInstance.
 type DaprInstanceStatusApplyConfiguration struct {
 	StatusApplyConfiguration `json:",inline"`
 	Chart                    *ChartMetaApplyConfiguration `json:"chart,omitempty"`

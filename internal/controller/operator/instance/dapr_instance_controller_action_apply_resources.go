@@ -22,8 +22,8 @@ import (
 	daprApi "github.com/dapr/kubernetes-operator/api/operator/v1alpha1"
 	"github.com/dapr/kubernetes-operator/pkg/controller/client"
 	"github.com/dapr/kubernetes-operator/pkg/helm"
-	"github.com/dapr/kubernetes-operator/pkg/pointer"
 	"github.com/dapr/kubernetes-operator/pkg/resources"
+	"k8s.io/utils/ptr"
 )
 
 func NewApplyResourcesAction(l logr.Logger) Action {
@@ -123,7 +123,7 @@ func (a *ApplyResourcesAction) Cleanup(ctx context.Context, rc *ReconciliationRe
 		// Delete clustered resources
 		if _, ok := dc.(*client.ClusteredResource); ok {
 			err := dc.Delete(ctx, obj.GetName(), metav1.DeleteOptions{
-				PropagationPolicy: pointer.Any(metav1.DeletePropagationForeground),
+				PropagationPolicy: ptr.To(metav1.DeletePropagationForeground),
 			})
 
 			if err != nil && !k8serrors.IsNotFound(err) {

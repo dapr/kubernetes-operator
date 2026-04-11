@@ -16,7 +16,7 @@ func (h *Helm) Uninstall(_ context.Context, name string, options ...UninstallOpt
 
 	io := ReleaseOptions[action.Uninstall]{
 		Client: client,
-		Values: make(map[string]interface{}),
+		Values: make(map[string]any),
 	}
 
 	for _, option := range options {

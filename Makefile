@@ -33,7 +33,7 @@ OPENSHIFT_VERSIONS ?= v4.12
 KUSTOMIZE_VERSION ?= v5.4.3
 KIND_VERSION ?= v0.29.0
 KIND_IMAGE_VERSION ?= v1.33.1
-LINTER_VERSION ?= v2.4.0
+LINTER_VERSION ?= v2.11.4
 OPERATOR_SDK_VERSION ?= v1.41.1
 OPM_VERSION ?= v1.56.0
 GOVULNCHECK_VERSION ?= latest
@@ -42,7 +42,7 @@ KO_VERSION ?= latest
 ## Tool Binaries
 KUBECTL ?= kubectl
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
-LINTER ?= $(LOCALBIN)/golangci-lint
+LINTER ?= go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(LINTER_VERSION)
 YQ ?= $(LOCALBIN)/yq
 KIND ?= $(LOCALBIN)/kind
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
@@ -112,7 +112,7 @@ generate: ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject
 	$(PROJECT_PATH)/hack/scripts/gen_client.sh $(PROJECT_PATH)
 
 .PHONY: fmt
-fmt: golangci-lint
+fmt:
 	@$(LINTER) fmt \
 		--config .golangci.yml
 
@@ -176,12 +176,11 @@ deps:  ## Tidy up deps.
 check: check/lint check/vuln
 
 .PHONY: check/lint
-check/lint: golangci-lint
+check/lint:
 	@echo "run golangci-lint"
 	@$(LINTER) run \
 		--config .golangci.yml \
-		--timeout $(LINT_TIMEOUT) \
-		--verbose
+		--timeout $(LINT_TIMEOUT)
 
 .PHONY: check/vuln
 check/vuln: govulncheck
@@ -193,7 +192,7 @@ check/vuln: govulncheck
 lint: check/lint
 
 .PHONY: lint/fix
-lint/fix: golangci-lint
+lint/fix:
 	@echo "run golangci-lint"
 	@$(LINTER) run \
 		--config .golangci.yml \
@@ -316,11 +315,6 @@ $(KUSTOMIZE): $(LOCALBIN)
 	test -s $(LOCALBIN)/kustomize || \
 	GOBIN=$(LOCALBIN) GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION)
 
-.PHONY: golangci-lint
-golangci-lint: $(LINTER)
-$(LINTER): $(LOCALBIN)
-	@test -s $(LOCALBIN)/golangci-lint || \
-	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(LINTER_VERSION)
 
 .PHONY: yq
 yq: $(YQ)

@@ -5,12 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 
 	"gopkg.in/yaml.v3"
 
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/dapr/kubernetes-operator/pkg/pointer"
+	"k8s.io/utils/ptr"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -23,8 +24,8 @@ func OwnerReference(owner client.Object) metav1.OwnerReference {
 		Kind:               owner.GetObjectKind().GroupVersionKind().Kind,
 		Name:               owner.GetName(),
 		UID:                owner.GetUID(),
-		BlockOwnerDeletion: pointer.Any(true),
-		Controller:         pointer.Any(true),
+		BlockOwnerDeletion: ptr.To(true), //nolint:modernize // ptr.To(true) != new(bool)
+		Controller:         ptr.To(true), //nolint:modernize // ptr.To(true) != new(bool)
 	}
 }
 
@@ -41,9 +42,7 @@ func Annotations(target *unstructured.Unstructured, annotations map[string]strin
 		m = make(map[string]string)
 	}
 
-	for k, v := range annotations {
-		m[k] = v
-	}
+	maps.Copy(m, annotations)
 
 	target.SetAnnotations(m)
 }
@@ -55,9 +54,7 @@ func Labels(target *unstructured.Unstructured, labels map[string]string) {
 		m = make(map[string]string)
 	}
 
-	for k, v := range labels {
-		m[k] = v
-	}
+	maps.Copy(m, labels)
 
 	target.SetLabels(m)
 }
@@ -124,7 +121,7 @@ func Decode(decoder runtime.Decoder, content []byte) ([]unstructured.Unstructure
 	yd := yaml.NewDecoder(r)
 
 	for {
-		var out map[string]interface{}
+		var out map[string]any
 
 		err := yd.Decode(&out)
 		if err != nil {
