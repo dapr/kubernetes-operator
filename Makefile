@@ -24,7 +24,7 @@ LOCALBIN := $(PROJECT_PATH)/bin
 
 HELM_CHART_REPO ?= https://dapr.github.io/helm-charts
 HELM_CHART ?= dapr
-HELM_CHART_VERSION ?= 1.16.1
+HELM_CHART_VERSION ?= 1.17.4
 HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr-$(HELM_CHART_VERSION).tgz
 
 OPENSHIFT_VERSIONS ?= v4.12
@@ -207,10 +207,6 @@ docker/build: test ## Build docker image with the manager.
 docker/push: ## Push docker image with the manager.
 	$(CONTAINER_TOOL) push $(CONTAINER_IMAGE)
 
-.PHONY: docker/push/kind
-docker/push/kind: docker/build ## Load docker image in kind.
-	$(KIND) load docker-image $(CONTAINER_IMAGE)
-
 .PHONY: docker/image/name
 docker/image/name:
 	@echo $(CONTAINER_IMAGE)
@@ -233,12 +229,6 @@ deploy: manifests ## Deploy controller to the K8s cluster specified in ~/.kube/c
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/deploy/standalone | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
-
-.PHONY: deploy/kind
-deploy/kind: manifests ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
-	$(KIND) load docker-image $(CONTAINER_IMAGE)
-	$(KUSTOMIZE) build config/deploy/standalone | kubectl apply -f -
 
 .PHONY: deploy/e2e/controller
 deploy/e2e/controller: manifests ## Deploy controller to the K8s cluster specified in ~/.kube/config.
