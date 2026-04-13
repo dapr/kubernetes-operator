@@ -137,12 +137,16 @@ test/e2e/app: ## Deploy test app.
 	KO_DOCKER_REPO=kind.local $(KO) build -B ./test/e2e/support/dapr-test-app
 
 
-.PHONY: test/e2e/kind
-test/e2e/kind: ## Create Kind cluster for e2e tests.
+.PHONY: test/e2e/kind/setup
+test/e2e/kind/setup: ## Create Kind cluster for e2e tests.
 	$(KIND) create cluster \
 		--image=kindest/node:$(KIND_IMAGE_VERSION) \
 		--config=$(PROJECT_PATH)/test/e2e/kind.yaml \
 		--wait=60s
+
+.PHONY: test/e2e/kind/teardown
+test/e2e/kind/teardown: ## Delete Kind cluster.
+	$(KIND) delete cluster
 
 ##@ Build
 
