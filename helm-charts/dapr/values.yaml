@@ -1,6 +1,6 @@
 global:
   registry: ghcr.io/dapr
-  tag: '1.16.1'
+  tag: '1.17.4'
   dnsSuffix: ".cluster.local"
   logAsJson: false
   imagePullPolicy: IfNotPresent
@@ -28,6 +28,7 @@ global:
     namespaced: false
   ha:
     enabled: false
+    topologyKey: "topology.kubernetes.io/zone"
     replicaCount: 3
     disruption:
       minimumAvailable: ""
