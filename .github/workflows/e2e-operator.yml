@@ -59,7 +59,7 @@ jobs:
         env:
           KIND_IMAGE_VERSION: v${{ matrix.kubernetes-version }}
         run: |
-          make test/e2e/kind
+          make test/e2e/kind/setup
       - name: 'SetUp Kind Ingress'
         run: |
           make deploy/e2e/ingress

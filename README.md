@@ -135,3 +135,80 @@ openshift-operators  ├─ServiceAccount/dapr-sentry                           
 openshift-operators  └─StatefulSet/dapr-placement-server                      -              67s
 openshift-operators    └─ControllerRevision/dapr-placement-server-6cb96b4b85  -              67s
 ```
+
+## Development
+
+### Prerequisites
+
+- [Go](https://golang.org/dl/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [Docker](https://docs.docker.com/get-docker/) or [Podman](https://podman.io/)
+
+All other tools (kustomize, kind, ko, etc.) are fetched automatically via `go run`.
+
+### Build
+
+```bash
+make build
+```
+
+### Lint and Vulnerability Check
+
+```bash
+make check
+```
+
+### Update Dapr Helm Chart
+
+Update `HELM_CHART_VERSION` in the `Makefile`, then run:
+
+```bash
+make update/dapr
+```
+
+### Run E2E Tests
+
+The project uses end-to-end tests that run against a real Kubernetes cluster.
+
+1. Create a Kind cluster:
+   ```bash
+   make test/e2e/kind/setup
+   ```
+
+2. Deploy the ingress controller:
+   ```bash
+   make deploy/e2e/ingress
+   ```
+
+3. Build and publish the operator image (using [ttl.sh](https://ttl.sh) as a temporary registry):
+   ```bash
+   export CONTAINER_IMAGE="ttl.sh/$(uuidgen | tr '[:upper:]' '[:lower:]'):1h"
+   make docker/build docker/push
+   ```
+
+4. Deploy the operator:
+   ```bash
+   make deploy/e2e/controller
+   ```
+
+5. Build the test application:
+   ```bash
+   make test/e2e/app
+   ```
+
+6. Run the tests:
+   ```bash
+   make test/e2e/operator
+   ```
+
+7. Tear down the Kind cluster:
+   ```bash
+   make test/e2e/kind/teardown
+   ```
+
+### Run E2E OLM Tests
+
+```bash
+make deploy/e2e/olm
+make test/e2e/olm
+```
