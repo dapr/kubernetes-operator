@@ -20,7 +20,7 @@ echo "Bundle Version : ${BUNDLE_VERSION}"
 
 echo "Generate bundle"
 
-${PROJECT_ROOT}/bin/kustomize build "${PROJECT_ROOT}/config/manifests" | ${PROJECT_ROOT}/bin/operator-sdk generate bundle \
+${KUSTOMIZE} build "${PROJECT_ROOT}/config/manifests" | ${PROJECT_ROOT}/bin/operator-sdk generate bundle \
   --use-image-digests \
   --overwrite \
   --package "${BUNDLE_NAME}" \
@@ -31,11 +31,11 @@ ${PROJECT_ROOT}/bin/kustomize build "${PROJECT_ROOT}/config/manifests" | ${PROJE
 
 echo "Patch bundle metadata"
 
-${PROJECT_ROOT}/bin/yq -i \
+${YQ} -i \
   '.metadata.annotations.containerImage = .spec.install.spec.deployments[0].spec.template.spec.containers[0].image' \
   "${PROJECT_ROOT}/bundle/${BUNDLE_NAME}/manifests/${BUNDLE_NAME}.clusterserviceversion.yaml"
 
-${PROJECT_ROOT}/bin/yq -i \
+${YQ} -i \
   '.annotations."com.redhat.openshift.versions" = env(OPENSHIFT_VERSIONS)' \
   "${PROJECT_ROOT}/bundle/${BUNDLE_NAME}/metadata/annotations.yaml"
 

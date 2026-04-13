@@ -41,14 +41,14 @@ KO_VERSION ?= latest
 
 ## Tool Binaries
 KUBECTL ?= kubectl
-KUSTOMIZE ?= $(LOCALBIN)/kustomize
+KUSTOMIZE ?= go run sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION)
 LINTER ?= go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(LINTER_VERSION)
-YQ ?= $(LOCALBIN)/yq
-KIND ?= $(LOCALBIN)/kind
+YQ ?= go run github.com/mikefarah/yq/v4@latest
+KIND ?= go run sigs.k8s.io/kind@$(KIND_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
 OPM ?= $(LOCALBIN)/opm
-GOVULNCHECK ?= $(LOCALBIN)/govulncheck
-KO ?= $(LOCALBIN)/ko
+GOVULNCHECK ?= go run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION)
+KO ?= go run github.com/google/ko@$(KO_VERSION)
 
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -133,13 +133,13 @@ test/e2e/olm: ## Run e2e catalog tests.
 	DAPR_HELM_CHART_VERSION="$(HELM_CHART_VERSION)" go test -ldflags="$(GOLDFLAGS)" -p 1 -v ./test/e2e/olm/...
 
 .PHONY: test/e2e/app
-test/e2e/app: ko ## Deploy test app.
-	KO_DOCKER_REPO=kind.local $(LOCALBIN)/ko build -B ./test/e2e/support/dapr-test-app
+test/e2e/app: ## Deploy test app.
+	KO_DOCKER_REPO=kind.local $(KO) build -B ./test/e2e/support/dapr-test-app
 
 
 .PHONY: test/e2e/kind
-test/e2e/kind: kind ## Deploy test app.
-	$(LOCALBIN)/kind create cluster \
+test/e2e/kind: ## Create Kind cluster for e2e tests.
+	$(KIND) create cluster \
 		--image=kindest/node:$(KIND_IMAGE_VERSION) \
 		--config=$(PROJECT_PATH)/test/e2e/kind.yaml \
 		--wait=60s
@@ -183,7 +183,7 @@ check/lint:
 		--timeout $(LINT_TIMEOUT)
 
 .PHONY: check/vuln
-check/vuln: govulncheck
+check/vuln:
 	@echo "run govulncheck"
 	@$(GOVULNCHECK) ./...
 
@@ -208,8 +208,8 @@ docker/push: ## Push docker image with the manager.
 	$(CONTAINER_TOOL) push $(CONTAINER_IMAGE)
 
 .PHONY: docker/push/kind
-docker/push/kind: kind docker/build ## Load docker image in kind.
-	$(LOCALBIN)/kind load docker-image $(CONTAINER_IMAGE)
+docker/push/kind: docker/build ## Load docker image in kind.
+	$(KIND) load docker-image $(CONTAINER_IMAGE)
 
 .PHONY: docker/image/name
 docker/image/name:
@@ -218,15 +218,15 @@ docker/image/name:
 ##@ Deployment
 
 .PHONY: install
-install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
+install: manifests ## Install CRDs into the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) apply -f -
 
 .PHONY: uninstall
-uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+uninstall: manifests ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 .PHONY: deploy
-deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+deploy: manifests ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
 	$(KUSTOMIZE) build config/deploy/standalone | kubectl apply -f -
 
@@ -235,13 +235,13 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 	$(KUSTOMIZE) build config/deploy/standalone | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 .PHONY: deploy/kind
-deploy/kind: manifests kustomize kind ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+deploy/kind: manifests ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
-	$(LOCALBIN)/ load docker-image $(CONTAINER_IMAGE)
+	$(KIND) load docker-image $(CONTAINER_IMAGE)
 	$(KUSTOMIZE) build config/deploy/standalone | kubectl apply -f -
 
 .PHONY: deploy/e2e/controller
-deploy/e2e/controller: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+deploy/e2e/controller: manifests ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
 	$(KUSTOMIZE) build config/deploy/e2e | kubectl apply -f -
 	
@@ -268,9 +268,9 @@ bundle/info: ## Dump bundle info.
 	@echo $(BUNDLE_CONTAINER_IMAGE)
 
 .PHONY: bundle/generate_
-bundle/generate: generate manifests kustomize operator-sdk yq ## Generate bundle.
+bundle/generate: generate manifests operator-sdk ## Generate bundle.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTAINER_IMAGE)
-	$(PROJECT_PATH)/hack/scripts/gen_bundle.sh \
+	KUSTOMIZE="$(KUSTOMIZE)" YQ="$(YQ)" $(PROJECT_PATH)/hack/scripts/gen_bundle.sh \
 		$(PROJECT_PATH) \
 		$(BUNDLE_NAME) \
 		$(BUNDLE_VERSION) \
@@ -308,37 +308,6 @@ olm/install: operator-sdk ## Install olm.
 ## Location to install dependencies to
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
-
-.PHONY: kustomize
-kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
-$(KUSTOMIZE): $(LOCALBIN)
-	test -s $(LOCALBIN)/kustomize || \
-	GOBIN=$(LOCALBIN) GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION)
-
-
-.PHONY: yq
-yq: $(YQ)
-$(YQ): $(LOCALBIN)
-	@test -s $(LOCALBIN)/yq || \
-	GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@latest
-
-.PHONY: kind
-kind: $(KIND)
-$(KIND): $(LOCALBIN)
-	@test -s $(LOCALBIN)/kind || \
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/kind@$(KIND_VERSION)
-
-.PHONY: ko
-ko: $(KO)
-$(KO): $(LOCALBIN)
-	@test -s $(LOCALBIN)/ko || \
-	GOBIN=$(LOCALBIN) go install github.com/google/ko@$(KO_VERSION)
-
-.PHONY: govulncheck
-govulncheck: $(GOVULNCHECK)
-$(GOVULNCHECK): $(LOCALBIN)
-	@test -s $(GOVULNCHECK) || \
-	GOBIN=$(LOCALBIN) go install golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION)
 
 .PHONY: operator-sdk
 operator-sdk: $(OPERATOR_SDK)
