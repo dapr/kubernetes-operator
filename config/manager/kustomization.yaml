@@ -1,12 +1,11 @@
 resources:
-- manager.yaml
-
+  - manager.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
-- name: controller
-  newName: docker.io/daprio/kubernetes-operator
-  newTag: 0.0.12
+  - name: controller
+    newName: docker.io/daprio/kubernetes-operator
+    newTag: 0.0.13
