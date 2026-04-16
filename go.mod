@@ -18,10 +18,10 @@ require (
 	golang.org/x/time v0.15.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.20.2
-	k8s.io/api v0.35.3
-	k8s.io/apiextensions-apiserver v0.35.3
-	k8s.io/apimachinery v0.35.3
-	k8s.io/client-go v0.35.3
+	k8s.io/api v0.35.4
+	k8s.io/apiextensions-apiserver v0.35.4
+	k8s.io/apimachinery v0.35.4
+	k8s.io/client-go v0.35.4
 	k8s.io/klog/v2 v2.140.0
 	k8s.io/kube-openapi v0.0.0-20260330154417-16be699c7b31
 	k8s.io/utils v0.0.0-20260108192941-914a6e750570
@@ -135,9 +135,9 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/otel v1.40.0 // indirect
-	go.opentelemetry.io/otel/metric v1.40.0 // indirect
-	go.opentelemetry.io/otel/trace v1.40.0 // indirect
+	go.opentelemetry.io/otel v1.41.0 // indirect
+	go.opentelemetry.io/otel/metric v1.41.0 // indirect
+	go.opentelemetry.io/otel/trace v1.41.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
@@ -158,10 +158,10 @@ require (
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/apiserver v0.35.3 // indirect
+	k8s.io/apiserver v0.35.4 // indirect
 	k8s.io/cli-runtime v0.35.1 // indirect
-	k8s.io/code-generator v0.35.3 // indirect
-	k8s.io/component-base v0.35.3 // indirect
+	k8s.io/code-generator v0.35.4 // indirect
+	k8s.io/component-base v0.35.4 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250922181213-ec3ebc5fd46b // indirect
 	k8s.io/kubectl v0.35.1 // indirect
 	oras.land/oras-go/v2 v2.6.0 // indirect
