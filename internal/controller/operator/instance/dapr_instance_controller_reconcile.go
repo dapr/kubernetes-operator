@@ -55,7 +55,6 @@ func (r *Reconciler) reconciliationRequest(res *daprApi.DaprInstance) (Reconcili
 				"dapr_operator":         map[string]any{"runAsNonRoot": "true"},
 				"dapr_placement":        map[string]any{"runAsNonRoot": "true"},
 				"dapr_sentry":           map[string]any{"runAsNonRoot": "true"},
-				"dapr_dashboard":        map[string]any{"runAsNonRoot": "true"},
 				"dapr_sidecar_injector": map[string]any{"runAsNonRoot": true},
 			},
 		},
