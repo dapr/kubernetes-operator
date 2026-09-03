@@ -188,8 +188,7 @@ check/lint:
 
 .PHONY: check/vuln
 check/vuln:
-	@echo "run govulncheck"
-	@$(GOVULNCHECK) ./...
+	@$(PROJECT_PATH)/hack/scripts/govulncheck.sh $(GOVULNCHECK)
 
 
 .PHONY: lint
