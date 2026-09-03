@@ -24,7 +24,7 @@ LOCALBIN := $(PROJECT_PATH)/bin
 
 HELM_CHART_REPO ?= https://dapr.github.io/helm-charts
 HELM_CHART ?= dapr
-HELM_CHART_VERSION ?= 1.17.4
+HELM_CHART_VERSION ?= 1.18.3
 HELM_CHART_URL ?= https://raw.githubusercontent.com/dapr/helm-charts/master/dapr-$(HELM_CHART_VERSION).tgz
 
 OPENSHIFT_VERSIONS ?= v4.12
@@ -188,8 +188,7 @@ check/lint:
 
 .PHONY: check/vuln
 check/vuln:
-	@echo "run govulncheck"
-	@$(GOVULNCHECK) ./...
+	@$(PROJECT_PATH)/hack/scripts/govulncheck.sh $(GOVULNCHECK)
 
 
 .PHONY: lint
