@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/lburgazzoli/gomega-matchers v0.4.0
 	github.com/lburgazzoli/k8s-manifests-renderer-helm v0.1.4
-	github.com/onsi/gomega v1.39.1
+	github.com/onsi/gomega v1.41.0
 	github.com/operator-framework/api v0.42.0
 	github.com/operator-framework/operator-lifecycle-manager v0.42.0
 	github.com/rs/xid v1.6.0
