@@ -10,7 +10,7 @@ jobs:
       image: ${{ steps.publish.outputs.image }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: "Set up Go"
         uses: actions/setup-go@v6
         with:
@@ -32,7 +32,7 @@ jobs:
       versions: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: "Set matrix"
         id: set-matrix
         run: echo "matrix=$(cat .github/e2e-matrix.json | jq -c)" >> "$GITHUB_OUTPUT"
@@ -47,7 +47,7 @@ jobs:
       matrix: ${{ fromJSON(needs.matrix.outputs.versions) }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: "SetUp Go"
         uses: actions/setup-go@v6
         with:
