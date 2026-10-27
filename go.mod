@@ -3,7 +3,7 @@ module github.com/dapr/kubernetes-operator
 go 1.26.10
 
 require (
-	github.com/dapr/go-sdk v1.14.2
+	github.com/dapr/go-sdk v1.16.0
 	github.com/go-logr/logr v1.4.4
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/go-cleanhttp v0.5.2
