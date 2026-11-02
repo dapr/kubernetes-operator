@@ -13,8 +13,9 @@ set -eu
 # GO-2026-5064  containerd  CRI checkpoint restore CDI annotation smuggling
 # GO-2026-5338  containerd  CRI checkpoint import allows local image tag poisoning
 # GO-2026-5622  containerd  Arbitrary host CRI log file read through a symlink
+# GO-2026-6791  containerd  CRI checkpoint restore bypasses the destination security context
 #
-#   All three are fixed only in github.com/containerd/containerd/v2. The v1
+#   All four are fixed only in github.com/containerd/containerd/v2. The v1
 #   line is affected from version 0 and has no fix event. The operator reaches
 #   it through helm.sh/helm/v3/pkg/registry, which uses containerd/remotes for
 #   OCI transport. The operator does not call the CRI checkpoint API.
@@ -23,7 +24,7 @@ set -eu
 #
 #   The advisory has no fixed version. The operator reaches x/crypto through
 #   helm.sh/helm/v3/pkg/action and Masterminds/sprig/v3.
-ALLOW='GO-2026-5064 GO-2026-5338 GO-2026-5622 GO-2026-5932'
+ALLOW='GO-2026-5064 GO-2026-5338 GO-2026-5622 GO-2026-5932 GO-2026-6791'
 
 REPORT=$(mktemp)
 trap 'rm -f "$REPORT"' EXIT
