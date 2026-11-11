@@ -10,6 +10,14 @@ on:
       olm:
         required: true
         type: boolean
+      replaces:
+        required: false
+        type: string
+        default: ""
+      in-default-channel:
+        required: false
+        type: boolean
+        default: true
     secrets:
       registry-username:
         required: true
@@ -35,12 +43,17 @@ jobs:
           username: ${{ secrets.registry-username }}
           password: ${{ secrets.registry-password }}
       - name: Set versions
+        env:
+          INPUT_REPLACES: ${{ inputs.replaces }}
+          INPUT_IN_DEFAULT_CHANNEL: ${{ inputs.in-default-channel }}
         run: |
           export INPUT_VERSION="${{ inputs.version }}"
           export C_VERSION="${INPUT_VERSION#v}"
 
           echo "CONTAINER_IMAGE_VERSION=${C_VERSION}" >> $GITHUB_ENV
           echo "BUNDLE_VERSION=${C_VERSION}" >> $GITHUB_ENV
+          echo "BUNDLE_REPLACES_VERSION=${INPUT_REPLACES#v}" >> $GITHUB_ENV
+          echo "BUNDLE_IN_DEFAULT_CHANNEL=${INPUT_IN_DEFAULT_CHANNEL}" >> $GITHUB_ENV
           echo "CATALOG_VERSION=latest" >> $GITHUB_ENV
       - name: "Build Dapr Kubernetes Operator Container image"
         run: |
@@ -55,5 +68,4 @@ jobs:
       - name: "Build Dapr Kubernetes Operator OLM Catalog"
         if: ${{ inputs.olm }}
         run: |
-          make catalog/build
-          make catalog/push
+          make catalog/release
