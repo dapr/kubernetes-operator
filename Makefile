@@ -1,6 +1,7 @@
 
 PROJECT_NAME ?= kubernetes-operator
-PROJECT_VERSION ?= 0.0.13
+# The operator version is the Dapr version of the vendored Helm chart.
+PROJECT_VERSION ?= $(HELM_CHART_VERSION)
 
 CONTAINER_REGISTRY ?= docker.io
 CONTAINER_REGISTRY_ORG ?= daprio
@@ -11,6 +12,17 @@ CONTAINER_IMAGE ?= $(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_ORG)/$(PROJECT_NAM
 BUNDLE_NAME ?= dapr-kubernetes-operator
 BUNDLE_VERSION ?= $(PROJECT_VERSION)
 BUNDLE_CONTAINER_IMAGE ?= $(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_ORG)/$(PROJECT_NAME)-bundle:$(BUNDLE_VERSION)
+
+# OLM channels. A bundle goes to the channel of its Dapr minor version and, when
+# BUNDLE_IN_DEFAULT_CHANNEL is true, to the default channel too. The release
+# workflow sets BUNDLE_IN_DEFAULT_CHANNEL to false for a tag that is not on main.
+comma := ,
+DAPR_MINOR_VERSION ?= $(word 1,$(subst ., ,$(BUNDLE_VERSION))).$(word 2,$(subst ., ,$(BUNDLE_VERSION)))
+BUNDLE_DEFAULT_CHANNEL ?= alpha
+BUNDLE_IN_DEFAULT_CHANNEL ?= true
+BUNDLE_CHANNELS ?= $(if $(filter true,$(BUNDLE_IN_DEFAULT_CHANNEL)),$(BUNDLE_DEFAULT_CHANNEL)$(comma))dapr-$(DAPR_MINOR_VERSION)
+# The bundle version that this bundle replaces in the OLM update graph.
+BUNDLE_REPLACES_VERSION ?=
 
 CATALOG_VERSION ?= latest
 CATALOG_CONTAINER_IMAGE ?= $(CONTAINER_REGISTRY)/$(CONTAINER_REGISTRY_ORG)/$(PROJECT_NAME)-catalog:$(CATALOG_VERSION)
@@ -267,7 +279,10 @@ bundle/generate: generate manifests operator-sdk ## Generate bundle.
 		$(PROJECT_PATH) \
 		$(BUNDLE_NAME) \
 		$(BUNDLE_VERSION) \
-		$(OPENSHIFT_VERSIONS)
+		$(OPENSHIFT_VERSIONS) \
+		"$(BUNDLE_CHANNELS)" \
+		"$(BUNDLE_DEFAULT_CHANNEL)" \
+		"$(BUNDLE_REPLACES_VERSION)"
 
 .PHONY: bundle/build
 bundle/build: ## Build bundle image.
@@ -291,6 +306,16 @@ catalog/build: opm ## Build catalog image.
 .PHONY: catalog/push
 catalog/push: ## Push catalog image.
 	$(CONTAINER_TOOL) push $(CATALOG_CONTAINER_IMAGE)
+
+# The catalog image holds only the new bundle, so opm can build it only when the
+# bundle is in its default channel. Bundles from a tag that is not on main skip it.
+.PHONY: catalog/release
+catalog/release: ## Build and push catalog image, only for a bundle in the default channel.
+ifneq (,$(filter $(BUNDLE_DEFAULT_CHANNEL),$(subst $(comma), ,$(BUNDLE_CHANNELS))))
+	$(MAKE) catalog/build catalog/push
+else
+	@echo "Bundle is not in the $(BUNDLE_DEFAULT_CHANNEL) channel, skip $(CATALOG_CONTAINER_IMAGE)"
+endif
 
 .PHONY: olm/install
 olm/install: operator-sdk ## Install olm.
