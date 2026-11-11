@@ -1,6 +1,6 @@
 module github.com/dapr/kubernetes-operator
 
-go 1.26.10
+go 1.26.11
 
 require (
 	github.com/dapr/go-sdk v1.14.2
