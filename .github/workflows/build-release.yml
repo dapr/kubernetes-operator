@@ -9,11 +9,62 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  versions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      replaces: ${{ steps.graph.outputs.replaces }}
+      in-default-channel: ${{ steps.graph.outputs.in-default-channel }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: "Check the tag"
+        run: |
+          CHART_VERSION="$(yq '.version' helm-charts/dapr/Chart.yaml)"
+
+          if [ "${GITHUB_REF_NAME}" != "v${CHART_VERSION}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match the vendored Dapr chart version ${CHART_VERSION}, expected tag v${CHART_VERSION}"
+            exit 1
+          fi
+
+          case "${GITHUB_REF_NAME}" in
+            *-*)
+              echo "::error::tag ${GITHUB_REF_NAME} is a pre-release, only Dapr releases are published"
+              exit 1
+              ;;
+          esac
+      - name: "Find the place of the release in the OLM update graph"
+        id: graph
+        run: |
+          PREVIOUS_TAG="$(git describe --tags --abbrev=0 --match 'v*' --exclude 'v*-*' "${GITHUB_SHA}^")"
+
+          if [ "$(printf '%s\n' "${PREVIOUS_TAG}" "${GITHUB_REF_NAME}" | sort -V | tail -n 1)" != "${GITHUB_REF_NAME}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} must be higher than the version that it replaces, ${PREVIOUS_TAG}"
+            exit 1
+          fi
+
+          # Only a release from main goes to the default channel.
+          if git merge-base --is-ancestor "${GITHUB_SHA}" origin/main; then
+            IN_DEFAULT_CHANNEL=true
+          else
+            IN_DEFAULT_CHANNEL=false
+          fi
+
+          echo "${GITHUB_REF_NAME} replaces ${PREVIOUS_TAG}, in the default channel: ${IN_DEFAULT_CHANNEL}"
+          echo "replaces=${PREVIOUS_TAG}" >> "$GITHUB_OUTPUT"
+          echo "in-default-channel=${IN_DEFAULT_CHANNEL}" >> "$GITHUB_OUTPUT"
   release:
+    needs:
+      - versions
     uses: ./.github/workflows/publish.yml
     with:
       version: "${{ github.ref_name }}"
       olm: true
+      replaces: "${{ needs.versions.outputs.replaces }}"
+      in-default-channel: ${{ needs.versions.outputs.in-default-channel == 'true' }}
     secrets:
       registry-username: ${{ secrets.DOCKER_REGISTRY_ID }}
       registry-password: ${{ secrets.DOCKER_REGISTRY_PASS }}

@@ -75,6 +75,7 @@ The `DaprInstance` Custom Resource consists of the following properties
 | Name   | Default | Description                                                      |
 |--------|---------|------------------------------------------------------------------|
 | values | [Empty] | The [values][helm_configuration] passed into the Dapr Helm chart |
+| chart  | [Empty] | The Dapr Helm chart to use instead of the chart in the operator. Fields: `repo` (default `https://dapr.github.io/helm-charts`), `name` (default `dapr`), `version`, and `secret` (the credentials for `repo`). See [Versions and Channels](#versions-and-channels). |
 
 [install_manual]:./docs/install/manual.md
 [install_olm]:./docs/install/olm.md
@@ -136,6 +137,36 @@ openshift-operators  └─StatefulSet/dapr-placement-server                    
 openshift-operators    └─ControllerRevision/dapr-placement-server-6cb96b4b85  -              67s
 ```
 
+## Versions and Channels
+
+Each operator release installs one Dapr version, and the operator version is equal to that Dapr version. For example, operator `1.19.1` installs Dapr 1.19.1. Releases up to `0.0.15` used a separate version number.
+
+The operator is published to these OLM channels:
+
+| Channel    | Content                                                                 |
+|------------|-------------------------------------------------------------------------|
+| `alpha`    | The default channel. It follows the newest Dapr minor version.          |
+| `dapr-X.Y` | The releases for Dapr X.Y only. For example, `dapr-1.18` for Dapr 1.18. |
+
+To stay on a Dapr minor version, set `spec.channel` in the `Subscription` to `dapr-X.Y`. OLM then upgrades the operator only to new releases for that minor version. After the switch, OLM upgrades the operator only if a release in the new channel replaces the installed version. For example, `0.0.14` (Dapr 1.18.4) upgrades in `dapr-1.18`. `0.0.15` (Dapr 1.19.0) stays on `0.0.15` in `dapr-1.18`, because no release in that channel replaces it.
+
+With manual approval, the subscription can have an InstallPlan from the old channel that is not approved. OLM does not resolve the new channel while that InstallPlan is pending. Delete it, and OLM then creates an InstallPlan from the new channel.
+
+To install a Dapr patch version without a new operator release, set `spec.chart.version` in the `DaprInstance`. The operator then loads that chart from `spec.chart.repo` instead of the chart that it contains. Use this only for a patch version of the Dapr minor version that the operator installs.
+
+The operator does not compare `spec.chart.version` with its own chart, so the setting stays in force after an operator upgrade. Remove `spec.chart` when the installed operator release contains the Dapr version that you need.
+
+```yaml
+apiVersion: operator.dapr.io/v1alpha1
+kind: DaprInstance
+metadata:
+  name: "dapr-instance"
+spec:
+  chart:
+    version: "1.18.10"
+  values: {}
+```
+
 ## Development
 
 ### Prerequisites
@@ -165,6 +196,24 @@ Update `HELM_CHART_VERSION` in the `Makefile`, then run:
 ```bash
 make update/dapr
 ```
+
+### Release
+
+The release workflow runs when a `v*` tag is pushed. It checks the tag and finds the place of the release in the OLM update graph:
+
+- The tag must be equal to `v` and the version in `helm-charts/dapr/Chart.yaml`, for example `v1.19.1`. Pre-release tags are not published.
+- The bundle replaces the previous `v*` tag in the history of the tagged commit. That tag must be lower than the new tag.
+- A tag on `main` goes to the `alpha` channel and to the `dapr-X.Y` channel. A tag that is not on `main` goes to the `dapr-X.Y` channel only.
+
+`main` holds the newest Dapr minor version. To make patch releases for an older Dapr minor version:
+
+1. Create the `release-X.Y` branch from the last release tag for that minor version.
+2. Make sure that the branch has this release workflow. A tag from before this workflow, for example `v0.0.14`, has the old one: it publishes to `alpha` only and overwrites `kubernetes-operator-catalog:latest`. On such a branch, cherry-pick the changes to `.github/workflows/build-release.yml`, `.github/workflows/publish.yml`, `Makefile` and `hack/scripts/gen_bundle.sh` from `main` first.
+3. Update the Dapr Helm chart on that branch, then push the release tag from that branch.
+
+Bring changes to a `release-X.Y` branch with cherry-picks. A merge from `main` adds newer tags to the history of the branch, and the release workflow then stops the release.
+
+All bundles keep `alpha` as their default channel annotation. In the catalog, the bundle with the highest version sets the default channel of the package. The release workflow does not build the `kubernetes-operator-catalog` image for a tag that is not on `main`, because opm builds that image from the new bundle only.
 
 ### Run E2E Tests
 
