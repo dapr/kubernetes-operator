@@ -3,17 +3,28 @@ on:
   push:
     tags:
       - "v*"
+    # A change to the vendored Dapr chart version on main or on a release
+    # branch publishes a release. Path filters do not apply to tag pushes.
+    branches:
+      - main
+      - "release-*"
+    paths:
+      - helm-charts/dapr/Chart.yaml
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
-  cancel-in-progress: true
+  # Do not stop a release that is already publishing.
+  cancel-in-progress: false
 
 jobs:
   versions:
+    if: github.repository == 'dapr/kubernetes-operator'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     outputs:
+      release: ${{ steps.tag.outputs.release }}
+      tag: ${{ steps.tag.outputs.tag }}
       replaces: ${{ steps.graph.outputs.replaces }}
       in-default-channel: ${{ steps.graph.outputs.in-default-channel }}
     steps:
@@ -21,28 +32,47 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: "Check the tag"
+      - name: "Find the release tag"
+        id: tag
         run: |
           CHART_VERSION="$(yq '.version' helm-charts/dapr/Chart.yaml)"
+          TAG="v${CHART_VERSION}"
 
-          if [ "${GITHUB_REF_NAME}" != "v${CHART_VERSION}" ]; then
-            echo "::error::tag ${GITHUB_REF_NAME} does not match the vendored Dapr chart version ${CHART_VERSION}, expected tag v${CHART_VERSION}"
-            exit 1
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            if [ "${GITHUB_REF_NAME}" != "${TAG}" ]; then
+              echo "::error::tag ${GITHUB_REF_NAME} does not match the vendored Dapr chart version ${CHART_VERSION}, expected tag ${TAG}"
+              exit 1
+            fi
+          elif git rev-parse -q --verify "refs/tags/${TAG}" > /dev/null; then
+            echo "${TAG} exists, nothing to release"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-          case "${GITHUB_REF_NAME}" in
+          case "${TAG}" in
             *-*)
-              echo "::error::tag ${GITHUB_REF_NAME} is a pre-release, only Dapr releases are published"
-              exit 1
+              if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+                echo "::error::tag ${TAG} is a pre-release, only Dapr releases are published"
+                exit 1
+              fi
+              echo "${TAG} is a pre-release, nothing to release"
+              echo "release=false" >> "$GITHUB_OUTPUT"
+              exit 0
               ;;
           esac
+
+          echo "release=true" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
       - name: "Find the place of the release in the OLM update graph"
         id: graph
+        if: steps.tag.outputs.release == 'true'
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
           PREVIOUS_TAG="$(git describe --tags --abbrev=0 --match 'v*' --exclude 'v*-*' "${GITHUB_SHA}^")"
 
-          if [ "$(printf '%s\n' "${PREVIOUS_TAG}" "${GITHUB_REF_NAME}" | sort -V | tail -n 1)" != "${GITHUB_REF_NAME}" ]; then
-            echo "::error::tag ${GITHUB_REF_NAME} must be higher than the version that it replaces, ${PREVIOUS_TAG}"
+          if [ "$(printf '%s\n' "${PREVIOUS_TAG}" "${TAG}" | sort -V | tail -n 1)" != "${TAG}" ]; then
+            echo "::error::release ${TAG} must be higher than the version that it replaces, ${PREVIOUS_TAG}"
             exit 1
           fi
 
@@ -53,18 +83,45 @@ jobs:
             IN_DEFAULT_CHANNEL=false
           fi
 
-          echo "${GITHUB_REF_NAME} replaces ${PREVIOUS_TAG}, in the default channel: ${IN_DEFAULT_CHANNEL}"
+          echo "${TAG} replaces ${PREVIOUS_TAG}, in the default channel: ${IN_DEFAULT_CHANNEL}"
           echo "replaces=${PREVIOUS_TAG}" >> "$GITHUB_OUTPUT"
           echo "in-default-channel=${IN_DEFAULT_CHANNEL}" >> "$GITHUB_OUTPUT"
   release:
     needs:
       - versions
+    if: needs.versions.outputs.release == 'true'
     uses: ./.github/workflows/publish.yml
     with:
-      version: "${{ github.ref_name }}"
+      version: "${{ needs.versions.outputs.tag }}"
       olm: true
       replaces: "${{ needs.versions.outputs.replaces }}"
       in-default-channel: ${{ needs.versions.outputs.in-default-channel == 'true' }}
     secrets:
       registry-username: ${{ secrets.DOCKER_REGISTRY_ID }}
       registry-password: ${{ secrets.DOCKER_REGISTRY_PASS }}
+  github-release:
+    needs:
+      - versions
+      - release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # The tag is created with the release, after the images are published.
+      # A tag that GITHUB_TOKEN creates does not start this workflow again.
+      - name: "Create the tag and the GitHub release"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.versions.outputs.tag }}
+          LATEST: ${{ needs.versions.outputs.in-default-channel }}
+        run: |
+          if gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" > /dev/null 2>&1; then
+            echo "release ${TAG} exists"
+            exit 0
+          fi
+
+          gh release create "${TAG}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target "${GITHUB_SHA}" \
+            --generate-notes \
+            --latest="${LATEST}"

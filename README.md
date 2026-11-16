@@ -199,21 +199,27 @@ make update/dapr
 
 ### Release
 
-The release workflow runs when a `v*` tag is pushed. It checks the tag and finds the place of the release in the OLM update graph:
+A release is published when a change to the version in `helm-charts/dapr/Chart.yaml` reaches `main` or a `release-X.Y` branch, for example when the pull request with the output of `make update/dapr` merges. The release workflow publishes the operator image and the bundle, and for `main` also the catalog image. Then it creates the `v` tag and the GitHub release. It does nothing when the tag exists or when the chart version is a pre-release.
 
-- The tag must be equal to `v` and the version in `helm-charts/dapr/Chart.yaml`, for example `v1.19.1`. Pre-release tags are not published.
-- The bundle replaces the previous `v*` tag in the history of the tagged commit. That tag must be lower than the new tag.
-- A tag on `main` goes to the `alpha` channel and to the `dapr-X.Y` channel. A tag that is not on `main` goes to the `dapr-X.Y` channel only.
+To publish a release by hand, push the `v*` tag. The workflow then creates the GitHub release, so do not create it yourself.
+
+The release workflow checks the version and finds the place of the release in the OLM update graph:
+
+- The tag is `v` and the version in `helm-charts/dapr/Chart.yaml`, for example `v1.19.1`. A pushed tag that does not match stops the release. Pre-releases are not published.
+- The bundle replaces the previous `v*` tag in the history of the release commit. That tag must be lower than the new tag.
+- A release from `main` goes to the `alpha` channel and to the `dapr-X.Y` channel. A release from another branch goes to the `dapr-X.Y` channel only.
 
 `main` holds the newest Dapr minor version. To make patch releases for an older Dapr minor version:
 
 1. Create the `release-X.Y` branch from the last release tag for that minor version.
 2. Make sure that the branch has this release workflow. A tag from before this workflow, for example `v0.0.14`, has the old one: it publishes to `alpha` only and overwrites `kubernetes-operator-catalog:latest`. On such a branch, cherry-pick the changes to `.github/workflows/build-release.yml`, `.github/workflows/publish.yml`, `Makefile` and `hack/scripts/gen_bundle.sh` from `main` first.
-3. Update the Dapr Helm chart on that branch, then push the release tag from that branch.
+3. Update the Dapr Helm chart on that branch with a pull request. The merge publishes the release.
 
 Bring changes to a `release-X.Y` branch with cherry-picks. A merge from `main` adds newer tags to the history of the branch, and the release workflow then stops the release.
 
 All bundles keep `alpha` as their default channel annotation. In the catalog, the bundle with the highest version sets the default channel of the package. The release workflow does not build the `kubernetes-operator-catalog` image for a tag that is not on `main`, because opm builds that image from the new bundle only.
+
+OperatorHub.io and the OpenShift catalog do not get a release automatically. For each release, open a pull request that adds the bundle to `operators/dapr-kubernetes-operator/<version>/` in `k8s-operatorhub/community-operators` and in `redhat-openshift-ecosystem/community-operators-prod`.
 
 ### Run E2E Tests
 
